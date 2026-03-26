@@ -1,0 +1,126 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AvatarDisplay } from "@/components/avatar-display";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import type { SessionEntryRow } from "@/lib/supabase/types";
+
+interface SessionEntryCardProps {
+  entry: SessionEntryRow;
+  characterName: string;
+  characterAvatarUrl: string | null;
+  isOwner: boolean;
+}
+
+export function SessionEntryCard({
+  entry,
+  characterName,
+  characterAvatarUrl,
+  isOwner,
+}: SessionEntryCardProps) {
+  const router = useRouter();
+  const [editing, setEditing] = useState(false);
+  const [content, setContent] = useState(entry.content);
+  const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  async function handleSave() {
+    setSaving(true);
+    const supabase = createClient();
+    await supabase.from("session_entries").update({ content }).eq("id", entry.id);
+    setSaving(false);
+    setEditing(false);
+    router.refresh();
+  }
+
+  async function handleDelete() {
+    const supabase = createClient();
+    await supabase.from("session_entries").delete().eq("id", entry.id);
+    router.refresh();
+  }
+
+  return (
+    <>
+      <Card data-testid={`session-entry-${entry.id}`}>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AvatarDisplay name={characterName} avatarUrl={characterAvatarUrl} size={36} />
+              <CardTitle className="text-lg">{characterName}</CardTitle>
+            </div>
+            {isOwner && !editing && (
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditing(true)}
+                  data-testid={`entry-edit-${entry.id}`}
+                >
+                  Bearbeiten
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-destructive hover:text-destructive"
+                  data-testid={`entry-delete-${entry.id}`}
+                >
+                  Löschen
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {editing ? (
+            <div className="flex flex-col gap-3">
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="min-h-[120px] w-full rounded-md border border-input bg-input p-3 text-sm"
+                data-testid={`entry-edit-textarea-${entry.id}`}
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setContent(entry.content);
+                    setEditing(false);
+                  }}
+                >
+                  Abbrechen
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={saving}
+                  data-testid={`entry-save-${entry.id}`}
+                >
+                  {saving ? "Speichere..." : "Speichern"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="prose prose-sm prose-invert max-w-none">
+              <ReactMarkdown>{entry.content}</ReactMarkdown>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Beitrag löschen"
+        message="Möchtest du diesen Beitrag wirklich löschen?"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
+    </>
+  );
+}
