@@ -17,14 +17,35 @@ import {
   getWisdomModifiers,
   getCharismaModifiers,
 } from "@/lib/rules/abilities";
-import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
+import type {
+  CharacterRow,
+  CharacterClassRow,
+  CharacterEquipmentWithDetails,
+  CharacterSpellWithDetails,
+  CharacterWeaponProficiencyRow,
+  CharacterNWPWithDetails,
+  CharacterLanguageRow,
+} from "@/lib/supabase/types";
 
 interface PrintSheetProps {
   character: CharacterRow;
   characterClasses: CharacterClassRow[];
+  equipment: CharacterEquipmentWithDetails[];
+  spells: CharacterSpellWithDetails[];
+  weaponProficiencies: CharacterWeaponProficiencyRow[];
+  nonweaponProficiencies: CharacterNWPWithDetails[];
+  languages: CharacterLanguageRow[];
 }
 
-export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
+export function PrintSheet({
+  character,
+  characterClasses,
+  equipment,
+  spells,
+  weaponProficiencies,
+  nonweaponProficiencies,
+  languages,
+}: PrintSheetProps) {
   const t = useTranslations("print");
   const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
 
@@ -385,6 +406,103 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {/* ── Equipment ─────────────────────────────────────────── */}
+        {equipment.length > 0 && (
+          <section className="mb-4" data-testid="print-section-equipment">
+            <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+              {t("equipment")}
+            </h2>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-300 text-left text-xs">
+                  <th className="py-1">Item</th>
+                  <th className="py-1 text-center">Typ</th>
+                  <th className="py-1 text-center">{t("weight")}</th>
+                  <th className="py-1 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {equipment.map((e) => (
+                  <tr key={e.id} className="border-b border-gray-200">
+                    <td className="py-1">{e.weapon?.name ?? e.armor?.name ?? "—"}</td>
+                    <td className="py-1 text-center text-xs">{e.weapon ? "Waffe" : "Rüstung"}</td>
+                    <td className="py-1 text-center text-xs">
+                      {e.weapon?.weight ?? e.armor?.weight ?? 0} lbs
+                    </td>
+                    <td className="py-1 text-center text-xs">
+                      {e.equipped ? "Angelegt" : "Inventar"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {/* ── Spellbook ───────────────────────────────────────────── */}
+        {spells.length > 0 && (
+          <section className="mb-4" data-testid="print-section-spells">
+            <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+              {t("spellbook")}
+            </h2>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+              {spells.map((cs) => (
+                <div key={cs.spell.id} className="flex items-center gap-1">
+                  <span className={cs.prepared ? "font-semibold" : ""}>{cs.spell.name}</span>
+                  <span className="text-xs text-gray-500">(L{cs.spell.level})</span>
+                  {cs.prepared && <span className="text-xs text-gray-500">★</span>}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Proficiencies ───────────────────────────────────────── */}
+        {(weaponProficiencies.length > 0 || nonweaponProficiencies.length > 0) && (
+          <section className="mb-4" data-testid="print-section-proficiencies">
+            <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+              {t("proficiencies")}
+            </h2>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {weaponProficiencies.length > 0 && (
+                <div>
+                  <h3 className="font-semibold">{t("weaponProf")}</h3>
+                  <ul className="mt-1 list-inside list-disc text-xs">
+                    {weaponProficiencies.map((wp) => (
+                      <li key={wp.id}>
+                        {wp.weapon_name}
+                        {wp.specialization && " (Spezialisierung)"}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {nonweaponProficiencies.length > 0 && (
+                <div>
+                  <h3 className="font-semibold">{t("nwProf")}</h3>
+                  <ul className="mt-1 list-inside list-disc text-xs">
+                    {nonweaponProficiencies.map((nwp) => (
+                      <li key={nwp.id}>
+                        {nwp.proficiency.name} ({nwp.proficiency.ability}{" "}
+                        {nwp.proficiency.modifier >= 0
+                          ? `+${nwp.proficiency.modifier}`
+                          : nwp.proficiency.modifier}
+                        )
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            {languages.length > 0 && (
+              <div className="mt-2">
+                <h3 className="font-semibold text-sm">{t("languagesLabel")}</h3>
+                <p className="text-xs">{languages.map((l) => l.language_name).join(", ")}</p>
+              </div>
+            )}
           </section>
         )}
 

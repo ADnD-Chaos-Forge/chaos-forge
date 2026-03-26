@@ -371,7 +371,14 @@
     "climb": "Climb",
     "noise": "Noise",
     "readLang": "Read Lang.",
-    "backstab": "Backstab"
+    "backstab": "Backstab",
+    "equipment": "Equipment",
+    "weight": "Weight",
+    "spellbook": "Spellbook",
+    "proficiencies": "Proficiencies",
+    "weaponProf": "Weapon Proficiencies",
+    "nwProf": "Non-Weapon Proficiencies",
+    "languagesLabel": "Languages"
   },
   "theme": {
     "toggleDark": "Switch to dark mode",

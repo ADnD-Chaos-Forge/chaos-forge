@@ -371,7 +371,14 @@
     "climb": "Klettern",
     "noise": "Geräusche",
     "readLang": "Sprachen",
-    "backstab": "Hinterhalt"
+    "backstab": "Hinterhalt",
+    "equipment": "Ausrüstung",
+    "weight": "Gewicht",
+    "spellbook": "Zauberbuch",
+    "proficiencies": "Fertigkeiten",
+    "weaponProf": "Waffenfertigkeiten",
+    "nwProf": "Allgemeine Fertigkeiten",
+    "languagesLabel": "Sprachen"
   },
   "theme": {
     "toggleDark": "Zum dunklen Modus wechseln",

@@ -2,7 +2,15 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/supabase/auth";
 import { PrintSheet } from "@/components/print-sheet/print-sheet";
-import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
+import type {
+  CharacterRow,
+  CharacterClassRow,
+  CharacterEquipmentWithDetails,
+  CharacterSpellWithDetails,
+  CharacterWeaponProficiencyRow,
+  CharacterNWPWithDetails,
+  CharacterLanguageRow,
+} from "@/lib/supabase/types";
 
 interface PrintPageProps {
   params: Promise<{ id: string }>;
@@ -29,5 +37,42 @@ export default async function PrintPage({ params }: PrintPageProps) {
     .eq("character_id", id)
     .returns<CharacterClassRow[]>();
 
-  return <PrintSheet character={character} characterClasses={characterClasses ?? []} />;
+  const { data: equipment } = await supabase
+    .from("character_equipment")
+    .select("*, weapon:weapons(*), armor:armor(*)")
+    .eq("character_id", id);
+
+  const { data: spells } = await supabase
+    .from("character_spells")
+    .select("*, spell:spells(*)")
+    .eq("character_id", id);
+
+  const { data: weaponProfs } = await supabase
+    .from("character_weapon_proficiencies")
+    .select("*")
+    .eq("character_id", id)
+    .returns<CharacterWeaponProficiencyRow[]>();
+
+  const { data: nwProfs } = await supabase
+    .from("character_nonweapon_proficiencies")
+    .select("*, proficiency:nonweapon_proficiencies(*)")
+    .eq("character_id", id);
+
+  const { data: languages } = await supabase
+    .from("character_languages")
+    .select("*")
+    .eq("character_id", id)
+    .returns<CharacterLanguageRow[]>();
+
+  return (
+    <PrintSheet
+      character={character}
+      characterClasses={characterClasses ?? []}
+      equipment={(equipment as CharacterEquipmentWithDetails[]) ?? []}
+      spells={(spells as CharacterSpellWithDetails[]) ?? []}
+      weaponProficiencies={weaponProfs ?? []}
+      nonweaponProficiencies={(nwProfs as CharacterNWPWithDetails[]) ?? []}
+      languages={languages ?? []}
+    />
+  );
 }
