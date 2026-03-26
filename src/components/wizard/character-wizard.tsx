@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CLASSES } from "@/lib/rules/classes";
@@ -13,8 +14,12 @@ import { StepCombat } from "./step-combat";
 import { StepSummary } from "./step-summary";
 import { WIZARD_STEPS, INITIAL_WIZARD_STATE, type WizardState } from "./wizard-types";
 
+const STEP_LABEL_KEYS = ["basics", "abilities", "race", "class", "combat", "summary"] as const;
+
 export function CharacterWizard() {
   const router = useRouter();
+  const t = useTranslations("wizard");
+  const tc = useTranslations("common");
   const [currentStep, setCurrentStep] = useState(0);
   const [state, setState] = useState<WizardState>(INITIAL_WIZARD_STATE);
   const [saving, setSaving] = useState(false);
@@ -112,7 +117,7 @@ export function CharacterWizard() {
         ))}
       </div>
 
-      <h2 className="font-heading text-2xl text-primary">{WIZARD_STEPS[currentStep].label}</h2>
+      <h2 className="font-heading text-2xl text-primary">{t(STEP_LABEL_KEYS[currentStep])}</h2>
 
       {/* Step content */}
       {WIZARD_STEPS[currentStep].id === "basics" && (
@@ -138,7 +143,7 @@ export function CharacterWizard() {
           disabled={currentStep === 0}
           data-testid="wizard-prev-button"
         >
-          Zur&uuml;ck
+          {tc("back")}
         </Button>
 
         {isLastStep ? (
@@ -147,7 +152,7 @@ export function CharacterWizard() {
             disabled={saving || !canProceed()}
             data-testid="wizard-create-button"
           >
-            {saving ? "Erstelle Charakter..." : "Charakter erstellen"}
+            {saving ? t("creating") : t("createCharacter")}
           </Button>
         ) : (
           <Button
@@ -155,7 +160,7 @@ export function CharacterWizard() {
             disabled={!canProceed()}
             data-testid="wizard-next-button"
           >
-            Weiter
+            {tc("next")}
           </Button>
         )}
       </div>

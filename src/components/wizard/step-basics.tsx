@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ALL_ALIGNMENTS, getAlignmentLabel, getAllowedAlignments } from "@/lib/rules/alignment";
@@ -12,23 +13,24 @@ interface StepBasicsProps {
 }
 
 export function StepBasics({ state, onChange }: StepBasicsProps) {
+  const t = useTranslations("wizard");
   const allowedAlignments = state.classId ? getAllowedAlignments(state.classId) : ALL_ALIGNMENTS;
   const isAlignmentWarning = state.classId && !allowedAlignments.includes(state.alignment);
 
   return (
     <div className="flex flex-col gap-4" data-testid="wizard-step-basics">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="char-name">Name des Charakters</Label>
+        <Label htmlFor="char-name">{t("nameLabel")}</Label>
         <Input
           id="char-name"
           value={state.name}
           onChange={(e) => onChange({ name: e.target.value })}
-          placeholder="z.B. Thandril der Weise"
+          placeholder={t("namePlaceholder")}
           data-testid="wizard-name-input"
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="char-level">Stufe (Level)</Label>
+        <Label htmlFor="char-level">{t("levelLabel")}</Label>
         <Input
           id="char-level"
           type="number"
@@ -40,12 +42,10 @@ export function StepBasics({ state, onChange }: StepBasicsProps) {
           }
           data-testid="wizard-level-input"
         />
-        <p className="text-xs text-muted-foreground">
-          Charaktere k&ouml;nnen auf jeder Stufe erstellt werden (1-20).
-        </p>
+        <p className="text-xs text-muted-foreground">{t("levelHint")}</p>
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="char-alignment">Gesinnung (Alignment)</Label>
+        <Label htmlFor="char-alignment">{t("alignmentLabel")}</Label>
         <select
           id="char-alignment"
           value={state.alignment}
@@ -59,12 +59,7 @@ export function StepBasics({ state, onChange }: StepBasicsProps) {
             </option>
           ))}
         </select>
-        {isAlignmentWarning && (
-          <p className="text-xs text-yellow-400">
-            Warnung: Diese Gesinnung verst&ouml;&szlig;t gegen die offiziellen AD&amp;D 2e Regeln
-            f&uuml;r die gew&auml;hlte Klasse.
-          </p>
-        )}
+        {isAlignmentWarning && <p className="text-xs text-yellow-400">{t("alignmentWarning")}</p>}
       </div>
     </div>
   );

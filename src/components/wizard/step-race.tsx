@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { getAllRaces, canPlayClass } from "@/lib/rules/races";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ interface StepRaceProps {
 }
 
 export function StepRace({ state, onChange }: StepRaceProps) {
+  const t = useTranslations("wizard");
   const races = getAllRaces();
 
   function handleSelect(raceId: RaceId) {
@@ -21,7 +23,7 @@ export function StepRace({ state, onChange }: StepRaceProps) {
 
   return (
     <div className="flex flex-col gap-4" data-testid="wizard-step-race">
-      <p className="text-sm text-muted-foreground">W&auml;hle die Rasse deines Charakters.</p>
+      <p className="text-sm text-muted-foreground">{t("selectRace")}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         {races.map((race) => {
           const isSelected = state.raceId === race.id;
@@ -49,7 +51,7 @@ export function StepRace({ state, onChange }: StepRaceProps) {
                 )}
                 {race.infravision > 0 && (
                   <span className="text-xs text-muted-foreground">
-                    Infravision: {race.infravision} Fu&szlig;
+                    {t("infravision")}: {race.infravision} Fuß
                   </span>
                 )}
               </CardContent>

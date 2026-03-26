@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ interface ScannedCharacter {
 
 export default function ImportCharacterPage() {
   const router = useRouter();
+  const t = useTranslations("import");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [scanning, setScanning] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -123,11 +125,8 @@ export default function ImportCharacterPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6" data-testid="import-page">
-      <h1 className="font-heading text-3xl text-primary">Charakterbogen importieren</h1>
-      <p className="text-muted-foreground">
-        Lade ein Foto oder PDF eines AD&D-Charakterbogens hoch. Die KI extrahiert die Werte
-        automatisch.
-      </p>
+      <h1 className="font-heading text-3xl text-primary">{t("title")}</h1>
+      <p className="text-muted-foreground">{t("description")}</p>
 
       {/* Upload area */}
       {!scanned && (
@@ -138,15 +137,15 @@ export default function ImportCharacterPage() {
         >
           {preview ? (
             preview === "pdf" ? (
-              <p className="text-lg text-primary">PDF hochgeladen</p>
+              <p className="text-lg text-primary">{t("pdfUploaded")}</p>
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={preview} alt="Vorschau" className="max-h-64 rounded" />
             )
           ) : (
-            <p className="text-muted-foreground">Klicke hier um ein Foto oder PDF auszuwählen</p>
+            <p className="text-muted-foreground">{t("dropzone")}</p>
           )}
-          {scanning && <p className="text-sm text-primary">Scanne Charakterbogen...</p>}
+          {scanning && <p className="text-sm text-primary">{t("scanning")}</p>}
           <input
             ref={fileInputRef}
             type="file"
@@ -162,9 +161,7 @@ export default function ImportCharacterPage() {
       {scanned && (
         <Card data-testid="import-result">
           <CardHeader>
-            <CardTitle className="font-heading text-xl text-primary">
-              Erkannte Werte — bitte prüfen
-            </CardTitle>
+            <CardTitle className="font-heading text-xl text-primary">{t("resultTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -234,10 +231,10 @@ export default function ImportCharacterPage() {
                   setPreview(null);
                 }}
               >
-                Neues Foto
+                {t("newPhoto")}
               </Button>
               <Button onClick={handleCreate} disabled={saving} data-testid="import-create-button">
-                {saving ? "Erstelle..." : "Charakter erstellen"}
+                {saving ? t("creating") : t("createCharacter")}
               </Button>
             </div>
           </CardContent>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AvatarDisplay } from "@/components/avatar-display";
@@ -16,6 +17,7 @@ function hpColor(current: number, max: number): string {
 }
 
 export default async function DashboardPage() {
+  const t = await getTranslations("dashboard");
   const supabase = await createClient();
 
   const { data: characters } = await supabase
@@ -49,25 +51,25 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6" data-testid="dashboard-page">
-      <h1 className="font-heading text-3xl text-primary">Gruppen-Dashboard</h1>
+      <h1 className="font-heading text-3xl text-primary">{t("title")}</h1>
 
       {/* Stats row */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-xs text-muted-foreground">Abenteurer</div>
+            <div className="text-xs text-muted-foreground">{t("adventurers")}</div>
             <div className="font-heading text-3xl text-primary">{characters?.length ?? 0}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-xs text-muted-foreground">Durchschnittsstufe</div>
+            <div className="text-xs text-muted-foreground">{t("averageLevel")}</div>
             <div className="font-heading text-3xl text-primary">{avgLevel}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-xs text-muted-foreground">Klassenverteilung</div>
+            <div className="text-xs text-muted-foreground">{t("classDistribution")}</div>
             <div className="mt-1 flex flex-wrap justify-center gap-1">
               {Object.entries(classGroups).map(([group, count]) => (
                 <Badge key={group} variant="secondary">
@@ -85,7 +87,7 @@ export default async function DashboardPage() {
           <Card className="transition-colors hover:border-primary/50" data-testid="latest-session">
             <CardContent className="flex items-center justify-between p-4">
               <div>
-                <div className="text-xs text-muted-foreground">Letzte Session</div>
+                <div className="text-xs text-muted-foreground">{t("latestSession")}</div>
                 <div className="font-heading text-lg">{latestSession[0].title}</div>
               </div>
               <div className="text-sm text-muted-foreground">
@@ -97,9 +99,9 @@ export default async function DashboardPage() {
       )}
 
       {/* Character Grid */}
-      <h2 className="font-heading text-xl">Alle Charaktere</h2>
+      <h2 className="font-heading text-xl">{t("allCharacters")}</h2>
       {!characters || characters.length === 0 ? (
-        <p className="text-muted-foreground">Noch keine Charaktere in der Gruppe.</p>
+        <p className="text-muted-foreground">{t("noCharacters")}</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {characters.map((character) => {

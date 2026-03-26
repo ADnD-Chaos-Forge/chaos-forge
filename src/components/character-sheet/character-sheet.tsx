@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,9 @@ export function CharacterSheet({
   languages,
 }: CharacterSheetProps) {
   const router = useRouter();
+  const t = useTranslations("sheet");
+  const tc = useTranslations("characters");
+  const tcom = useTranslations("common");
   const [character, setCharacter] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -160,12 +164,12 @@ export function CharacterSheet({
         <div className="flex gap-2">
           <Link href={`/characters/${character.id}/print`}>
             <Button variant="outline" data-testid="sheet-print-button">
-              Druckansicht
+              {tc("printView")}
             </Button>
           </Link>
           {dirty && (
             <Button onClick={handleSave} disabled={saving} data-testid="sheet-save-button">
-              {saving ? "Speichere..." : "Speichern"}
+              {saving ? tcom("saving") : tcom("save")}
             </Button>
           )}
           {isOwner && (
@@ -174,7 +178,7 @@ export function CharacterSheet({
               onClick={() => setShowDeleteConfirm(true)}
               data-testid="sheet-delete-button"
             >
-              Löschen
+              {tcom("delete")}
             </Button>
           )}
         </div>
@@ -190,20 +194,22 @@ export function CharacterSheet({
 
       <Tabs defaultValue="stats" className="w-full">
         <TabsList className="w-full justify-start" data-testid="sheet-tabs">
-          <TabsTrigger value="stats">Werte</TabsTrigger>
-          <TabsTrigger value="combat">Kampf</TabsTrigger>
-          <TabsTrigger value="notes">Notizen</TabsTrigger>
-          <TabsTrigger value="equipment">Ausrüstung</TabsTrigger>
+          <TabsTrigger value="stats">{t("stats")}</TabsTrigger>
+          <TabsTrigger value="combat">{t("combat")}</TabsTrigger>
+          <TabsTrigger value="notes">{t("notes")}</TabsTrigger>
+          <TabsTrigger value="equipment">{t("equipment")}</TabsTrigger>
           {(classGroup === "wizard" ||
             classGroup === "priest" ||
-            character.class_id === "bard") && <TabsTrigger value="spells">Zauber</TabsTrigger>}
-          <TabsTrigger value="proficiencies">Fertigkeiten</TabsTrigger>
+            character.class_id === "bard") && (
+            <TabsTrigger value="spells">{t("spells")}</TabsTrigger>
+          )}
+          <TabsTrigger value="proficiencies">{t("proficiencies")}</TabsTrigger>
         </TabsList>
 
         {/* Stats Tab */}
         <TabsContent value="stats" className="flex flex-col gap-6">
           <div>
-            <h3 className="mb-3 font-heading text-lg">Attribute</h3>
+            <h3 className="mb-3 font-heading text-lg">{t("attributes")}</h3>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {[
                 {
@@ -268,11 +274,11 @@ export function CharacterSheet({
           <Separator />
 
           <div>
-            <h3 className="mb-3 font-heading text-lg">Trefferpunkte</h3>
+            <h3 className="mb-3 font-heading text-lg">{t("hitPoints")}</h3>
             <div className="flex gap-4">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="hp-current" className="text-xs text-muted-foreground">
-                  Aktuell
+                  {t("hpCurrent")}
                 </Label>
                 <Input
                   id="hp-current"
@@ -287,7 +293,7 @@ export function CharacterSheet({
               <div className="flex items-end pb-2 text-lg text-muted-foreground">/</div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="hp-max" className="text-xs text-muted-foreground">
-                  Maximum
+                  {t("hpMax")}
                 </Label>
                 <Input
                   id="hp-max"
@@ -305,12 +311,12 @@ export function CharacterSheet({
           <Separator />
 
           <div>
-            <h3 className="mb-3 font-heading text-lg">Erfahrungspunkte</h3>
+            <h3 className="mb-3 font-heading text-lg">{t("xp")}</h3>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-4">
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="xp-current" className="text-xs text-muted-foreground">
-                    Aktuell
+                    {t("hpCurrent")}
                   </Label>
                   <Input
                     id="xp-current"
@@ -369,7 +375,7 @@ export function CharacterSheet({
           <Separator />
 
           <div>
-            <h3 className="mb-3 font-heading text-lg">Schatz</h3>
+            <h3 className="mb-3 font-heading text-lg">{t("gold")}</h3>
             <div className="grid grid-cols-5 gap-2">
               {[
                 { key: "gold_pp" as const, label: "PP" },
@@ -404,7 +410,7 @@ export function CharacterSheet({
           <div>
             {race?.racialAbilities && race.racialAbilities.length > 0 && (
               <div className="mb-4">
-                <h3 className="mb-2 font-heading text-lg">Rassenfähigkeiten</h3>
+                <h3 className="mb-2 font-heading text-lg">{t("racialAbilities")}</h3>
                 <ul className="list-inside list-disc text-sm text-muted-foreground">
                   {race.racialAbilities.map((ability, i) => (
                     <li key={i}>{ability}</li>
@@ -414,7 +420,7 @@ export function CharacterSheet({
             )}
             {cls?.classAbilities && cls.classAbilities.length > 0 && (
               <div>
-                <h3 className="mb-2 font-heading text-lg">Klassenfähigkeiten</h3>
+                <h3 className="mb-2 font-heading text-lg">{t("classAbilities")}</h3>
                 <ul className="list-inside list-disc text-sm text-muted-foreground">
                   {cls.classAbilities.map((ability, i) => (
                     <li key={i}>{ability}</li>
@@ -429,20 +435,20 @@ export function CharacterSheet({
         <TabsContent value="combat" className="flex flex-col gap-6">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div className="rounded-md border border-border p-4 text-center">
-              <div className="text-xs text-muted-foreground">ETW0 (THAC0)</div>
+              <div className="text-xs text-muted-foreground">{t("thac0")}</div>
               <div className="font-heading text-3xl text-primary" data-testid="sheet-thac0">
                 {thac0}
               </div>
             </div>
             <div className="rounded-md border border-border p-4 text-center">
-              <div className="text-xs text-muted-foreground">R&uuml;stungsklasse</div>
+              <div className="text-xs text-muted-foreground">{t("armorClass")}</div>
               <div className="font-heading text-3xl text-primary" data-testid="sheet-ac">
                 {baseAC}
               </div>
-              <div className="text-xs text-muted-foreground">Basis (ohne R&uuml;stung)</div>
+              <div className="text-xs text-muted-foreground">{t("acBase")}</div>
             </div>
             <div className="rounded-md border border-border p-4 text-center">
-              <div className="text-xs text-muted-foreground">Treffer / Schaden</div>
+              <div className="text-xs text-muted-foreground">{t("hitDamage")}</div>
               <div className="font-heading text-2xl text-primary">
                 {strMods.hitAdj >= 0 ? "+" : ""}
                 {strMods.hitAdj} / {strMods.dmgAdj >= 0 ? "+" : ""}
@@ -453,14 +459,14 @@ export function CharacterSheet({
 
           {saves && (
             <div>
-              <h3 className="mb-3 font-heading text-lg">Rettungsw&uuml;rfe</h3>
+              <h3 className="mb-3 font-heading text-lg">{t("savingThrows")}</h3>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                 {[
-                  { label: "Gift/Tod", value: saves.paralyzation },
-                  { label: "Stab/Rute", value: saves.rod },
-                  { label: "Versteinerung", value: saves.petrification },
-                  { label: "Odemwaffe", value: saves.breath },
-                  { label: "Zauber", value: saves.spell },
+                  { label: t("savePoison"), value: saves.paralyzation },
+                  { label: t("saveRod"), value: saves.rod },
+                  { label: t("savePetrification"), value: saves.petrification },
+                  { label: t("saveBreath"), value: saves.breath },
+                  { label: t("saveSpell"), value: saves.spell },
                 ].map(({ label, value }) => (
                   <div key={label} className="rounded-md border border-border p-3 text-center">
                     <div className="text-xs text-muted-foreground">{label}</div>
@@ -475,13 +481,13 @@ export function CharacterSheet({
         {/* Notes Tab */}
         <TabsContent value="notes">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="notes">Notizen</Label>
+            <Label htmlFor="notes">{t("notes")}</Label>
             <textarea
               id="notes"
               value={character.notes}
               onChange={(e) => update("notes", e.target.value)}
               className="min-h-[200px] w-full rounded-md border border-input bg-input p-3 text-sm"
-              placeholder="Hintergrundgeschichte, wichtige Items, Quests..."
+              placeholder={t("notesPlaceholder")}
               data-testid="sheet-notes"
             />
           </div>

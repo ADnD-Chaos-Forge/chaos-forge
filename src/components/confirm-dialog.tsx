@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 interface ConfirmDialogProps {
@@ -19,6 +20,8 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const t = useTranslations("confirm");
+
   if (!open) return null;
 
   return (
@@ -35,7 +38,7 @@ export function ConfirmDialog({
         <p className="text-sm text-muted-foreground">{message}</p>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onCancel} data-testid="confirm-cancel">
-            Abbrechen
+            {t("cancel")}
           </Button>
           <Button variant="destructive" onClick={onConfirm} data-testid="confirm-delete">
             {confirmLabel}

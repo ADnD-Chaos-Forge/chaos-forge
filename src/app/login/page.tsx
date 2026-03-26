@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
+  const t = useTranslations("login");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -21,9 +23,7 @@ export default function LoginPage() {
 
     try {
       if (!isSupabaseConfigured()) {
-        setError(
-          "Supabase ist nicht konfiguriert. Bitte .env.local mit NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_ANON_KEY anlegen."
-        );
+        setError(t("supabaseNotConfigured"));
         setLoading(false);
         return;
       }
@@ -57,7 +57,7 @@ export default function LoginPage() {
       if (error) {
         setError(error.message);
       } else {
-        setMessage("Prüfe dein Postfach — wir haben dir einen Magic Link gesendet!");
+        setMessage(t("success"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ein unbekannter Fehler ist aufgetreten.");
@@ -70,21 +70,17 @@ export default function LoginPage() {
     <div className="flex flex-1 items-center justify-center px-6" data-testid="login-page">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="font-heading text-2xl text-primary">
-            Willkommen, Abenteurer
-          </CardTitle>
-          <CardDescription>
-            Melde dich mit deiner E-Mail an — wir senden dir einen magischen Link.
-          </CardDescription>
+          <CardTitle className="font-heading text-2xl text-primary">{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email">E-Mail</Label>
+              <Label htmlFor="email">{t("emailLabel")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="held@chaosrpg.de"
+                placeholder={t("emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -92,7 +88,7 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" disabled={loading} data-testid="login-submit-button">
-              {loading ? "Sende Magic Link..." : "Magic Link senden"}
+              {loading ? t("submitting") : t("submit")}
             </Button>
             {message && (
               <p className="text-sm text-green-500" data-testid="login-success-message">

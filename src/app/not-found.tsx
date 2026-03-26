@@ -1,19 +1,19 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getTranslations } from "next-intl/server";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const t = await getTranslations("notFound");
   return (
     <div
       className="flex flex-1 flex-col items-center justify-center px-6"
       data-testid="not-found-page"
     >
       <div className="flex flex-col items-center gap-4 text-center">
-        <h1 className="font-heading text-6xl text-primary">404</h1>
-        <p className="text-lg text-muted-foreground">
-          Diese Seite wurde in den Tiefen des Dungeons verschlungen.
-        </p>
+        <h1 className="font-heading text-6xl text-primary">{t("title")}</h1>
+        <p className="text-lg text-muted-foreground">{t("message")}</p>
         <Link href="/">
-          <Button>Zur&uuml;ck zur Taverne</Button>
+          <Button>{t("backHome")}</Button>
         </Link>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { CLASSES } from "@/lib/rules/classes";
 import type { CharacterRow } from "@/lib/supabase/types";
 
 export default async function CharactersPage() {
+  const t = await getTranslations("characters");
   const supabase = await createClient();
   const { data: characters } = await supabase
     .from("characters")
@@ -19,9 +21,9 @@ export default async function CharactersPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-6" data-testid="characters-page">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-3xl text-primary">Deine Charaktere</h1>
+        <h1 className="font-heading text-3xl text-primary">{t("title")}</h1>
         <Link href="/characters/new">
-          <Button data-testid="create-character-button">Neuer Charakter</Button>
+          <Button data-testid="create-character-button">{t("newCharacter")}</Button>
         </Link>
       </div>
 
@@ -30,11 +32,9 @@ export default async function CharactersPage() {
           className="flex flex-1 flex-col items-center justify-center gap-4 text-center"
           data-testid="no-characters"
         >
-          <p className="text-lg text-muted-foreground">
-            Noch keine Charaktere erstellt. Zeit, deine Legende zu schmieden!
-          </p>
+          <p className="text-lg text-muted-foreground">{t("noCharacters")}</p>
           <Link href="/characters/new">
-            <Button size="lg">Ersten Charakter erstellen</Button>
+            <Button size="lg">{t("createFirst")}</Button>
           </Link>
         </div>
       ) : (
@@ -65,7 +65,9 @@ export default async function CharactersPage() {
                     <div className="flex flex-wrap gap-2">
                       {race && <Badge variant="secondary">{race.name}</Badge>}
                       {cls && <Badge variant="secondary">{cls.name}</Badge>}
-                      <Badge variant="outline">Stufe {character.level}</Badge>
+                      <Badge variant="outline">
+                        {t("level")} {character.level}
+                      </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground">
                       HP: {character.hp_current}/{character.hp_max}
