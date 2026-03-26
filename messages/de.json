@@ -211,7 +211,10 @@
     "components": "Komponenten",
     "description": "Beschreibung",
     "noSpells": "Noch keine Zauber gelernt.",
-    "notACaster": "Diese Klasse kann keine Zauber wirken."
+    "notACaster": "Diese Klasse kann keine Zauber wirken.",
+    "castingTime": "Zauberzeit",
+    "savingThrow": "Rettungswurf",
+    "removeSpell": "Entfernen"
   },
   "proficiencies": {
     "title": "Fertigkeiten",

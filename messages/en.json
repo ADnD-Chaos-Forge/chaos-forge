@@ -211,7 +211,10 @@
     "components": "Components",
     "description": "Description",
     "noSpells": "No spells learned yet.",
-    "notACaster": "This class cannot cast spells."
+    "notACaster": "This class cannot cast spells.",
+    "castingTime": "Casting Time",
+    "savingThrow": "Saving Throw",
+    "removeSpell": "Remove"
   },
   "proficiencies": {
     "title": "Proficiencies",
