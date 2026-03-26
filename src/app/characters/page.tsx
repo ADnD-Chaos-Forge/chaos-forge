@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AvatarDisplay } from "@/components/avatar-display";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
 import type { CharacterRow } from "@/lib/supabase/types";
@@ -51,7 +52,14 @@ export default async function CharactersPage() {
                   data-testid={`character-card-${character.id}`}
                 >
                   <CardHeader>
-                    <CardTitle className="font-heading text-xl">{character.name}</CardTitle>
+                    <div className="flex items-center gap-3">
+                      <AvatarDisplay
+                        name={character.name}
+                        avatarUrl={character.avatar_url}
+                        size={40}
+                      />
+                      <CardTitle className="font-heading text-xl">{character.name}</CardTitle>
+                    </div>
                   </CardHeader>
                   <CardContent className="flex flex-col gap-2">
                     <div className="flex flex-wrap gap-2">

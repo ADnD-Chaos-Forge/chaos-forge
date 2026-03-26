@@ -20,13 +20,16 @@ import {
   getWisdomModifiers,
   getCharismaModifiers,
 } from "@/lib/rules/abilities";
+import { AvatarUpload } from "@/components/avatar-upload";
+import Link from "next/link";
 import type { CharacterRow } from "@/lib/supabase/types";
 
 interface CharacterSheetProps {
   character: CharacterRow;
+  userId: string;
 }
 
-export function CharacterSheet({ character: initial }: CharacterSheetProps) {
+export function CharacterSheet({ character: initial, userId }: CharacterSheetProps) {
   const router = useRouter();
   const [character, setCharacter] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -79,21 +82,36 @@ export function CharacterSheet({ character: initial }: CharacterSheetProps) {
     <div className="mx-auto w-full max-w-4xl p-6" data-testid="character-sheet">
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="font-heading text-3xl text-primary" data-testid="sheet-name">
-            {character.name}
-          </h1>
-          <div className="mt-1 flex flex-wrap gap-2">
-            {race && <Badge>{race.name}</Badge>}
-            {cls && <Badge>{cls.name}</Badge>}
-            <Badge variant="outline">Stufe {character.level}</Badge>
+        <div className="flex items-start gap-4">
+          <AvatarUpload
+            characterId={character.id}
+            userId={userId}
+            characterName={character.name}
+            currentAvatarUrl={character.avatar_url}
+          />
+          <div>
+            <h1 className="font-heading text-3xl text-primary" data-testid="sheet-name">
+              {character.name}
+            </h1>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {race && <Badge>{race.name}</Badge>}
+              {cls && <Badge>{cls.name}</Badge>}
+              <Badge variant="outline">Stufe {character.level}</Badge>
+            </div>
           </div>
         </div>
-        {dirty && (
-          <Button onClick={handleSave} disabled={saving} data-testid="sheet-save-button">
-            {saving ? "Speichere..." : "Speichern"}
-          </Button>
-        )}
+        <div className="flex gap-2">
+          <Link href={`/characters/${character.id}/print`}>
+            <Button variant="outline" data-testid="sheet-print-button">
+              Druckansicht
+            </Button>
+          </Link>
+          {dirty && (
+            <Button onClick={handleSave} disabled={saving} data-testid="sheet-save-button">
+              {saving ? "Speichere..." : "Speichern"}
+            </Button>
+          )}
+        </div>
       </div>
 
       <Tabs defaultValue="stats" className="w-full">
