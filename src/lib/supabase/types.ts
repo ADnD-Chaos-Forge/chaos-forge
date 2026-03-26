@@ -25,6 +25,27 @@ export interface CharacterRow {
   gold_ep: number;
   gold_sp: number;
   gold_cp: number;
+  // Personal details
+  player_name: string;
+  age: number | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  gender: string;
+  hair_color: string;
+  eye_color: string;
+  // Ability Sub-Scores (Player's Option)
+  str_stamina: number | null;
+  str_muscle: number | null;
+  dex_aim: number | null;
+  dex_balance: number | null;
+  con_health: number | null;
+  con_fitness: number | null;
+  int_reason: number | null;
+  int_knowledge: number | null;
+  wis_intuition: number | null;
+  wis_willpower: number | null;
+  cha_leadership: number | null;
+  cha_appearance: number | null;
   created_at: string;
   updated_at: string;
 }
