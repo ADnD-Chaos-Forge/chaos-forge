@@ -120,6 +120,7 @@ export interface ArmorRow {
 export interface SpellRow {
   id: string;
   name: string;
+  name_en: string | null;
   level: number;
   spell_type: "wizard" | "priest";
   school: string | null;
@@ -129,6 +130,9 @@ export interface SpellRow {
   area_of_effect: string;
   components: string[];
   description: string;
+  description_en: string | null;
+  casting_time: string;
+  saving_throw: string;
   is_custom: boolean;
   created_by: string | null;
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,7 +93,19 @@ export function TabSpells({
   allSpells,
 }: TabSpellsProps) {
   const router = useRouter();
+  const t = useTranslations("spells");
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
+
+  const spellName = useCallback(
+    (spell: SpellRow) => (locale === "en" && spell.name_en ? spell.name_en : spell.name),
+    [locale]
+  );
+  const spellDesc = useCallback(
+    (spell: SpellRow) =>
+      locale === "en" && spell.description_en ? spell.description_en : spell.description,
+    [locale]
+  );
   const [learnDialogOpen, setLearnDialogOpen] = useState(false);
   const [expandedSpellId, setExpandedSpellId] = useState<string | null>(null);
   const [learnSearchQuery, setLearnSearchQuery] = useState("");
@@ -377,7 +390,7 @@ export function TabSpells({
                         onClick={() => setExpandedSpellId(isExpanded ? null : spell.id)}
                         data-testid={`spell-toggle-details-${spell.id}`}
                       >
-                        <CardTitle className="text-sm">{spell.name}</CardTitle>
+                        <CardTitle className="text-sm">{spellName(spell)}</CardTitle>
                         <Badge variant="outline" className="text-xs">
                           {spell.school ?? spell.sphere}
                         </Badge>
@@ -390,7 +403,7 @@ export function TabSpells({
                           onClick={() => handleTogglePrepared(spell.id, charSpell.prepared)}
                           data-testid={`spell-prepare-toggle-${spell.id}`}
                         >
-                          {charSpell.prepared ? "Vorbereitet" : "Vorbereiten"}
+                          {charSpell.prepared ? t("unprepareSpell") : t("prepareSpell")}
                         </Button>
                         <Button
                           variant="ghost"
@@ -400,22 +413,40 @@ export function TabSpells({
                           className="text-destructive hover:text-destructive"
                           data-testid={`spell-remove-${spell.id}`}
                         >
-                          Entfernen
+                          {t("removeSpell")}
                         </Button>
                       </div>
                     </CardHeader>
                     {isExpanded && (
                       <CardContent data-testid={`spell-details-${spell.id}`}>
                         <div className="mb-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                          <span>Reichweite: {spell.range}</span>
-                          <span>Dauer: {spell.duration}</span>
-                          <span>Wirkungsbereich: {spell.area_of_effect}</span>
+                          <span>
+                            {t("range")}: {spell.range}
+                          </span>
+                          <span>
+                            {t("duration")}: {spell.duration}
+                          </span>
+                          <span>
+                            {t("areaOfEffect")}: {spell.area_of_effect}
+                          </span>
+                          {spell.casting_time && (
+                            <span>
+                              {t("castingTime")}: {spell.casting_time}
+                            </span>
+                          )}
+                          {spell.saving_throw && spell.saving_throw !== "None" && (
+                            <span>
+                              {t("savingThrow")}: {spell.saving_throw}
+                            </span>
+                          )}
                           {spell.components.length > 0 && (
-                            <span>Komponenten: {spell.components.join(", ")}</span>
+                            <span>
+                              {t("components")}: {spell.components.join(", ")}
+                            </span>
                           )}
                         </div>
                         <div className="prose prose-sm max-w-none dark:prose-invert">
-                          <ReactMarkdown>{spell.description}</ReactMarkdown>
+                          <ReactMarkdown>{spellDesc(spell)}</ReactMarkdown>
                         </div>
                       </CardContent>
                     )}
@@ -531,16 +562,16 @@ export function TabSpells({
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{spell.name}</span>
+                          <span className="text-sm font-medium">{spellName(spell)}</span>
                           <Badge variant="outline" className="text-xs">
-                            Stufe {spell.level}
+                            {t("level")} {spell.level}
                           </Badge>
                           <Badge variant="outline" className="text-xs">
                             {spell.school ?? spell.sphere}
                           </Badge>
                         </div>
                         <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                          <ReactMarkdown>{spell.description}</ReactMarkdown>
+                          <ReactMarkdown>{spellDesc(spell)}</ReactMarkdown>
                         </div>
                       </div>
                       <Button
