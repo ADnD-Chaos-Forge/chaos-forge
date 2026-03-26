@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 interface AvatarDisplayProps {
   name: string;
   avatarUrl: string | null;
@@ -19,7 +17,8 @@ function getInitials(name: string): string {
 export function AvatarDisplay({ name, avatarUrl, size = 80, className = "" }: AvatarDisplayProps) {
   if (avatarUrl) {
     return (
-      <Image
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
         src={avatarUrl}
         alt={`Avatar von ${name}`}
         width={size}

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
@@ -94,7 +93,8 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
         <section className="mb-4 border-b-2 border-black pb-3" data-testid="print-section-personal">
           <div className="flex items-start gap-4">
             {character.avatar_url && (
-              <Image
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={character.avatar_url}
                 alt={character.name}
                 width={72}
