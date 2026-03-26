@@ -1,0 +1,82 @@
+"use client";
+
+import { RACES } from "@/lib/rules/races";
+import { CLASSES, getClassGroup } from "@/lib/rules/classes";
+import { getThac0 } from "@/lib/rules/combat";
+import { getStrengthModifiers, getDexterityModifiers, getConstitutionModifiers } from "@/lib/rules/abilities";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import type { WizardState } from "./wizard-types";
+
+interface StepSummaryProps {
+  state: WizardState;
+}
+
+export function StepSummary({ state }: StepSummaryProps) {
+  const race = state.raceId ? RACES[state.raceId] : null;
+  const cls = state.classId ? CLASSES[state.classId] : null;
+  const classGroup = state.classId ? getClassGroup(state.classId) : null;
+  const thac0 = classGroup ? getThac0(classGroup, state.level) : 20;
+  const strMods = getStrengthModifiers(state.str, state.strExceptional ?? undefined);
+  const dexMods = getDexterityModifiers(state.dex);
+  const conMods = getConstitutionModifiers(state.con);
+
+  return (
+    <div className="flex flex-col gap-4" data-testid="wizard-step-summary">
+      <h2 className="font-heading text-2xl text-primary">{state.name || "Unbenannt"}</h2>
+
+      <div className="flex flex-wrap gap-2">
+        {race && <Badge>{race.name}</Badge>}
+        {cls && <Badge>{cls.name}</Badge>}
+        <Badge variant="outline">Stufe {state.level}</Badge>
+      </div>
+
+      <Separator />
+
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+        {[
+          { label: "STR", value: state.str, extra: state.strExceptional ? `/${state.strExceptional === 100 ? "00" : String(state.strExceptional).padStart(2, "0")}` : "" },
+          { label: "DEX", value: state.dex, extra: "" },
+          { label: "CON", value: state.con, extra: "" },
+          { label: "INT", value: state.int, extra: "" },
+          { label: "WIS", value: state.wis, extra: "" },
+          { label: "CHA", value: state.cha, extra: "" },
+        ].map(({ label, value, extra }) => (
+          <div key={label} className="rounded-md border border-border p-2 text-center">
+            <div className="text-xs text-muted-foreground">{label}</div>
+            <div className="font-mono text-lg">
+              {value}{extra}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Separator />
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-md border border-border p-2 text-center">
+          <div className="text-xs text-muted-foreground">ETW0</div>
+          <div className="font-mono text-lg">{thac0}</div>
+        </div>
+        <div className="rounded-md border border-border p-2 text-center">
+          <div className="text-xs text-muted-foreground">RK</div>
+          <div className="font-mono text-lg">{10 + dexMods.defensiveAdj}</div>
+        </div>
+        <div className="rounded-md border border-border p-2 text-center">
+          <div className="text-xs text-muted-foreground">HP</div>
+          <div className="font-mono text-lg">{state.hpMax}</div>
+        </div>
+        <div className="rounded-md border border-border p-2 text-center">
+          <div className="text-xs text-muted-foreground">Treffer/Schaden</div>
+          <div className="font-mono text-lg">
+            {strMods.hitAdj >= 0 ? "+" : ""}{strMods.hitAdj}/{strMods.dmgAdj >= 0 ? "+" : ""}{strMods.dmgAdj}
+          </div>
+        </div>
+      </div>
+
+      <div className="text-sm text-muted-foreground">
+        HP-Mod (CON): {conMods.hpAdj >= 0 ? "+" : ""}{conMods.hpAdj}/Stufe
+      </div>
+    </div>
+  );
+}
