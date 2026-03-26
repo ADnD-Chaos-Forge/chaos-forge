@@ -1,5 +1,26 @@
 # 🗺️ Chaos Forge - Entwicklungs-Roadmap
 
+## 1. Projektübersicht
+Entwicklung von "Chaos Forge", einer modernen Web-Applikation zur Erstellung, Verwaltung und Aktualisierung von Pen-&-Paper-Charakteren für **Advanced Dungeons & Dragons (AD&D) 2nd Edition**. 
+Die App richtet sich an eine private Spielgruppe ("Chaos RPG") mit maximal 10 Nutzern und sehr geringer paralleler Nutzung. 
+**Wichtigstes Architekturziel:** Die Applikation muss extrem kostengünstig (idealerweise komplett im Free-Tier) zu betreiben und zu hosten sein.
+
+## 2. Kernfunktionen (Features)
+* **Level-Agnostische Erstellung:** Charaktere können auf beliebigen Stufen angelegt werden.
+* **Avatar-Upload:** Möglichkeit, Charakterporträts hochzuladen.
+* **Smart Print-Layout:** Generierung eines perfekt optimierten, druckfertigen PDFs für das Spielen am Tisch ohne Bildschirme.
+* **Foto-Import (OCR/Vision):** Auslesen und Importieren von physischen Charakterbögen via Kamera/Foto.
+* **Session-Management ("Die Chronik des Chaos"):** Timeline-Ansicht, Tagging und Smart Summaries (Zusammenfassungen für längere Spielpausen).
+* **Geführter Wizard & Automatisierung:** Anfängerfreundliche Erstellung unter strikter Einhaltung der AD&D 2e Restriktionen (inkl. automatischer Modifikatoren-Berechnung).
+
+## 3. AD&D 2nd Edition Spezifika (Datenmodell)
+* **Attribute:** STR (inkl. 18/xx Ausnahmsstärke), DEX, CON, INT, WIS, CHA.
+* **Rassen & Klassen:** Mensch, Elf, Zwerg etc. vs. Krieger, Magier, Priester, Schurken (inkl. Level-Caps).
+* **Kampfwerte:** Absteigende Rüstungsklasse (RK/AC), ETW0 (THAC0), klassenspezifische Trefferwürfel, Rettungswürfe.
+* **Fertigkeiten:** Waffenfertigkeiten (inkl. Spezialisierung) und Allgemeine Fertigkeiten.
+* **Magie:** Magier (Schulen & Spezialisten) und Priester (Sphären mit Haupt-/Nebenzugang).
+* **Ausrüstung:** Berücksichtigung von Gewicht (Belastung) und Waffengeschwindigkeit.
+
 ## Epic 1: Projekt-Setup & Infrastruktur
 - [ ] Initialisierung des Repositories & Tech-Stacks (z.B. Next.js).
 - [ ] Setup der CI/CD Pipeline und Playwright für E2E-Testing.
