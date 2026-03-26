@@ -46,6 +46,14 @@ export interface CharacterRow {
   wis_willpower: number | null;
   cha_leadership: number | null;
   cha_appearance: number | null;
+  // Thief Skills (percentage-based, 0-99)
+  thief_pick_locks: number;
+  thief_find_traps: number;
+  thief_move_silently: number;
+  thief_hide_shadows: number;
+  thief_climb_walls: number;
+  thief_detect_noise: number;
+  thief_read_languages: number;
   created_at: string;
   updated_at: string;
 }

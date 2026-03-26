@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getThac0, getAttackRoll, getSavingThrows } from "./combat";
+import { getThac0, getAttackRoll, getSavingThrows, getAttacksPerRound } from "./combat";
 
 describe("THAC0", () => {
   it("should return 20 for a level 1 warrior", () => {
@@ -101,5 +101,28 @@ describe("Saving Throws", () => {
     expect(saves.petrification).toBe(12);
     expect(saves.breath).toBe(16);
     expect(saves.spell).toBe(15);
+  });
+});
+
+describe("Attacks Per Round", () => {
+  it("warrior L1-6 gets 1 attack", () => {
+    expect(getAttacksPerRound("warrior", 1)).toBe("1");
+    expect(getAttacksPerRound("warrior", 6)).toBe("1");
+  });
+
+  it("warrior L7-12 gets 3/2 attacks", () => {
+    expect(getAttacksPerRound("warrior", 7)).toBe("3/2");
+    expect(getAttacksPerRound("warrior", 12)).toBe("3/2");
+  });
+
+  it("warrior L13+ gets 2 attacks", () => {
+    expect(getAttacksPerRound("warrior", 13)).toBe("2");
+    expect(getAttacksPerRound("warrior", 20)).toBe("2");
+  });
+
+  it("non-warriors always get 1 attack", () => {
+    expect(getAttacksPerRound("priest", 10)).toBe("1");
+    expect(getAttacksPerRound("rogue", 15)).toBe("1");
+    expect(getAttacksPerRound("wizard", 20)).toBe("1");
   });
 });

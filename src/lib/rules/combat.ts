@@ -101,3 +101,15 @@ export function getSavingThrows(classGroup: ClassGroup, level: number): SavingTh
     spell: saves[4],
   };
 }
+
+// ─── ATTACKS PER ROUND ───────────────────────────────────────────────────────
+// PHB: Warriors gain extra attacks at higher levels
+// Warriors: 1/1 at L1-6, 3/2 at L7-12, 2/1 at L13+
+// All others: 1/1
+
+export function getAttacksPerRound(classGroup: ClassGroup, level: number): string {
+  if (classGroup !== "warrior") return "1";
+  if (level >= 13) return "2";
+  if (level >= 7) return "3/2";
+  return "1";
+}

@@ -1,12 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
 import { getAlignmentLabel } from "@/lib/rules/alignment";
 import { getXpForNextLevel } from "@/lib/rules/experience";
 import type { ClassId } from "@/lib/rules/types";
 import { getMulticlassThac0, getMulticlassSaves } from "@/lib/rules/multiclass";
+import { getAttacksPerRound } from "@/lib/rules/combat";
+import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import {
   getStrengthModifiers,
   getDexterityModifiers,
@@ -23,9 +26,9 @@ interface PrintSheetProps {
 }
 
 export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
+  const t = useTranslations("print");
   const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
 
-  // Multiclass support
   const activeClasses = characterClasses.filter((cc) => cc.is_active);
   const classEntries = activeClasses.map((cc) => ({
     classId: cc.class_id as ClassId,
@@ -57,26 +60,32 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
       ? `18/${character.str_exceptional === 100 ? "00" : String(character.str_exceptional).padStart(2, "0")}`
       : String(character.str);
 
+  const attacksDisplay =
+    classEntries.length > 0
+      ? classEntries
+          .map((ce) => getAttacksPerRound(CLASSES[ce.classId]?.group ?? "warrior", ce.level))
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .join(" / ")
+      : "1";
+
   return (
     <>
-      {/* Print button - hidden when printing */}
       <div className="flex justify-center gap-4 p-4 print:hidden">
         <button
           onClick={() => window.print()}
           className="rounded bg-gray-800 px-6 py-2 text-white hover:bg-gray-700"
           data-testid="print-trigger-button"
         >
-          Drucken (Cmd+P)
+          {t("print")}
         </button>
         <button
           onClick={() => window.history.back()}
           className="rounded border border-gray-400 px-6 py-2 hover:bg-gray-100"
         >
-          Zurück
+          {t("back")}
         </button>
       </div>
 
-      {/* Print sheet - A4 optimized */}
       <div
         className="mx-auto max-w-[210mm] bg-white p-6 text-black print:m-0 print:max-w-none print:p-4"
         data-testid="print-sheet"
@@ -84,7 +93,6 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
         {/* ── Personal Information ──────────────────────────────── */}
         <section className="mb-4 border-b-2 border-black pb-3" data-testid="print-section-personal">
           <div className="flex items-start gap-4">
-            {/* Avatar */}
             {character.avatar_url && (
               <Image
                 src={character.avatar_url}
@@ -99,39 +107,40 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
               <h1 className="font-serif text-2xl font-bold">{character.name}</h1>
               <div className="mt-1 grid grid-cols-3 gap-x-4 gap-y-1 text-sm">
                 <div>
-                  <span className="font-semibold">Rasse:</span> {race?.name ?? "—"}
+                  <span className="font-semibold">{t("race")}:</span> {race?.name ?? "—"}
                 </div>
                 <div>
-                  <span className="font-semibold">Klasse:</span> {classNames || "—"}
+                  <span className="font-semibold">{t("class")}:</span> {classNames || "—"}
                 </div>
                 <div>
-                  <span className="font-semibold">Stufe:</span> {levelDisplay || character.level}
+                  <span className="font-semibold">{t("level")}:</span>{" "}
+                  {levelDisplay || character.level}
                 </div>
                 <div>
-                  <span className="font-semibold">Trefferwürfel:</span> {hitDice || "—"}
+                  <span className="font-semibold">{t("hitDie")}:</span> {hitDice || "—"}
                 </div>
                 <div>
-                  <span className="font-semibold">HP:</span> {character.hp_current}/
+                  <span className="font-semibold">{t("hp")}:</span> {character.hp_current}/
                   {character.hp_max}
                 </div>
                 <div>
-                  <span className="font-semibold">Gesinnung:</span>{" "}
+                  <span className="font-semibold">{t("alignment")}:</span>{" "}
                   {getAlignmentLabel(character.alignment)}
                 </div>
                 <div>
-                  <span className="font-semibold">XP:</span>{" "}
+                  <span className="font-semibold">{t("xp")}:</span>{" "}
                   {activeClasses.length > 0
                     ? activeClasses
                         .map((cc) => {
                           const name = CLASSES[cc.class_id as ClassId]?.name ?? cc.class_id;
                           const next = getXpForNextLevel(cc.class_id as ClassId, cc.level);
-                          return `${name}: ${cc.xp_current.toLocaleString("de-DE")}${next ? ` / ${next.toLocaleString("de-DE")}` : " (Max)"}`;
+                          return `${name}: ${cc.xp_current.toLocaleString()}${next ? ` / ${next.toLocaleString()}` : " (Max)"}`;
                         })
                         .join("; ")
-                    : character.xp_current.toLocaleString("de-DE")}
+                    : character.xp_current.toLocaleString()}
                 </div>
                 <div>
-                  <span className="font-semibold">Schatz:</span>{" "}
+                  <span className="font-semibold">{t("treasure")}:</span>{" "}
                   {character.gold_pp > 0 ? `${character.gold_pp} PP, ` : ""}
                   {character.gold_gp} GP
                   {character.gold_sp > 0 ? `, ${character.gold_sp} SP` : ""}
@@ -139,27 +148,27 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
                 </div>
                 {character.player_name && (
                   <div>
-                    <span className="font-semibold">Spieler:</span> {character.player_name}
+                    <span className="font-semibold">{t("player")}:</span> {character.player_name}
                   </div>
                 )}
                 {character.age != null && (
                   <div>
-                    <span className="font-semibold">Alter:</span> {character.age}
+                    <span className="font-semibold">{t("age")}:</span> {character.age}
                   </div>
                 )}
                 {character.height_cm != null && (
                   <div>
-                    <span className="font-semibold">Größe:</span> {character.height_cm} cm
+                    <span className="font-semibold">{t("height")}:</span> {character.height_cm} cm
                   </div>
                 )}
                 {character.weight_kg != null && (
                   <div>
-                    <span className="font-semibold">Gewicht:</span> {character.weight_kg} kg
+                    <span className="font-semibold">{t("weight")}:</span> {character.weight_kg} kg
                   </div>
                 )}
                 {character.gender && (
                   <div>
-                    <span className="font-semibold">Geschlecht:</span> {character.gender}
+                    <span className="font-semibold">{t("gender")}:</span> {character.gender}
                   </div>
                 )}
               </div>
@@ -169,71 +178,73 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
 
         {/* ── Ability Scores ────────────────────────────────────── */}
         <section className="mb-4" data-testid="print-section-abilities">
-          <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">Attribute</h2>
+          <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+            {t("abilities")}
+          </h2>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-300 text-left">
-                <th className="py-1 font-semibold">Attribut</th>
-                <th className="py-1 text-center font-semibold">Wert</th>
-                <th className="py-1 font-semibold">Modifikatoren</th>
+                <th className="py-1 font-semibold">{t("attribute")}</th>
+                <th className="py-1 text-center font-semibold">{t("value")}</th>
+                <th className="py-1 font-semibold">{t("modifiers")}</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-gray-200">
-                <td className="py-1">Stärke (STR)</td>
+                <td className="py-1">{t("strName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{strDisplay}</td>
                 <td className="py-1 text-xs">
-                  Treffer: {strMods.hitAdj >= 0 ? "+" : ""}
-                  {strMods.hitAdj}, Schaden: {strMods.dmgAdj >= 0 ? "+" : ""}
-                  {strMods.dmgAdj}, Gewicht: {strMods.weightAllow} lbs, Türen: {strMods.openDoors},
-                  Gitter: {strMods.bendBars}%
+                  {t("hit")}: {strMods.hitAdj >= 0 ? "+" : ""}
+                  {strMods.hitAdj}, {t("damage")}: {strMods.dmgAdj >= 0 ? "+" : ""}
+                  {strMods.dmgAdj}, {t("weightAllow")}: {strMods.weightAllow} lbs, {t("doors")}:{" "}
+                  {strMods.openDoors}, {t("bars")}: {strMods.bendBars}%
                 </td>
               </tr>
               <tr className="border-b border-gray-200">
-                <td className="py-1">Geschicklichkeit (DEX)</td>
+                <td className="py-1">{t("dexName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{character.dex}</td>
                 <td className="py-1 text-xs">
-                  Reaktion: {dexMods.reactionAdj >= 0 ? "+" : ""}
-                  {dexMods.reactionAdj}, Fernkampf: {dexMods.missileAdj >= 0 ? "+" : ""}
-                  {dexMods.missileAdj}, RK: {dexMods.defensiveAdj >= 0 ? "+" : ""}
+                  {t("reaction")}: {dexMods.reactionAdj >= 0 ? "+" : ""}
+                  {dexMods.reactionAdj}, {t("missile")}: {dexMods.missileAdj >= 0 ? "+" : ""}
+                  {dexMods.missileAdj}, {t("ac")}: {dexMods.defensiveAdj >= 0 ? "+" : ""}
                   {dexMods.defensiveAdj}
                 </td>
               </tr>
               <tr className="border-b border-gray-200">
-                <td className="py-1">Konstitution (CON)</td>
+                <td className="py-1">{t("conName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{character.con}</td>
                 <td className="py-1 text-xs">
-                  HP: {conMods.hpAdj >= 0 ? "+" : ""}
-                  {conMods.hpAdj}/Stufe, Systemschock: {conMods.systemShock}%, Auferstehung:{" "}
+                  {t("hpPerLevel")}: {conMods.hpAdj >= 0 ? "+" : ""}
+                  {conMods.hpAdj}, {t("systemShock")}: {conMods.systemShock}%, {t("resurrection")}:{" "}
                   {conMods.resurrectionSurvival}%
                 </td>
               </tr>
               <tr className="border-b border-gray-200">
-                <td className="py-1">Intelligenz (INT)</td>
+                <td className="py-1">{t("intName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{character.int}</td>
                 <td className="py-1 text-xs">
-                  Sprachen: {intMods.numberOfLanguages}
-                  {intMods.spellLevel ? `, Max. Zauberstufe: ${intMods.spellLevel}` : ""}
-                  {intMods.chanceToLearn ? `, Zauber lernen: ${intMods.chanceToLearn}%` : ""}
+                  {t("languages")}: {intMods.numberOfLanguages}
+                  {intMods.spellLevel ? `, ${t("maxSpellLevel")}: ${intMods.spellLevel}` : ""}
+                  {intMods.chanceToLearn ? `, ${t("learnSpell")}: ${intMods.chanceToLearn}%` : ""}
                 </td>
               </tr>
               <tr className="border-b border-gray-200">
-                <td className="py-1">Weisheit (WIS)</td>
+                <td className="py-1">{t("wisName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{character.wis}</td>
                 <td className="py-1 text-xs">
-                  Mag. Abwehr: {wisMods.magicalDefenseAdj >= 0 ? "+" : ""}
-                  {wisMods.magicalDefenseAdj}, Zauberversagen: {wisMods.spellFailure}%
+                  {t("magDefense")}: {wisMods.magicalDefenseAdj >= 0 ? "+" : ""}
+                  {wisMods.magicalDefenseAdj}, {t("spellFailure")}: {wisMods.spellFailure}%
                   {wisMods.bonusSpells.length > 0 &&
-                    `, Bonuszauber: ${wisMods.bonusSpells.join("/")}`}
+                    `, ${t("bonusSpells")}: ${wisMods.bonusSpells.join("/")}`}
                 </td>
               </tr>
               <tr className="border-b border-gray-200">
-                <td className="py-1">Charisma (CHA)</td>
+                <td className="py-1">{t("chaName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{character.cha}</td>
                 <td className="py-1 text-xs">
-                  Gefolgsleute: {chaMods.maxHenchmen}, Loyalität:{" "}
+                  {t("henchmen")}: {chaMods.maxHenchmen}, {t("loyalty")}:{" "}
                   {chaMods.loyaltyBase >= 0 ? "+" : ""}
-                  {chaMods.loyaltyBase}, Reaktion: {chaMods.reactionAdj >= 0 ? "+" : ""}
+                  {chaMods.loyaltyBase}, {t("reaction")}: {chaMods.reactionAdj >= 0 ? "+" : ""}
                   {chaMods.reactionAdj}
                 </td>
               </tr>
@@ -243,29 +254,42 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
 
         {/* ── Combat ────────────────────────────────────────────── */}
         <section className="mb-4" data-testid="print-section-combat">
-          <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">Kampfwerte</h2>
+          <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+            {t("combatValues")}
+          </h2>
           <div className="grid grid-cols-4 gap-3 text-center text-sm">
             <div className="rounded border border-gray-300 p-2">
-              <div className="text-xs text-gray-500">ETW0 (THAC0)</div>
+              <div className="text-xs text-gray-500">THAC0</div>
               <div className="font-mono text-xl font-bold">{thac0}</div>
             </div>
             <div className="rounded border border-gray-300 p-2">
-              <div className="text-xs text-gray-500">Rüstungsklasse</div>
+              <div className="text-xs text-gray-500">{t("armorClass")}</div>
               <div className="font-mono text-xl font-bold">{baseAC}</div>
-              <div className="text-xs text-gray-500">Basis</div>
+              <div className="text-xs text-gray-500">{t("base")}</div>
             </div>
             <div className="rounded border border-gray-300 p-2">
-              <div className="text-xs text-gray-500">Treffer-Mod</div>
+              <div className="text-xs text-gray-500">{t("hitMod")}</div>
               <div className="font-mono text-xl font-bold">
                 {strMods.hitAdj >= 0 ? "+" : ""}
                 {strMods.hitAdj}
               </div>
             </div>
             <div className="rounded border border-gray-300 p-2">
-              <div className="text-xs text-gray-500">Schadens-Mod</div>
+              <div className="text-xs text-gray-500">{t("damageMod")}</div>
               <div className="font-mono text-xl font-bold">
                 {strMods.dmgAdj >= 0 ? "+" : ""}
                 {strMods.dmgAdj}
+              </div>
+            </div>
+            <div className="rounded border border-gray-300 p-2">
+              <div className="text-xs text-gray-500">{t("attacksPerRound")}</div>
+              <div className="font-mono text-xl font-bold">{attacksDisplay}</div>
+            </div>
+            <div className="rounded border border-gray-300 p-2">
+              <div className="text-xs text-gray-500">{t("initiative")}</div>
+              <div className="font-mono text-xl font-bold">
+                {dexMods.reactionAdj >= 0 ? "+" : ""}
+                {dexMods.reactionAdj}
               </div>
             </div>
           </div>
@@ -275,15 +299,15 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
         {saves && (
           <section className="mb-4" data-testid="print-section-saves">
             <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
-              Rettungswürfe
+              {t("savingThrows")}
             </h2>
             <div className="grid grid-cols-5 gap-2 text-center text-sm">
               {[
-                { label: "Gift/Lähmung/Tod", value: saves.paralyzation },
-                { label: "Stab/Rute/Zepter", value: saves.rod },
-                { label: "Versteinerung/Verwandlung", value: saves.petrification },
-                { label: "Odemwaffe", value: saves.breath },
-                { label: "Zauber", value: saves.spell },
+                { label: t("savePara"), value: saves.paralyzation },
+                { label: t("saveRod"), value: saves.rod },
+                { label: t("savePetri"), value: saves.petrification },
+                { label: t("saveBreath"), value: saves.breath },
+                { label: t("saveSpell"), value: saves.spell },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded border border-gray-300 p-2">
                   <div className="text-xs text-gray-500">{label}</div>
@@ -298,12 +322,14 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
         {(race?.racialAbilities?.length || activeClasses.length > 0) && (
           <section className="mb-4" data-testid="print-section-abilities-list">
             <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
-              Fähigkeiten
+              {t("abilities_section")}
             </h2>
             <div className="grid grid-cols-2 gap-4 text-sm">
               {race?.racialAbilities && race.racialAbilities.length > 0 && (
                 <div>
-                  <h3 className="font-semibold">Rassenfähigkeiten ({race.name})</h3>
+                  <h3 className="font-semibold">
+                    {t("racialAbilities")} ({race.name})
+                  </h3>
                   <ul className="mt-1 list-inside list-disc text-xs">
                     {race.racialAbilities.map((a, i) => (
                       <li key={i}>{a}</li>
@@ -316,7 +342,9 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
                 if (!clsDef?.classAbilities?.length) return null;
                 return (
                   <div key={cc.class_id}>
-                    <h3 className="font-semibold">Klassenfähigkeiten ({clsDef.name})</h3>
+                    <h3 className="font-semibold">
+                      {t("classAbilities")} ({clsDef.name})
+                    </h3>
                     <ul className="mt-1 list-inside list-disc text-xs">
                       {clsDef.classAbilities.map((a, i) => (
                         <li key={i}>{a}</li>
@@ -329,20 +357,53 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
           </section>
         )}
 
+        {/* ── Thief Skills ──────────────────────────────────────── */}
+        {hasThiefSkills(activeClasses.map((cc) => cc.class_id as ClassId)) && (
+          <section className="mb-4" data-testid="print-section-thief">
+            <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+              {t("thiefSkills")}
+            </h2>
+            <div className="grid grid-cols-4 gap-2 text-center text-sm">
+              {[
+                { label: t("locks"), value: character.thief_pick_locks },
+                { label: t("traps"), value: character.thief_find_traps },
+                { label: t("silent"), value: character.thief_move_silently },
+                { label: t("hide"), value: character.thief_hide_shadows },
+                { label: t("climb"), value: character.thief_climb_walls },
+                { label: t("noise"), value: character.thief_detect_noise },
+                { label: t("readLang"), value: character.thief_read_languages },
+                {
+                  label: t("backstab"),
+                  value: `x${getBackstabMultiplier(activeClasses.find((cc) => cc.class_id === "thief" || cc.class_id === "bard")?.level ?? 1)}`,
+                },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded border border-gray-300 p-2">
+                  <div className="text-xs text-gray-500">{label}</div>
+                  <div className="font-mono text-lg font-bold">
+                    {typeof value === "number" ? `${value}%` : value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* ── Notes ─────────────────────────────────────────────── */}
         {character.notes && (
           <section className="mb-4" data-testid="print-section-notes">
-            <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">Notizen</h2>
+            <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+              {t("notes")}
+            </h2>
             <p className="whitespace-pre-wrap text-sm">{character.notes}</p>
           </section>
         )}
 
         {/* ── Footer ────────────────────────────────────────────── */}
         <footer className="mt-6 flex items-center justify-between border-t border-gray-300 pt-2 text-xs text-gray-400">
-          <span>Chaos Forge — AD&D 2nd Edition Manager</span>
+          <span>{t("footer")}</span>
           <span>
-            Erstellt am{" "}
-            {new Date(character.created_at).toLocaleDateString("de-DE", {
+            {t("createdAt")}{" "}
+            {new Date(character.created_at).toLocaleDateString(undefined, {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
