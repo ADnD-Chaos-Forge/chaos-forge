@@ -7,7 +7,7 @@ export default async function Home() {
   const user = await getOptionalUser();
 
   if (user) {
-    redirect("/characters");
+    redirect("/dashboard");
   }
 
   return (

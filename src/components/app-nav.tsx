@@ -9,6 +9,11 @@ export function AppNav() {
       data-testid="app-nav"
     >
       <div className="flex items-center gap-4">
+        <Link href="/dashboard">
+          <Button variant="ghost" size="sm" data-testid="nav-dashboard">
+            Dashboard
+          </Button>
+        </Link>
         <Link href="/characters">
           <Button variant="ghost" size="sm" data-testid="nav-characters">
             Charaktere
@@ -17,6 +22,11 @@ export function AppNav() {
         <Link href="/sessions">
           <Button variant="ghost" size="sm" data-testid="nav-sessions">
             Chronik
+          </Button>
+        </Link>
+        <Link href="/characters/import">
+          <Button variant="ghost" size="sm" data-testid="nav-import">
+            Import
           </Button>
         </Link>
       </div>

@@ -21,6 +21,7 @@ import {
   getCharismaModifiers,
 } from "@/lib/rules/abilities";
 import { AvatarUpload } from "@/components/avatar-upload";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import Link from "next/link";
 import type { CharacterRow } from "@/lib/supabase/types";
 
@@ -34,6 +35,9 @@ export function CharacterSheet({ character: initial, userId }: CharacterSheetPro
   const [character, setCharacter] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const isOwner = character.user_id === userId;
 
   const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
   const cls = character.class_id ? CLASSES[character.class_id as keyof typeof CLASSES] : null;
@@ -78,6 +82,13 @@ export function CharacterSheet({ character: initial, userId }: CharacterSheetPro
     router.refresh();
   }
 
+  async function handleDelete() {
+    const supabase = createClient();
+    await supabase.from("characters").delete().eq("id", character.id);
+    router.push("/characters");
+    router.refresh();
+  }
+
   return (
     <div className="mx-auto w-full max-w-4xl p-6" data-testid="character-sheet">
       {/* Header */}
@@ -111,8 +122,25 @@ export function CharacterSheet({ character: initial, userId }: CharacterSheetPro
               {saving ? "Speichere..." : "Speichern"}
             </Button>
           )}
+          {isOwner && (
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteConfirm(true)}
+              data-testid="sheet-delete-button"
+            >
+              Löschen
+            </Button>
+          )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Charakter löschen"
+        message={`Möchtest du "${character.name}" wirklich unwiderruflich löschen?`}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
 
       <Tabs defaultValue="stats" className="w-full">
         <TabsList className="w-full justify-start" data-testid="sheet-tabs">

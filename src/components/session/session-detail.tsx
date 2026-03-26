@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AvatarDisplay } from "@/components/avatar-display";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { SessionEntryForm } from "./session-entry-form";
+import { SessionEntryCard } from "./session-entry-card";
 import { TagManager } from "./tag-manager";
 import type { SessionRow, SessionEntryRow, TagRow, CharacterRow } from "@/lib/supabase/types";
 
@@ -47,6 +47,14 @@ export function SessionDetail({
   const [savingSummary, setSavingSummary] = useState(false);
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [summaryDirty, setSummaryDirty] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  async function handleDeleteSession() {
+    const supabase = createClient();
+    await supabase.from("sessions").delete().eq("id", session.id);
+    router.push("/sessions");
+    router.refresh();
+  }
 
   const dateStr = new Date(session.session_date).toLocaleDateString("de-DE", {
     weekday: "long",
@@ -104,11 +112,24 @@ export function SessionDetail({
   return (
     <div className="mx-auto w-full max-w-4xl p-6" data-testid="session-detail">
       {/* Header */}
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="font-heading text-3xl text-primary" data-testid="session-title">
+            {session.title}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">{dateStr}</p>
+        </div>
+        {isCreator && (
+          <Button
+            variant="destructive"
+            onClick={() => setShowDeleteConfirm(true)}
+            data-testid="session-delete-button"
+          >
+            Löschen
+          </Button>
+        )}
+      </div>
       <div className="mb-6">
-        <h1 className="font-heading text-3xl text-primary" data-testid="session-title">
-          {session.title}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">{dateStr}</p>
         {tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {tags.map((tag) => (
@@ -142,21 +163,13 @@ export function SessionDetail({
         {entries.map((entry) => {
           const char = characterMap[entry.character_id];
           return (
-            <Card key={entry.id} data-testid={`session-entry-${entry.id}`}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-3">
-                  <AvatarDisplay
-                    name={char?.name ?? "?"}
-                    avatarUrl={char?.avatar_url ?? null}
-                    size={36}
-                  />
-                  <CardTitle className="text-lg">{char?.name ?? "Unbekannt"}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="prose prose-sm prose-invert max-w-none">
-                <ReactMarkdown>{entry.content}</ReactMarkdown>
-              </CardContent>
-            </Card>
+            <SessionEntryCard
+              key={entry.id}
+              entry={entry}
+              characterName={char?.name ?? "Unbekannt"}
+              characterAvatarUrl={char?.avatar_url ?? null}
+              isOwner={entry.user_id === userId}
+            />
           );
         })}
 
@@ -240,6 +253,14 @@ export function SessionDetail({
           <p className="text-sm text-muted-foreground">Noch keine Zusammenfassung vorhanden.</p>
         )}
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Session löschen"
+        message={`Möchtest du "${session.title}" wirklich unwiderruflich löschen? Alle Beiträge gehen verloren.`}
+        onConfirm={handleDeleteSession}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 }
