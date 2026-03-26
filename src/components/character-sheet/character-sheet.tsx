@@ -139,6 +139,7 @@ export function CharacterSheet({
   const baseAC = 10 + dexMods.defensiveAdj;
 
   function update(field: keyof CharacterRow, value: string | number | null) {
+    if (!isOwner) return;
     setCharacter((prev) => ({ ...prev, [field]: value }));
     setDirty(true);
   }
@@ -266,7 +267,7 @@ export function CharacterSheet({
               {tc("printView")}
             </Button>
           </Link>
-          {dirty && (
+          {dirty && isOwner && (
             <Button onClick={handleSave} disabled={saving} data-testid="sheet-save-button">
               {saving ? (
                 <>
