@@ -4,12 +4,18 @@ import { createClient } from "@supabase/supabase-js";
 const TEST_EMAIL = process.env.TEST_USER_EMAIL;
 const TEST_PASSWORD = process.env.TEST_USER_PASSWORD;
 
-export async function POST() {
+export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !serviceRoleKey || !TEST_EMAIL || !TEST_PASSWORD) {
-    return NextResponse.json({ error: "Test-Login nicht konfiguriert." }, { status: 503 });
+    return NextResponse.json({ error: "not_configured" }, { status: 404 });
+  }
+
+  // Check if the email matches the configured test email
+  const body = await request.json().catch(() => ({}));
+  if (body.email?.toLowerCase() !== TEST_EMAIL.toLowerCase()) {
+    return NextResponse.json({ error: "not_test_user" }, { status: 404 });
   }
 
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
