@@ -26,10 +26,10 @@ Die App richtet sich an eine private Spielgruppe ("Chaos RPG") mit maximal 10 Nu
 
 ## Epic 1: Projekt-Setup & Infrastruktur
 
-- [ ] Initialisierung des Repositories & Tech-Stacks (z.B. Next.js).
-- [ ] Setup der CI/CD Pipeline und Playwright für E2E-Testing.
-- [ ] Anbindung der Datenbank (z.B. Supabase) & Einrichtung des Datenmodells (User, Characters).
-- [ ] Basis-Layout und Theming (AD&D Nostalgie-Look).
+- [x] Initialisierung des Repositories & Tech-Stacks (Next.js 16, TypeScript, Tailwind v4, shadcn/ui).
+- [x] Setup der CI/CD Pipeline (GitHub Actions) und Playwright für E2E-Testing.
+- [x] Anbindung der Datenbank (Supabase) & Einrichtung des Datenmodells (profiles, characters + RLS).
+- [x] Basis-Layout und Theming (AD&D Nostalgie-Look: Cinzel + Crimson Text, dunkles Pergament-Theme).
 
 ## Epic 2: AD&D Core-Regelwerk (Engine)
 
