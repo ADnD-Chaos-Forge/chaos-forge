@@ -28,6 +28,26 @@ export default function LoginPage() {
         return;
       }
 
+      // Test-User Bypass: auto-login without magic link
+      if (email.toLowerCase() === "test@chaos-forge.de") {
+        const res = await fetch("/api/test-login", { method: "POST" });
+        const data = await res.json();
+        if (data.error) {
+          setError(data.error);
+        } else {
+          // Set session via Supabase client
+          const supabase = createClient();
+          await supabase.auth.setSession({
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+          });
+          window.location.href = "/characters";
+          return;
+        }
+        setLoading(false);
+        return;
+      }
+
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOtp({
         email,
