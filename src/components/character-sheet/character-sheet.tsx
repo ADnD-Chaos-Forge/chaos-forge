@@ -11,11 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RACES } from "@/lib/rules/races";
-import { CLASSES, getClassGroup } from "@/lib/rules/classes";
+import { CLASSES } from "@/lib/rules/classes";
 import { getAlignmentLabel } from "@/lib/rules/alignment";
 import { getXpForNextLevel, getXpThreshold } from "@/lib/rules/experience";
 import type { ClassId } from "@/lib/rules/types";
-import { getThac0, getSavingThrows } from "@/lib/rules/combat";
+import {
+  getMulticlassThac0,
+  getMulticlassSaves,
+  multiclassHasExceptionalStr,
+  getMulticlassGroups,
+} from "@/lib/rules/multiclass";
 import {
   getStrengthModifiers,
   getDexterityModifiers,
@@ -27,7 +32,7 @@ import {
 import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import Link from "next/link";
-import type { CharacterRow } from "@/lib/supabase/types";
+import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
 import { TabEquipment } from "./tab-equipment";
 import { TabSpells } from "./tab-spells";
 import { TabProficiencies } from "./tab-proficiencies";
@@ -45,6 +50,7 @@ import type {
 
 interface CharacterSheetProps {
   character: CharacterRow;
+  characterClasses: CharacterClassRow[];
   userId: string;
   equipment: CharacterEquipmentWithDetails[];
   spells: CharacterSpellWithDetails[];
@@ -59,6 +65,7 @@ interface CharacterSheetProps {
 
 export function CharacterSheet({
   character: initial,
+  characterClasses: initialClasses,
   userId,
   equipment,
   spells,
@@ -75,19 +82,43 @@ export function CharacterSheet({
   const tc = useTranslations("characters");
   const tcom = useTranslations("common");
   const [character, setCharacter] = useState(initial);
+  const [charClasses, setCharClasses] = useState(initialClasses);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const isOwner = character.user_id === userId;
 
+  // Derive multiclass data
+  const activeClasses = charClasses.filter((cc) => cc.is_active);
+  const classIds = activeClasses.map((cc) => cc.class_id as ClassId);
+  const classEntries = activeClasses.map((cc) => ({
+    classId: cc.class_id as ClassId,
+    level: cc.level,
+  }));
+
   const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
-  const cls = character.class_id ? CLASSES[character.class_id as keyof typeof CLASSES] : null;
-  const classGroup = character.class_id
-    ? getClassGroup(character.class_id as keyof typeof CLASSES)
-    : null;
-  const thac0 = classGroup ? getThac0(classGroup, character.level) : 20;
-  const saves = classGroup ? getSavingThrows(classGroup, character.level) : null;
+  const classNames = classIds.map((id) => CLASSES[id]?.name ?? id).join(" / ");
+  const levelDisplay =
+    activeClasses.length > 1
+      ? activeClasses.map((cc) => cc.level).join("/")
+      : String(activeClasses[0]?.level ?? character.level);
+
+  // Use multiclass-aware calculations
+  const thac0 = classEntries.length > 0 ? getMulticlassThac0(classEntries) : 20;
+  const saves = classEntries.length > 0 ? getMulticlassSaves(classEntries) : null;
+  const classGroups = getMulticlassGroups(classIds);
+  const hasExceptionalStr = multiclassHasExceptionalStr(classIds);
+
+  // For spells tab: show if any class group is wizard/priest, or bard
+  const showSpells =
+    classGroups.includes("wizard") || classGroups.includes("priest") || classIds.includes("bard");
+
+  // For spells/proficiencies: use primary (first) class
+  const primaryClassId: ClassId | null = classIds[0] ?? ((character.class_id as ClassId) || null);
+  const primaryClassGroup = classGroups[0] ?? "warrior";
+  const primaryLevel = activeClasses[0]?.level ?? character.level;
+
   const strMods = getStrengthModifiers(character.str, character.str_exceptional ?? undefined);
   const dexMods = getDexterityModifiers(character.dex);
   const conMods = getConstitutionModifiers(character.con);
@@ -101,10 +132,19 @@ export function CharacterSheet({
     setDirty(true);
   }
 
+  function updateClassField(classId: string, field: "level" | "xp_current", value: number) {
+    setCharClasses((prev) =>
+      prev.map((cc) => (cc.class_id === classId ? { ...cc, [field]: value } : cc))
+    );
+    setDirty(true);
+  }
+
   async function handleSave() {
     setSaving(true);
     const supabase = createClient();
-    await supabase
+
+    // Save character fields
+    const { error: charError } = await supabase
       .from("characters")
       .update({
         str: character.str,
@@ -117,7 +157,6 @@ export function CharacterSheet({
         hp_current: character.hp_current,
         hp_max: character.hp_max,
         alignment: character.alignment,
-        xp_current: character.xp_current,
         gold_pp: character.gold_pp,
         gold_gp: character.gold_gp,
         gold_ep: character.gold_ep,
@@ -145,6 +184,21 @@ export function CharacterSheet({
         cha_appearance: character.cha_appearance,
       })
       .eq("id", character.id);
+
+    if (charError) {
+      setSaving(false);
+      return;
+    }
+
+    // Save character_classes (level + xp per class) in parallel
+    const classUpdates = charClasses.map((cc) =>
+      supabase
+        .from("character_classes")
+        .update({ level: cc.level, xp_current: cc.xp_current })
+        .eq("id", cc.id)
+    );
+    await Promise.all(classUpdates);
+
     setSaving(false);
     setDirty(false);
     router.refresh();
@@ -152,7 +206,8 @@ export function CharacterSheet({
 
   async function handleDelete() {
     const supabase = createClient();
-    await supabase.from("characters").delete().eq("id", character.id);
+    const { error } = await supabase.from("characters").delete().eq("id", character.id);
+    if (error) return;
     router.push("/characters");
     router.refresh();
   }
@@ -174,9 +229,16 @@ export function CharacterSheet({
             </h1>
             <div className="mt-1 flex flex-wrap gap-2">
               {race && <Badge>{race.name}</Badge>}
-              {cls && <Badge>{cls.name}</Badge>}
-              <Badge variant="outline">Stufe {character.level}</Badge>
+              {classNames && <Badge data-testid="sheet-class-badge">{classNames}</Badge>}
+              <Badge variant="outline" data-testid="sheet-level-badge">
+                {t("levelPerClass")}: {levelDisplay}
+              </Badge>
               <Badge variant="outline">{getAlignmentLabel(character.alignment)}</Badge>
+              {activeClasses.length > 1 && (
+                <Badge variant="secondary" data-testid="sheet-multiclass-badge">
+                  {t("multiclass")}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
@@ -217,11 +279,7 @@ export function CharacterSheet({
           <TabsTrigger value="combat">{t("combat")}</TabsTrigger>
           <TabsTrigger value="notes">{t("notes")}</TabsTrigger>
           <TabsTrigger value="equipment">{t("equipment")}</TabsTrigger>
-          {(classGroup === "wizard" ||
-            classGroup === "priest" ||
-            character.class_id === "bard") && (
-            <TabsTrigger value="spells">{t("spells")}</TabsTrigger>
-          )}
+          {showSpells && <TabsTrigger value="spells">{t("spells")}</TabsTrigger>}
           <TabsTrigger value="proficiencies">{t("proficiencies")}</TabsTrigger>
         </TabsList>
 
@@ -446,7 +504,7 @@ export function CharacterSheet({
                       data-testid={`sheet-ability-${key}`}
                     />
                     <div className="mt-1 text-xs text-muted-foreground">{mods}</div>
-                    {key === "str" && character.str === 18 && cls?.exceptionalStrength && (
+                    {key === "str" && character.str === 18 && hasExceptionalStr && (
                       <div className="mt-2 flex flex-col gap-1">
                         <Label
                           htmlFor="sheet-str-exceptional"
@@ -577,65 +635,84 @@ export function CharacterSheet({
 
           <Separator />
 
+          {/* XP per Class */}
           <div>
             <h3 className="mb-3 font-heading text-lg">{t("xp")}</h3>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-4">
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="xp-current" className="text-xs text-muted-foreground">
-                    {t("hpCurrent")}
-                  </Label>
-                  <Input
-                    id="xp-current"
-                    type="number"
-                    min={0}
-                    value={character.xp_current}
-                    onChange={(e) =>
-                      update("xp_current", Math.max(0, parseInt(e.target.value) || 0))
-                    }
-                    className="w-32 text-center font-mono"
-                    data-testid="sheet-xp-current"
-                  />
-                </div>
-                {character.class_id &&
-                  (() => {
-                    const nextLevelXp = getXpForNextLevel(
-                      character.class_id as ClassId,
-                      character.level
-                    );
-                    const currentThreshold = getXpThreshold(
-                      character.class_id as ClassId,
-                      character.level
-                    );
-                    if (!nextLevelXp)
-                      return (
-                        <span className="text-sm text-muted-foreground">Max. Stufe erreicht</span>
-                      );
-                    const progress = Math.min(
+            <div className="flex flex-col gap-4">
+              {activeClasses.map((cc) => {
+                const clsDef = CLASSES[cc.class_id as ClassId];
+                const nextLevelXp = getXpForNextLevel(cc.class_id as ClassId, cc.level);
+                const currentThreshold = getXpThreshold(cc.class_id as ClassId, cc.level);
+                const progress = nextLevelXp
+                  ? Math.min(
                       100,
                       Math.max(
                         0,
-                        ((character.xp_current - currentThreshold) /
-                          (nextLevelXp - currentThreshold)) *
+                        ((cc.xp_current - currentThreshold) / (nextLevelXp - currentThreshold)) *
                           100
                       )
-                    );
-                    return (
+                    )
+                  : 100;
+
+                return (
+                  <div
+                    key={cc.class_id}
+                    className="rounded-md border border-border p-3"
+                    data-testid={`sheet-xp-${cc.class_id}`}
+                  >
+                    <div className="mb-2 flex items-center gap-3">
+                      <span className="font-heading text-sm">{clsDef?.name ?? cc.class_id}</span>
+                      <div className="flex items-center gap-1">
+                        <Label className="text-xs text-muted-foreground">Stufe</Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={20}
+                          value={cc.level}
+                          onChange={(e) =>
+                            updateClassField(
+                              cc.class_id,
+                              "level",
+                              Math.max(1, Math.min(20, parseInt(e.target.value) || 1))
+                            )
+                          }
+                          className="w-16 text-center font-mono text-sm"
+                          data-testid={`sheet-level-${cc.class_id}`}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        type="number"
+                        min={0}
+                        value={cc.xp_current}
+                        onChange={(e) =>
+                          updateClassField(
+                            cc.class_id,
+                            "xp_current",
+                            Math.max(0, parseInt(e.target.value) || 0)
+                          )
+                        }
+                        className="w-32 text-center font-mono text-sm"
+                        data-testid={`sheet-xp-input-${cc.class_id}`}
+                      />
                       <div className="flex flex-1 flex-col gap-1">
                         <div className="text-xs text-muted-foreground">
-                          Nächste Stufe: {nextLevelXp.toLocaleString("de-DE")} XP
+                          {nextLevelXp
+                            ? t("xpNextLevel", { xp: nextLevelXp.toLocaleString("de-DE") })
+                            : t("xpMax")}
                         </div>
                         <div className="h-3 w-full rounded-full bg-muted">
                           <div
                             className="h-3 rounded-full bg-primary transition-all"
                             style={{ width: `${progress}%` }}
-                            data-testid="sheet-xp-bar"
                           />
                         </div>
                       </div>
-                    );
-                  })()}
-              </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -685,16 +762,23 @@ export function CharacterSheet({
                 </ul>
               </div>
             )}
-            {cls?.classAbilities && cls.classAbilities.length > 0 && (
-              <div>
-                <h3 className="mb-2 font-heading text-lg">{t("classAbilities")}</h3>
-                <ul className="list-inside list-disc text-sm text-muted-foreground">
-                  {cls.classAbilities.map((ability, i) => (
-                    <li key={i}>{ability}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {/* Show class abilities for ALL classes */}
+            {classIds.map((clsId) => {
+              const clsDef = CLASSES[clsId];
+              if (!clsDef?.classAbilities?.length) return null;
+              return (
+                <div key={clsId} className="mb-4">
+                  <h3 className="mb-2 font-heading text-lg">
+                    {t("classAbilities")} — {clsDef.name}
+                  </h3>
+                  <ul className="list-inside list-disc text-sm text-muted-foreground">
+                    {clsDef.classAbilities.map((ability, i) => (
+                      <li key={i}>{ability}</li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
         </TabsContent>
 
@@ -772,14 +856,14 @@ export function CharacterSheet({
           />
         </TabsContent>
 
-        {(classGroup === "wizard" || classGroup === "priest" || character.class_id === "bard") && (
+        {showSpells && primaryClassId && (
           <TabsContent value="spells">
             <TabSpells
               characterId={character.id}
               userId={userId}
-              classId={character.class_id ?? "fighter"}
-              classGroup={classGroup ?? "warrior"}
-              level={character.level}
+              classId={primaryClassId}
+              classGroup={primaryClassGroup}
+              level={primaryLevel}
               intScore={character.int}
               wisScore={character.wis}
               spells={spells}
@@ -792,10 +876,10 @@ export function CharacterSheet({
           <TabProficiencies
             characterId={character.id}
             userId={userId}
-            classId={character.class_id ?? "fighter"}
-            classGroup={classGroup ?? "warrior"}
+            classId={primaryClassId ?? "fighter"}
+            classGroup={primaryClassGroup}
             raceId={character.race_id ?? "human"}
-            level={character.level}
+            level={primaryLevel}
             intScore={character.int}
             weaponProficiencies={weaponProficiencies}
             nonweaponProficiencies={nonweaponProficiencies}

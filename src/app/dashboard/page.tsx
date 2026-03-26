@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { AvatarDisplay } from "@/components/avatar-display";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
-import type { CharacterRow, SessionRow } from "@/lib/supabase/types";
+import type { CharacterRow, CharacterClassRow, SessionRow } from "@/lib/supabase/types";
 
 function hpColor(current: number, max: number): string {
   if (max === 0) return "text-muted-foreground";
@@ -26,6 +26,19 @@ export default async function DashboardPage() {
     .order("name")
     .returns<CharacterRow[]>();
 
+  // Load character_classes for multiclass display
+  const { data: allCharClasses } = await supabase
+    .from("character_classes")
+    .select("*")
+    .returns<CharacterClassRow[]>();
+
+  const charClassMap = new Map<string, CharacterClassRow[]>();
+  for (const cc of allCharClasses ?? []) {
+    const existing = charClassMap.get(cc.character_id) ?? [];
+    existing.push(cc);
+    charClassMap.set(cc.character_id, existing);
+  }
+
   const { data: latestSession } = await supabase
     .from("sessions")
     .select("*")
@@ -33,21 +46,39 @@ export default async function DashboardPage() {
     .limit(1)
     .returns<SessionRow[]>();
 
-  const avgLevel =
-    characters && characters.length > 0
-      ? Math.round(characters.reduce((sum, c) => sum + c.level, 0) / characters.length)
-      : 0;
+  // Calculate avg level using character_classes if available
+  const avgLevel = (() => {
+    if (!characters || characters.length === 0) return 0;
+    let totalLevel = 0;
+    let count = 0;
+    for (const c of characters) {
+      const classes = (charClassMap.get(c.id) ?? []).filter((cc) => cc.is_active);
+      if (classes.length > 0) {
+        totalLevel += Math.max(...classes.map((cc) => cc.level));
+      } else {
+        totalLevel += c.level;
+      }
+      count++;
+    }
+    return Math.round(totalLevel / count);
+  })();
 
-  const classGroups =
-    characters?.reduce(
-      (acc, c) => {
-        const cls = c.class_id ? CLASSES[c.class_id as keyof typeof CLASSES] : null;
+  // Class distribution: multiclass chars count for each of their classes
+  const classGroups: Record<string, number> = {};
+  for (const c of characters ?? []) {
+    const classes = (charClassMap.get(c.id) ?? []).filter((cc) => cc.is_active);
+    if (classes.length > 0) {
+      for (const cc of classes) {
+        const cls = CLASSES[cc.class_id as keyof typeof CLASSES];
         const group = cls?.group ?? "unknown";
-        acc[group] = (acc[group] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    ) ?? {};
+        classGroups[group] = (classGroups[group] || 0) + 1;
+      }
+    } else if (c.class_id) {
+      const cls = CLASSES[c.class_id as keyof typeof CLASSES];
+      const group = cls?.group ?? "unknown";
+      classGroups[group] = (classGroups[group] || 0) + 1;
+    }
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6" data-testid="dashboard-page">
@@ -106,9 +137,19 @@ export default async function DashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {characters.map((character) => {
             const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
-            const cls = character.class_id
-              ? CLASSES[character.class_id as keyof typeof CLASSES]
-              : null;
+            const classes = (charClassMap.get(character.id) ?? []).filter((cc) => cc.is_active);
+            const classNames =
+              classes.length > 0
+                ? classes
+                    .map((cc) => CLASSES[cc.class_id as keyof typeof CLASSES]?.name ?? cc.class_id)
+                    .join(" / ")
+                : character.class_id
+                  ? (CLASSES[character.class_id as keyof typeof CLASSES]?.name ?? null)
+                  : null;
+            const levelDisplay =
+              classes.length > 0
+                ? classes.map((cc) => cc.level).join("/")
+                : String(character.level);
             const hpClass = hpColor(character.hp_current, character.hp_max);
 
             return (
@@ -132,13 +173,13 @@ export default async function DashboardPage() {
                               {race.name}
                             </Badge>
                           )}
-                          {cls && (
+                          {classNames && (
                             <Badge variant="secondary" className="text-xs">
-                              {cls.name}
+                              {classNames}
                             </Badge>
                           )}
                           <Badge variant="outline" className="text-xs">
-                            Stufe {character.level}
+                            Stufe {levelDisplay}
                           </Badge>
                         </div>
                       </div>

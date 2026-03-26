@@ -8,4 +8,5 @@ export * from "./proficiencies";
 export * from "./races";
 export * from "./classes";
 export * from "./magic";
+export * from "./multiclass";
 export * from "./spellslots";

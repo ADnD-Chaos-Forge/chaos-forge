@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/supabase/auth";
 import { PrintSheet } from "@/components/print-sheet/print-sheet";
-import type { CharacterRow } from "@/lib/supabase/types";
+import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
 
 interface PrintPageProps {
   params: Promise<{ id: string }>;
@@ -23,5 +23,11 @@ export default async function PrintPage({ params }: PrintPageProps) {
     notFound();
   }
 
-  return <PrintSheet character={character} />;
+  const { data: characterClasses } = await supabase
+    .from("character_classes")
+    .select("*")
+    .eq("character_id", id)
+    .returns<CharacterClassRow[]>();
+
+  return <PrintSheet character={character} characterClasses={characterClasses ?? []} />;
 }
