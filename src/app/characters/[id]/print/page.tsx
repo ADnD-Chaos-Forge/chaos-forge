@@ -1,16 +1,16 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/supabase/auth";
-import { CharacterSheet } from "@/components/character-sheet/character-sheet";
+import { PrintSheet } from "@/components/print-sheet/print-sheet";
 import type { CharacterRow } from "@/lib/supabase/types";
 
-interface CharacterPageProps {
+interface PrintPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function CharacterPage({ params }: CharacterPageProps) {
+export default async function PrintPage({ params }: PrintPageProps) {
   const { id } = await params;
-  const user = await requireAuth();
+  await requireAuth();
   const supabase = await createClient();
 
   const { data: character } = await supabase
@@ -23,5 +23,5 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
     notFound();
   }
 
-  return <CharacterSheet character={character} userId={user.id} />;
+  return <PrintSheet character={character} />;
 }
