@@ -41,10 +41,10 @@ Die App richtet sich an eine private Spielgruppe ("Chaos RPG") mit maximal 10 Nu
 
 ## Epic 3: Charakter-Management
 
-- [ ] Interaktiver Charakterbogen (Anzeige & manuelle Bearbeitung).
-- [ ] Step-by-Step Wizard für die Charaktererstellung (level-agnostisch).
-- [ ] Avatar-Upload-Funktion.
-- [ ] Smart Print-Layout (Druck-CSS/PDF-Generierung).
+- [x] Interaktiver Charakterbogen (Anzeige & manuelle Bearbeitung) mit Tabs (Werte/Kampf/Notizen).
+- [x] Step-by-Step Wizard für die Charaktererstellung (6 Schritte, level-agnostisch).
+- [x] Avatar-Upload (Client-seitiges Resize 400x400 WebP, Supabase Storage, Initialen-Fallback).
+- [x] Smart Print-Layout (Druck-CSS, dedizierter Print-View /characters/[id]/print, A4-optimiert).
 
 ## Epic 4: Die Chronik des Chaos (Session Log)
 
