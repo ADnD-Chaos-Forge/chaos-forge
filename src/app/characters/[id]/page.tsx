@@ -7,6 +7,8 @@ import type {
   CharacterClassRow,
   CharacterEquipmentWithDetails,
   CharacterSpellWithDetails,
+  CharacterInventoryWithDetails,
+  GeneralItemRow,
   WeaponRow,
   ArmorRow,
   SpellRow,
@@ -92,6 +94,18 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
     .eq("character_id", id)
     .returns<CharacterClassRow[]>();
 
+  // Fetch inventory
+  const { data: inventoryData } = await supabase
+    .from("character_inventory")
+    .select("*, item:general_items(*)")
+    .eq("character_id", id);
+
+  const { data: allGeneralItems } = await supabase
+    .from("general_items")
+    .select("*")
+    .order("name")
+    .returns<GeneralItemRow[]>();
+
   // Fetch languages
   const { data: languages } = await supabase
     .from("character_languages")
@@ -111,6 +125,8 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
       allSpells={allSpells ?? []}
       weaponProficiencies={weaponProfs ?? []}
       nonweaponProficiencies={(nwProfs as CharacterNWPWithDetails[]) ?? []}
+      inventory={(inventoryData as CharacterInventoryWithDetails[]) ?? []}
+      allGeneralItems={allGeneralItems ?? []}
       allNonweaponProficiencies={allNWPs ?? []}
       languages={languages ?? []}
     />
