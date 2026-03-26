@@ -28,6 +28,24 @@ export default function LoginPage() {
         return;
       }
 
+      // Test-User Bypass: try auto-login, API checks if email matches
+      const testRes = await fetch("/api/test-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (testRes.ok) {
+        const testData = await testRes.json();
+        const supabase = createClient();
+        await supabase.auth.setSession({
+          access_token: testData.access_token,
+          refresh_token: testData.refresh_token,
+        });
+        window.location.href = "/characters";
+        return;
+      }
+      // Not a test user — fall through to normal Magic Link
+
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOtp({
         email,

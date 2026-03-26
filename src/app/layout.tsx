@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cinzel, Crimson_Text, Geist_Mono } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -44,34 +45,37 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${cinzel.variable} ${crimsonText.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${cinzel.variable} ${crimsonText.variable} ${geistMono.variable} h-full antialiased dark`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <header className="flex items-center justify-center border-b border-border px-6 py-4">
-          <Link href="/">
+        <ThemeProvider>
+          <header className="flex items-center justify-center border-b border-border px-6 py-4">
+            <Link href="/">
+              <Image
+                src="/header-logo.webp"
+                alt="Chaos Forge"
+                width={280}
+                height={120}
+                priority
+                className="h-16 w-auto sm:h-20"
+              />
+            </Link>
+          </header>
+
+          <main className="flex flex-1 flex-col">{children}</main>
+
+          <footer className="flex flex-col items-center gap-2 border-t border-border px-6 py-6">
             <Image
-              src="/header-logo.webp"
-              alt="Chaos Forge"
-              width={280}
-              height={120}
-              priority
-              className="h-16 w-auto sm:h-20"
+              src="/footer-logo.webp"
+              alt="Chaos Forge — Est. 2nd Ed."
+              width={200}
+              height={100}
+              className="h-12 w-auto opacity-70"
             />
-          </Link>
-        </header>
-
-        <main className="flex flex-1 flex-col">{children}</main>
-
-        <footer className="flex flex-col items-center gap-2 border-t border-border px-6 py-6">
-          <Image
-            src="/footer-logo.webp"
-            alt="Chaos Forge — Est. 2nd Ed."
-            width={200}
-            height={100}
-            className="h-12 w-auto opacity-70"
-          />
-          <p className="text-xs text-muted-foreground">Chaos RPG — AD&D 2nd Edition</p>
-        </footer>
+            <p className="text-xs text-muted-foreground">Chaos RPG — AD&D 2nd Edition</p>
+          </footer>
+        </ThemeProvider>
       </body>
     </html>
   );

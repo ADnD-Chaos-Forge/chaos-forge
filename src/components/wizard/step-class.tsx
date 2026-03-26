@@ -23,14 +23,15 @@ export function StepClass({ state, onChange }: StepClassProps) {
     cha: state.cha,
   };
 
-  function getDisabledReason(classId: ClassId): string | null {
+  function getWarning(classId: ClassId): string | null {
+    const warnings: string[] = [];
     if (state.raceId && !canPlayClass(state.raceId, classId)) {
-      return "Nicht verfügbar für diese Rasse";
+      warnings.push("Nicht regelkonform für diese Rasse");
     }
     if (!meetsAbilityRequirements(classId, abilities)) {
-      return "Attribut-Anforderungen nicht erfüllt";
+      warnings.push("Attribut-Anforderungen nicht erfüllt");
     }
-    return null;
+    return warnings.length > 0 ? warnings.join(". ") : null;
   }
 
   return (
@@ -39,20 +40,16 @@ export function StepClass({ state, onChange }: StepClassProps) {
       <div className="grid gap-3 sm:grid-cols-2">
         {classes.map((cls) => {
           const isSelected = state.classId === cls.id;
-          const disabledReason = getDisabledReason(cls.id);
+          const warning = getWarning(cls.id);
           const levelLimit = state.raceId ? getLevelLimit(state.raceId, cls.id) : null;
 
           return (
             <Card
               key={cls.id}
-              className={`transition-colors ${
-                disabledReason
-                  ? "cursor-not-allowed opacity-40"
-                  : isSelected
-                    ? "cursor-pointer border-primary bg-primary/5"
-                    : "cursor-pointer hover:border-primary/30"
+              className={`cursor-pointer transition-colors ${
+                isSelected ? "border-primary bg-primary/5" : "hover:border-primary/30"
               }`}
-              onClick={() => !disabledReason && onChange({ classId: cls.id })}
+              onClick={() => onChange({ classId: cls.id })}
               data-testid={`wizard-class-${cls.id}`}
             >
               <CardHeader className="pb-2">
@@ -64,8 +61,13 @@ export function StepClass({ state, onChange }: StepClassProps) {
                   <Badge variant="outline">d{cls.hitDie}</Badge>
                   {levelLimit && <Badge variant="secondary">Max. Stufe {levelLimit}</Badge>}
                 </div>
-                {disabledReason && (
-                  <span className="text-xs text-destructive">{disabledReason}</span>
+                {warning && (
+                  <div className="mt-1 flex items-center gap-1">
+                    <Badge className="bg-yellow-800/50 text-yellow-200" variant="secondary">
+                      Warnung
+                    </Badge>
+                    <span className="text-xs text-yellow-400">{warning}</span>
+                  </div>
                 )}
               </CardContent>
             </Card>

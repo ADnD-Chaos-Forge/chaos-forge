@@ -11,6 +11,9 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES, getClassGroup } from "@/lib/rules/classes";
+import { getAlignmentLabel } from "@/lib/rules/alignment";
+import { getXpForNextLevel, getXpThreshold } from "@/lib/rules/experience";
+import type { ClassId } from "@/lib/rules/types";
 import { getThac0, getSavingThrows } from "@/lib/rules/combat";
 import {
   getStrengthModifiers,
@@ -24,13 +27,48 @@ import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import Link from "next/link";
 import type { CharacterRow } from "@/lib/supabase/types";
+import { TabEquipment } from "./tab-equipment";
+import { TabSpells } from "./tab-spells";
+import { TabProficiencies } from "./tab-proficiencies";
+import type {
+  CharacterEquipmentWithDetails,
+  CharacterSpellWithDetails,
+  WeaponRow,
+  ArmorRow,
+  SpellRow,
+  CharacterWeaponProficiencyRow,
+  CharacterNWPWithDetails,
+  NonweaponProficiencyRow,
+  CharacterLanguageRow,
+} from "@/lib/supabase/types";
 
 interface CharacterSheetProps {
   character: CharacterRow;
   userId: string;
+  equipment: CharacterEquipmentWithDetails[];
+  spells: CharacterSpellWithDetails[];
+  allWeapons: WeaponRow[];
+  allArmor: ArmorRow[];
+  allSpells: SpellRow[];
+  weaponProficiencies: CharacterWeaponProficiencyRow[];
+  nonweaponProficiencies: CharacterNWPWithDetails[];
+  allNonweaponProficiencies: NonweaponProficiencyRow[];
+  languages: CharacterLanguageRow[];
 }
 
-export function CharacterSheet({ character: initial, userId }: CharacterSheetProps) {
+export function CharacterSheet({
+  character: initial,
+  userId,
+  equipment,
+  spells,
+  allWeapons,
+  allArmor,
+  allSpells,
+  weaponProficiencies,
+  nonweaponProficiencies,
+  allNonweaponProficiencies,
+  languages,
+}: CharacterSheetProps) {
   const router = useRouter();
   const [character, setCharacter] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -74,6 +112,13 @@ export function CharacterSheet({ character: initial, userId }: CharacterSheetPro
         cha: character.cha,
         hp_current: character.hp_current,
         hp_max: character.hp_max,
+        alignment: character.alignment,
+        xp_current: character.xp_current,
+        gold_pp: character.gold_pp,
+        gold_gp: character.gold_gp,
+        gold_ep: character.gold_ep,
+        gold_sp: character.gold_sp,
+        gold_cp: character.gold_cp,
         notes: character.notes,
       })
       .eq("id", character.id);
@@ -108,6 +153,7 @@ export function CharacterSheet({ character: initial, userId }: CharacterSheetPro
               {race && <Badge>{race.name}</Badge>}
               {cls && <Badge>{cls.name}</Badge>}
               <Badge variant="outline">Stufe {character.level}</Badge>
+              <Badge variant="outline">{getAlignmentLabel(character.alignment)}</Badge>
             </div>
           </div>
         </div>
@@ -147,6 +193,11 @@ export function CharacterSheet({ character: initial, userId }: CharacterSheetPro
           <TabsTrigger value="stats">Werte</TabsTrigger>
           <TabsTrigger value="combat">Kampf</TabsTrigger>
           <TabsTrigger value="notes">Notizen</TabsTrigger>
+          <TabsTrigger value="equipment">Ausrüstung</TabsTrigger>
+          {(classGroup === "wizard" ||
+            classGroup === "priest" ||
+            character.class_id === "bard") && <TabsTrigger value="spells">Zauber</TabsTrigger>}
+          <TabsTrigger value="proficiencies">Fertigkeiten</TabsTrigger>
         </TabsList>
 
         {/* Stats Tab */}
@@ -250,6 +301,128 @@ export function CharacterSheet({ character: initial, userId }: CharacterSheetPro
               </div>
             </div>
           </div>
+
+          <Separator />
+
+          <div>
+            <h3 className="mb-3 font-heading text-lg">Erfahrungspunkte</h3>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="xp-current" className="text-xs text-muted-foreground">
+                    Aktuell
+                  </Label>
+                  <Input
+                    id="xp-current"
+                    type="number"
+                    min={0}
+                    value={character.xp_current}
+                    onChange={(e) =>
+                      update("xp_current", Math.max(0, parseInt(e.target.value) || 0))
+                    }
+                    className="w-32 text-center font-mono"
+                    data-testid="sheet-xp-current"
+                  />
+                </div>
+                {character.class_id &&
+                  (() => {
+                    const nextLevelXp = getXpForNextLevel(
+                      character.class_id as ClassId,
+                      character.level
+                    );
+                    const currentThreshold = getXpThreshold(
+                      character.class_id as ClassId,
+                      character.level
+                    );
+                    if (!nextLevelXp)
+                      return (
+                        <span className="text-sm text-muted-foreground">Max. Stufe erreicht</span>
+                      );
+                    const progress = Math.min(
+                      100,
+                      Math.max(
+                        0,
+                        ((character.xp_current - currentThreshold) /
+                          (nextLevelXp - currentThreshold)) *
+                          100
+                      )
+                    );
+                    return (
+                      <div className="flex flex-1 flex-col gap-1">
+                        <div className="text-xs text-muted-foreground">
+                          Nächste Stufe: {nextLevelXp.toLocaleString("de-DE")} XP
+                        </div>
+                        <div className="h-3 w-full rounded-full bg-muted">
+                          <div
+                            className="h-3 rounded-full bg-primary transition-all"
+                            style={{ width: `${progress}%` }}
+                            data-testid="sheet-xp-bar"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div>
+            <h3 className="mb-3 font-heading text-lg">Schatz</h3>
+            <div className="grid grid-cols-5 gap-2">
+              {[
+                { key: "gold_pp" as const, label: "PP" },
+                { key: "gold_gp" as const, label: "GP" },
+                { key: "gold_ep" as const, label: "EP" },
+                { key: "gold_sp" as const, label: "SP" },
+                { key: "gold_cp" as const, label: "CP" },
+              ].map(({ key, label }) => (
+                <div key={key} className="flex flex-col gap-1">
+                  <Label
+                    htmlFor={`sheet-${key}`}
+                    className="text-center text-xs text-muted-foreground"
+                  >
+                    {label}
+                  </Label>
+                  <Input
+                    id={`sheet-${key}`}
+                    type="number"
+                    min={0}
+                    value={character[key]}
+                    onChange={(e) => update(key, Math.max(0, parseInt(e.target.value) || 0))}
+                    className="text-center font-mono"
+                    data-testid={`sheet-${key}`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          <div>
+            {race?.racialAbilities && race.racialAbilities.length > 0 && (
+              <div className="mb-4">
+                <h3 className="mb-2 font-heading text-lg">Rassenfähigkeiten</h3>
+                <ul className="list-inside list-disc text-sm text-muted-foreground">
+                  {race.racialAbilities.map((ability, i) => (
+                    <li key={i}>{ability}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {cls?.classAbilities && cls.classAbilities.length > 0 && (
+              <div>
+                <h3 className="mb-2 font-heading text-lg">Klassenfähigkeiten</h3>
+                <ul className="list-inside list-disc text-sm text-muted-foreground">
+                  {cls.classAbilities.map((ability, i) => (
+                    <li key={i}>{ability}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         {/* Combat Tab */}
@@ -312,6 +485,50 @@ export function CharacterSheet({ character: initial, userId }: CharacterSheetPro
               data-testid="sheet-notes"
             />
           </div>
+        </TabsContent>
+
+        <TabsContent value="equipment">
+          <TabEquipment
+            characterId={character.id}
+            userId={userId}
+            equipment={equipment}
+            allWeapons={allWeapons}
+            allArmor={allArmor}
+            strWeightAllow={strMods.weightAllow}
+            dexDefenseAdj={dexMods.defensiveAdj}
+          />
+        </TabsContent>
+
+        {(classGroup === "wizard" || classGroup === "priest" || character.class_id === "bard") && (
+          <TabsContent value="spells">
+            <TabSpells
+              characterId={character.id}
+              userId={userId}
+              classId={character.class_id ?? "fighter"}
+              classGroup={classGroup ?? "warrior"}
+              level={character.level}
+              intScore={character.int}
+              wisScore={character.wis}
+              spells={spells}
+              allSpells={allSpells}
+            />
+          </TabsContent>
+        )}
+
+        <TabsContent value="proficiencies">
+          <TabProficiencies
+            characterId={character.id}
+            userId={userId}
+            classId={character.class_id ?? "fighter"}
+            classGroup={classGroup ?? "warrior"}
+            raceId={character.race_id ?? "human"}
+            level={character.level}
+            intScore={character.int}
+            weaponProficiencies={weaponProficiencies}
+            nonweaponProficiencies={nonweaponProficiencies}
+            allNonweaponProficiencies={allNonweaponProficiencies}
+            languages={languages}
+          />
         </TabsContent>
       </Tabs>
     </div>

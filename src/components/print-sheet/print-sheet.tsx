@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES, getClassGroup } from "@/lib/rules/classes";
+import { getAlignmentLabel } from "@/lib/rules/alignment";
+import { getXpForNextLevel } from "@/lib/rules/experience";
+import type { ClassId } from "@/lib/rules/types";
 import { getThac0, getSavingThrows } from "@/lib/rules/combat";
 import {
   getStrengthModifiers,
@@ -98,7 +101,27 @@ export function PrintSheet({ character }: PrintSheetProps) {
                   {character.hp_max}
                 </div>
                 <div>
-                  <span className="font-semibold">Gruppe:</span> {classGroup ?? "—"}
+                  <span className="font-semibold">Gesinnung:</span>{" "}
+                  {getAlignmentLabel(character.alignment)}
+                </div>
+                <div>
+                  <span className="font-semibold">XP:</span>{" "}
+                  {character.xp_current.toLocaleString("de-DE")}
+                  {character.class_id &&
+                    (() => {
+                      const next = getXpForNextLevel(
+                        character.class_id as ClassId,
+                        character.level
+                      );
+                      return next ? ` / ${next.toLocaleString("de-DE")}` : " (Max)";
+                    })()}
+                </div>
+                <div>
+                  <span className="font-semibold">Schatz:</span>{" "}
+                  {character.gold_pp > 0 ? `${character.gold_pp} PP, ` : ""}
+                  {character.gold_gp} GP
+                  {character.gold_sp > 0 ? `, ${character.gold_sp} SP` : ""}
+                  {character.gold_cp > 0 ? `, ${character.gold_cp} CP` : ""}
                 </div>
               </div>
             </div>
@@ -228,6 +251,37 @@ export function PrintSheet({ character }: PrintSheetProps) {
                   <div className="font-mono text-lg font-bold">{value}</div>
                 </div>
               ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Racial & Class Abilities ──────────────────────────── */}
+        {(race?.racialAbilities?.length || cls?.classAbilities?.length) && (
+          <section className="mb-4" data-testid="print-section-abilities-list">
+            <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+              Fähigkeiten
+            </h2>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {race?.racialAbilities && race.racialAbilities.length > 0 && (
+                <div>
+                  <h3 className="font-semibold">Rassenfähigkeiten ({race.name})</h3>
+                  <ul className="mt-1 list-inside list-disc text-xs">
+                    {race.racialAbilities.map((a, i) => (
+                      <li key={i}>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {cls?.classAbilities && cls.classAbilities.length > 0 && (
+                <div>
+                  <h3 className="font-semibold">Klassenfähigkeiten ({cls.name})</h3>
+                  <ul className="mt-1 list-inside list-disc text-xs">
+                    {cls.classAbilities.map((a, i) => (
+                      <li key={i}>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </section>
         )}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/logout-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppNav() {
   return (
@@ -30,7 +31,10 @@ export function AppNav() {
           </Button>
         </Link>
       </div>
-      <LogoutButton />
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <LogoutButton />
+      </div>
     </nav>
   );
 }
