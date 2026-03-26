@@ -48,9 +48,9 @@ Die App richtet sich an eine private Spielgruppe ("Chaos RPG") mit maximal 10 Nu
 
 ## Epic 4: Die Chronik des Chaos (Session Log)
 
-- [ ] Timeline-Ansicht für Sessions.
-- [ ] Tagging-System (NPCs, Orte, Charaktere).
-- [ ] Smart Summaries (Text-Zusammenfassungen).
+- [x] Timeline-Ansicht für Sessions (chronologisch, mit Tags und Summary-Vorschau).
+- [x] Tagging-System (NPC, Ort, Gegenstand, Quest — mit Autocomplete und farbigen Badges).
+- [x] Smart Summaries (KI-Zusammenfassung via Claude Haiku 4.5 + manuelles Markdown-Feld).
 
 ## Epic 5: Advanced Features
 
