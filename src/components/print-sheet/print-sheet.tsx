@@ -123,6 +123,31 @@ export function PrintSheet({ character }: PrintSheetProps) {
                   {character.gold_sp > 0 ? `, ${character.gold_sp} SP` : ""}
                   {character.gold_cp > 0 ? `, ${character.gold_cp} CP` : ""}
                 </div>
+                {character.player_name && (
+                  <div>
+                    <span className="font-semibold">Spieler:</span> {character.player_name}
+                  </div>
+                )}
+                {character.age != null && (
+                  <div>
+                    <span className="font-semibold">Alter:</span> {character.age}
+                  </div>
+                )}
+                {character.height_cm != null && (
+                  <div>
+                    <span className="font-semibold">Größe:</span> {character.height_cm} cm
+                  </div>
+                )}
+                {character.weight_kg != null && (
+                  <div>
+                    <span className="font-semibold">Gewicht:</span> {character.weight_kg} kg
+                  </div>
+                )}
+                {character.gender && (
+                  <div>
+                    <span className="font-semibold">Geschlecht:</span> {character.gender}
+                  </div>
+                )}
               </div>
             </div>
           </div>

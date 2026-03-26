@@ -124,6 +124,25 @@ export function CharacterSheet({
         gold_sp: character.gold_sp,
         gold_cp: character.gold_cp,
         notes: character.notes,
+        player_name: character.player_name,
+        age: character.age,
+        height_cm: character.height_cm,
+        weight_kg: character.weight_kg,
+        gender: character.gender,
+        hair_color: character.hair_color,
+        eye_color: character.eye_color,
+        str_stamina: character.str_stamina,
+        str_muscle: character.str_muscle,
+        dex_aim: character.dex_aim,
+        dex_balance: character.dex_balance,
+        con_health: character.con_health,
+        con_fitness: character.con_fitness,
+        int_reason: character.int_reason,
+        int_knowledge: character.int_knowledge,
+        wis_intuition: character.wis_intuition,
+        wis_willpower: character.wis_willpower,
+        cha_leadership: character.cha_leadership,
+        cha_appearance: character.cha_appearance,
       })
       .eq("id", character.id);
     setSaving(false);
@@ -208,6 +227,119 @@ export function CharacterSheet({
 
         {/* Stats Tab */}
         <TabsContent value="stats" className="flex flex-col gap-6">
+          {/* Personal Details */}
+          <details data-testid="personal-details-section">
+            <summary className="cursor-pointer font-heading text-lg">
+              {t("personalDetails")}
+            </summary>
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="player-name" className="text-xs text-muted-foreground">
+                  {t("playerName")}
+                </Label>
+                <Input
+                  id="player-name"
+                  type="text"
+                  value={character.player_name ?? ""}
+                  onChange={(e) => update("player_name", e.target.value)}
+                  data-testid="sheet-player-name"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="age" className="text-xs text-muted-foreground">
+                  {t("age")}
+                </Label>
+                <Input
+                  id="age"
+                  type="number"
+                  min={0}
+                  value={character.age ?? ""}
+                  onChange={(e) =>
+                    update(
+                      "age",
+                      e.target.value ? Math.max(0, parseInt(e.target.value) || 0) : null
+                    )
+                  }
+                  data-testid="sheet-age"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="height-cm" className="text-xs text-muted-foreground">
+                  {t("heightCm")}
+                </Label>
+                <Input
+                  id="height-cm"
+                  type="number"
+                  min={0}
+                  value={character.height_cm ?? ""}
+                  onChange={(e) =>
+                    update(
+                      "height_cm",
+                      e.target.value ? Math.max(0, parseInt(e.target.value) || 0) : null
+                    )
+                  }
+                  data-testid="sheet-height-cm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="weight-kg" className="text-xs text-muted-foreground">
+                  {t("weightKg")}
+                </Label>
+                <Input
+                  id="weight-kg"
+                  type="number"
+                  min={0}
+                  value={character.weight_kg ?? ""}
+                  onChange={(e) =>
+                    update(
+                      "weight_kg",
+                      e.target.value ? Math.max(0, parseInt(e.target.value) || 0) : null
+                    )
+                  }
+                  data-testid="sheet-weight-kg"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="gender" className="text-xs text-muted-foreground">
+                  {t("gender")}
+                </Label>
+                <Input
+                  id="gender"
+                  type="text"
+                  value={character.gender ?? ""}
+                  onChange={(e) => update("gender", e.target.value)}
+                  data-testid="sheet-gender"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="hair-color" className="text-xs text-muted-foreground">
+                  {t("hairColor")}
+                </Label>
+                <Input
+                  id="hair-color"
+                  type="text"
+                  value={character.hair_color ?? ""}
+                  onChange={(e) => update("hair_color", e.target.value)}
+                  data-testid="sheet-hair-color"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="eye-color" className="text-xs text-muted-foreground">
+                  {t("eyeColor")}
+                </Label>
+                <Input
+                  id="eye-color"
+                  type="text"
+                  value={character.eye_color ?? ""}
+                  onChange={(e) => update("eye_color", e.target.value)}
+                  data-testid="sheet-eye-color"
+                />
+              </div>
+            </div>
+          </details>
+
+          <Separator />
+
           <div>
             <h3 className="mb-3 font-heading text-lg">{t("attributes")}</h3>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -248,26 +380,161 @@ export function CharacterSheet({
                   value: character.cha,
                   mods: `${chaMods.maxHenchmen} Gefolgsleute`,
                 },
-              ].map(({ key, label, value, mods }) => (
-                <div key={key} className="rounded-md border border-border p-3">
-                  <Label htmlFor={`sheet-${key}`} className="text-xs text-muted-foreground">
-                    {label}
-                  </Label>
-                  <Input
-                    id={`sheet-${key}`}
-                    type="number"
-                    min={3}
-                    max={18}
-                    value={value}
-                    onChange={(e) =>
-                      update(key, Math.max(3, Math.min(18, parseInt(e.target.value) || 3)))
-                    }
-                    className="mt-1 text-center font-mono text-lg"
-                    data-testid={`sheet-ability-${key}`}
-                  />
-                  <div className="mt-1 text-xs text-muted-foreground">{mods}</div>
-                </div>
-              ))}
+              ].map(({ key, label, value, mods }) => {
+                const subScoreMap: Record<
+                  string,
+                  {
+                    key1: keyof CharacterRow;
+                    label1: string;
+                    key2: keyof CharacterRow;
+                    label2: string;
+                  }
+                > = {
+                  str: {
+                    key1: "str_stamina",
+                    label1: t("stamina"),
+                    key2: "str_muscle",
+                    label2: t("muscle"),
+                  },
+                  dex: {
+                    key1: "dex_aim",
+                    label1: t("aim"),
+                    key2: "dex_balance",
+                    label2: t("balance"),
+                  },
+                  con: {
+                    key1: "con_health",
+                    label1: t("health"),
+                    key2: "con_fitness",
+                    label2: t("fitness"),
+                  },
+                  int: {
+                    key1: "int_reason",
+                    label1: t("reason"),
+                    key2: "int_knowledge",
+                    label2: t("knowledge"),
+                  },
+                  wis: {
+                    key1: "wis_intuition",
+                    label1: t("intuition"),
+                    key2: "wis_willpower",
+                    label2: t("willpower"),
+                  },
+                  cha: {
+                    key1: "cha_leadership",
+                    label1: t("leadership"),
+                    key2: "cha_appearance",
+                    label2: t("appearance"),
+                  },
+                };
+                const sub = subScoreMap[key];
+                return (
+                  <div key={key} className="rounded-md border border-border p-3">
+                    <Label htmlFor={`sheet-${key}`} className="text-xs text-muted-foreground">
+                      {label}
+                    </Label>
+                    <Input
+                      id={`sheet-${key}`}
+                      type="number"
+                      min={3}
+                      max={18}
+                      value={value}
+                      onChange={(e) =>
+                        update(key, Math.max(3, Math.min(18, parseInt(e.target.value) || 3)))
+                      }
+                      className="mt-1 text-center font-mono text-lg"
+                      data-testid={`sheet-ability-${key}`}
+                    />
+                    <div className="mt-1 text-xs text-muted-foreground">{mods}</div>
+                    {key === "str" && character.str === 18 && cls?.exceptionalStrength && (
+                      <div className="mt-2 flex flex-col gap-1">
+                        <Label
+                          htmlFor="sheet-str-exceptional"
+                          className="text-xs text-muted-foreground"
+                        >
+                          {t("exceptionalStr")}
+                        </Label>
+                        <Input
+                          id="sheet-str-exceptional"
+                          type="number"
+                          min={1}
+                          max={100}
+                          value={character.str_exceptional ?? ""}
+                          onChange={(e) =>
+                            update(
+                              "str_exceptional",
+                              e.target.value
+                                ? Math.max(1, Math.min(100, parseInt(e.target.value) || 1))
+                                : null
+                            )
+                          }
+                          className="w-20 text-center font-mono text-sm"
+                          data-testid="sheet-str-exceptional"
+                        />
+                      </div>
+                    )}
+                    {sub && (
+                      <details className="mt-2" data-testid={`sheet-subscores-${key}`}>
+                        <summary className="cursor-pointer text-xs text-muted-foreground">
+                          {t("subScores")}
+                        </summary>
+                        <div className="mt-1 flex gap-2">
+                          <div className="flex flex-col gap-1">
+                            <Label
+                              htmlFor={`sheet-${sub.key1}`}
+                              className="text-xs text-muted-foreground"
+                            >
+                              {sub.label1}
+                            </Label>
+                            <Input
+                              id={`sheet-${sub.key1}`}
+                              type="number"
+                              min={3}
+                              max={18}
+                              value={character[sub.key1] ?? ""}
+                              onChange={(e) =>
+                                update(
+                                  sub.key1,
+                                  e.target.value
+                                    ? Math.max(3, Math.min(18, parseInt(e.target.value) || 3))
+                                    : null
+                                )
+                              }
+                              className="w-16 text-center font-mono text-sm"
+                              data-testid={`sheet-${sub.key1}`}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <Label
+                              htmlFor={`sheet-${sub.key2}`}
+                              className="text-xs text-muted-foreground"
+                            >
+                              {sub.label2}
+                            </Label>
+                            <Input
+                              id={`sheet-${sub.key2}`}
+                              type="number"
+                              min={3}
+                              max={18}
+                              value={character[sub.key2] ?? ""}
+                              onChange={(e) =>
+                                update(
+                                  sub.key2,
+                                  e.target.value
+                                    ? Math.max(3, Math.min(18, parseInt(e.target.value) || 3))
+                                    : null
+                                )
+                              }
+                              className="w-16 text-center font-mono text-sm"
+                              data-testid={`sheet-${sub.key2}`}
+                            />
+                          </div>
+                        </div>
+                      </details>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
