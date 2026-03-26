@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/supabase/auth";
 import { CharacterSheet } from "@/components/character-sheet/character-sheet";
 import type {
   CharacterRow,
+  CharacterClassRow,
   CharacterEquipmentWithDetails,
   CharacterSpellWithDetails,
   WeaponRow,
@@ -84,6 +85,13 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
     .order("name")
     .returns<NonweaponProficiencyRow[]>();
 
+  // Fetch character classes (multiclass support)
+  const { data: characterClasses } = await supabase
+    .from("character_classes")
+    .select("*")
+    .eq("character_id", id)
+    .returns<CharacterClassRow[]>();
+
   // Fetch languages
   const { data: languages } = await supabase
     .from("character_languages")
@@ -94,6 +102,7 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
   return (
     <CharacterSheet
       character={character}
+      characterClasses={characterClasses ?? []}
       userId={user.id}
       equipment={(equipment as CharacterEquipmentWithDetails[]) ?? []}
       spells={(spells as CharacterSpellWithDetails[]) ?? []}

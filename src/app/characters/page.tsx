@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { AvatarDisplay } from "@/components/avatar-display";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
-import type { CharacterRow } from "@/lib/supabase/types";
+import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
 
 export default async function CharactersPage() {
   const t = await getTranslations("characters");
@@ -17,6 +17,19 @@ export default async function CharactersPage() {
     .select("*")
     .order("updated_at", { ascending: false })
     .returns<CharacterRow[]>();
+
+  // Load all character_classes for display
+  const { data: allCharClasses } = await supabase
+    .from("character_classes")
+    .select("*")
+    .returns<CharacterClassRow[]>();
+
+  const charClassMap = new Map<string, CharacterClassRow[]>();
+  for (const cc of allCharClasses ?? []) {
+    const existing = charClassMap.get(cc.character_id) ?? [];
+    existing.push(cc);
+    charClassMap.set(cc.character_id, existing);
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6" data-testid="characters-page">
@@ -41,9 +54,19 @@ export default async function CharactersPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {characters.map((character) => {
             const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
-            const cls = character.class_id
-              ? CLASSES[character.class_id as keyof typeof CLASSES]
-              : null;
+            const classes = (charClassMap.get(character.id) ?? []).filter((cc) => cc.is_active);
+            const classNames =
+              classes.length > 0
+                ? classes
+                    .map((cc) => CLASSES[cc.class_id as keyof typeof CLASSES]?.name ?? cc.class_id)
+                    .join(" / ")
+                : character.class_id
+                  ? (CLASSES[character.class_id as keyof typeof CLASSES]?.name ?? null)
+                  : null;
+            const levelDisplay =
+              classes.length > 0
+                ? classes.map((cc) => cc.level).join("/")
+                : String(character.level);
 
             return (
               <Link key={character.id} href={`/characters/${character.id}`}>
@@ -64,9 +87,9 @@ export default async function CharactersPage() {
                   <CardContent className="flex flex-col gap-2">
                     <div className="flex flex-wrap gap-2">
                       {race && <Badge variant="secondary">{race.name}</Badge>}
-                      {cls && <Badge variant="secondary">{cls.name}</Badge>}
+                      {classNames && <Badge variant="secondary">{classNames}</Badge>}
                       <Badge variant="outline">
-                        {t("level")} {character.level}
+                        {t("level")} {levelDisplay}
                       </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground">

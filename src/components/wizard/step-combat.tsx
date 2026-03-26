@@ -3,8 +3,11 @@
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getThac0, getSavingThrows } from "@/lib/rules/combat";
-import { getClassGroup } from "@/lib/rules/classes";
+import {
+  getMulticlassThac0,
+  getMulticlassSaves,
+  getMulticlassHpDivisor,
+} from "@/lib/rules/multiclass";
 import { getDexterityModifiers } from "@/lib/rules/abilities";
 import type { WizardState } from "./wizard-types";
 
@@ -16,11 +19,13 @@ interface StepCombatProps {
 export function StepCombat({ state, onChange }: StepCombatProps) {
   const t = useTranslations("wizard");
   const ts = useTranslations("sheet");
-  const classGroup = state.classId ? getClassGroup(state.classId) : null;
-  const thac0 = classGroup ? getThac0(classGroup, state.level) : 20;
-  const saves = classGroup ? getSavingThrows(classGroup, state.level) : null;
+
+  const classEntries = state.classIds.map((id) => ({ classId: id, level: state.level }));
+  const thac0 = classEntries.length > 0 ? getMulticlassThac0(classEntries) : 20;
+  const saves = classEntries.length > 0 ? getMulticlassSaves(classEntries) : null;
   const dexMods = getDexterityModifiers(state.dex);
   const baseAC = 10 + dexMods.defensiveAdj;
+  const hpDivisor = getMulticlassHpDivisor(state.classIds.length);
 
   return (
     <div className="flex flex-col gap-6" data-testid="wizard-step-combat">
@@ -36,6 +41,11 @@ export function StepCombat({ state, onChange }: StepCombatProps) {
           onChange={(e) => onChange({ hpMax: Math.max(1, parseInt(e.target.value) || 1) })}
           data-testid="wizard-hp-max"
         />
+        {hpDivisor > 1 && (
+          <p className="text-xs text-yellow-400" data-testid="wizard-hp-divisor-hint">
+            {t("multiclassHpHint", { count: hpDivisor })}
+          </p>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

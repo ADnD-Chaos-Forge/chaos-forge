@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { CLASSES } from "@/lib/rules/classes";
+import { multiclassHasExceptionalStr } from "@/lib/rules/multiclass";
 import { StepBasics } from "./step-basics";
 import { StepAbilities } from "./step-abilities";
 import { StepRace } from "./step-race";
@@ -38,7 +38,7 @@ export function CharacterWizard() {
       case "race":
         return state.raceId !== null;
       case "class":
-        return state.classId !== null;
+        return state.classIds.length > 0;
       case "combat":
         return state.hpMax >= 1;
       case "summary":
@@ -48,9 +48,7 @@ export function CharacterWizard() {
     }
   }
 
-  const isWarriorClass = state.classId
-    ? (CLASSES[state.classId]?.exceptionalStrength ?? false)
-    : false;
+  const isWarriorClass = multiclassHasExceptionalStr(state.classIds);
 
   async function handleCreate() {
     setSaving(true);
@@ -67,6 +65,7 @@ export function CharacterWizard() {
       return;
     }
 
+    // Insert character (class_id = first class for backward compat)
     const { data, error: insertError } = await supabase
       .from("characters")
       .insert({
@@ -75,7 +74,7 @@ export function CharacterWizard() {
         level: state.level,
         alignment: state.alignment,
         race_id: state.raceId,
-        class_id: state.classId,
+        class_id: state.classIds[0] ?? null,
         str: state.str,
         str_exceptional: isWarriorClass && state.str === 18 ? state.strExceptional : null,
         dex: state.dex,
@@ -93,6 +92,24 @@ export function CharacterWizard() {
       setError(insertError.message);
       setSaving(false);
       return;
+    }
+
+    // Insert character_classes entries
+    if (state.classIds.length > 0) {
+      const classRows = state.classIds.map((classId) => ({
+        character_id: data.id,
+        class_id: classId,
+        level: state.level,
+        xp_current: 0,
+      }));
+
+      const { error: classError } = await supabase.from("character_classes").insert(classRows);
+
+      if (classError) {
+        setError(classError.message);
+        setSaving(false);
+        return;
+      }
     }
 
     router.push(`/characters/${data.id}`);

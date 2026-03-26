@@ -14,8 +14,9 @@ interface StepBasicsProps {
 
 export function StepBasics({ state, onChange }: StepBasicsProps) {
   const t = useTranslations("wizard");
-  const allowedAlignments = state.classId ? getAllowedAlignments(state.classId) : ALL_ALIGNMENTS;
-  const isAlignmentWarning = state.classId && !allowedAlignments.includes(state.alignment);
+  const primaryClassId = state.classIds.length > 0 ? state.classIds[0] : null;
+  const allowedAlignments = primaryClassId ? getAllowedAlignments(primaryClassId) : ALL_ALIGNMENTS;
+  const isAlignmentWarning = primaryClassId && !allowedAlignments.includes(state.alignment);
 
   return (
     <div className="flex flex-col gap-4" data-testid="wizard-step-basics">

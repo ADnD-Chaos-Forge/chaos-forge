@@ -1,9 +1,12 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { getAllClasses, meetsAbilityRequirements } from "@/lib/rules/classes";
 import { canPlayClass, getLevelLimit } from "@/lib/rules/races";
+import { isRuleCompliantMulticlass } from "@/lib/rules/multiclass";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CheckSquare, Square } from "lucide-react";
 import type { WizardState } from "./wizard-types";
 import type { ClassId, AbilityName } from "@/lib/rules/types";
 
@@ -13,6 +16,7 @@ interface StepClassProps {
 }
 
 export function StepClass({ state, onChange }: StepClassProps) {
+  const t = useTranslations("wizard");
   const classes = getAllClasses();
   const abilities: Record<AbilityName, number> = {
     str: state.str,
@@ -23,24 +27,54 @@ export function StepClass({ state, onChange }: StepClassProps) {
     cha: state.cha,
   };
 
-  function getWarning(classId: ClassId): string | null {
+  function toggleClass(classId: ClassId) {
+    const isSelected = state.classIds.includes(classId);
+    if (isSelected) {
+      onChange({ classIds: state.classIds.filter((id) => id !== classId) });
+    } else {
+      onChange({ classIds: [...state.classIds, classId] });
+    }
+  }
+
+  function getWarnings(classId: ClassId): string[] {
     const warnings: string[] = [];
     if (state.raceId && !canPlayClass(state.raceId, classId)) {
-      warnings.push("Nicht regelkonform für diese Rasse");
+      warnings.push(t("notRuleConformRace"));
     }
     if (!meetsAbilityRequirements(classId, abilities)) {
-      warnings.push("Attribut-Anforderungen nicht erfüllt");
+      warnings.push(t("abilityReqNotMet"));
     }
-    return warnings.length > 0 ? warnings.join(". ") : null;
+    return warnings;
   }
+
+  // Check if the current multi-selection is rule-compliant
+  const isMulticlass = state.classIds.length > 1;
+  const isMultiCompliant =
+    isMulticlass && state.raceId ? isRuleCompliantMulticlass(state.raceId, state.classIds) : true;
 
   return (
     <div className="flex flex-col gap-4" data-testid="wizard-step-class">
-      <p className="text-sm text-muted-foreground">W&auml;hle die Klasse deines Charakters.</p>
+      <p className="text-sm text-muted-foreground">{t("selectClassHint")}</p>
+
+      {isMulticlass && (
+        <div className="flex items-center gap-2">
+          <Badge data-testid="multiclass-badge">{t("multiclass")}</Badge>
+          {!isMultiCompliant && (
+            <Badge
+              className="bg-yellow-800/50 text-yellow-200"
+              variant="secondary"
+              data-testid="multiclass-warning"
+            >
+              {t("multiclassWarning")}
+            </Badge>
+          )}
+        </div>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2">
         {classes.map((cls) => {
-          const isSelected = state.classId === cls.id;
-          const warning = getWarning(cls.id);
+          const isSelected = state.classIds.includes(cls.id);
+          const warnings = getWarnings(cls.id);
           const levelLimit = state.raceId ? getLevelLimit(state.raceId, cls.id) : null;
 
           return (
@@ -49,24 +83,35 @@ export function StepClass({ state, onChange }: StepClassProps) {
               className={`cursor-pointer transition-colors ${
                 isSelected ? "border-primary bg-primary/5" : "hover:border-primary/30"
               }`}
-              onClick={() => onChange({ classId: cls.id })}
+              onClick={() => toggleClass(cls.id)}
               data-testid={`wizard-class-${cls.id}`}
             >
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">{cls.name}</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  {isSelected ? (
+                    <CheckSquare className="h-5 w-5 text-primary" />
+                  ) : (
+                    <Square className="h-5 w-5 text-muted-foreground" />
+                  )}
+                  {cls.name}
+                </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-1">
                 <div className="flex flex-wrap gap-1">
                   <Badge variant="outline">{cls.group}</Badge>
                   <Badge variant="outline">d{cls.hitDie}</Badge>
-                  {levelLimit && <Badge variant="secondary">Max. Stufe {levelLimit}</Badge>}
+                  {levelLimit && (
+                    <Badge variant="secondary">
+                      {t("maxLevel")} {levelLimit}
+                    </Badge>
+                  )}
                 </div>
-                {warning && (
+                {warnings.length > 0 && (
                   <div className="mt-1 flex items-center gap-1">
                     <Badge className="bg-yellow-800/50 text-yellow-200" variant="secondary">
                       Warnung
                     </Badge>
-                    <span className="text-xs text-yellow-400">{warning}</span>
+                    <span className="text-xs text-yellow-400">{warnings.join(". ")}</span>
                   </div>
                 )}
               </CardContent>

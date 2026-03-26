@@ -199,3 +199,12 @@ export interface SessionTagRow {
   session_id: string;
   tag_id: string;
 }
+
+export interface CharacterClassRow {
+  id: string;
+  character_id: string;
+  class_id: string;
+  level: number;
+  xp_current: number;
+  is_active: boolean;
+}

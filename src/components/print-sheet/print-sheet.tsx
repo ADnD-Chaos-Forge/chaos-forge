@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { RACES } from "@/lib/rules/races";
-import { CLASSES, getClassGroup } from "@/lib/rules/classes";
+import { CLASSES } from "@/lib/rules/classes";
 import { getAlignmentLabel } from "@/lib/rules/alignment";
 import { getXpForNextLevel } from "@/lib/rules/experience";
 import type { ClassId } from "@/lib/rules/types";
-import { getThac0, getSavingThrows } from "@/lib/rules/combat";
+import { getMulticlassThac0, getMulticlassSaves } from "@/lib/rules/multiclass";
 import {
   getStrengthModifiers,
   getDexterityModifiers,
@@ -15,20 +15,35 @@ import {
   getWisdomModifiers,
   getCharismaModifiers,
 } from "@/lib/rules/abilities";
-import type { CharacterRow } from "@/lib/supabase/types";
+import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
 
 interface PrintSheetProps {
   character: CharacterRow;
+  characterClasses: CharacterClassRow[];
 }
 
-export function PrintSheet({ character }: PrintSheetProps) {
+export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
   const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
-  const cls = character.class_id ? CLASSES[character.class_id as keyof typeof CLASSES] : null;
-  const classGroup = character.class_id
-    ? getClassGroup(character.class_id as keyof typeof CLASSES)
-    : null;
-  const thac0 = classGroup ? getThac0(classGroup, character.level) : 20;
-  const saves = classGroup ? getSavingThrows(classGroup, character.level) : null;
+
+  // Multiclass support
+  const activeClasses = characterClasses.filter((cc) => cc.is_active);
+  const classEntries = activeClasses.map((cc) => ({
+    classId: cc.class_id as ClassId,
+    level: cc.level,
+  }));
+  const classNames = activeClasses
+    .map((cc) => CLASSES[cc.class_id as ClassId]?.name ?? cc.class_id)
+    .join(" / ");
+  const levelDisplay = activeClasses.map((cc) => cc.level).join("/");
+  const hitDice = activeClasses
+    .map((cc) => {
+      const def = CLASSES[cc.class_id as ClassId];
+      return def ? `d${def.hitDie}` : "—";
+    })
+    .join("/");
+
+  const thac0 = classEntries.length > 0 ? getMulticlassThac0(classEntries) : 20;
+  const saves = classEntries.length > 0 ? getMulticlassSaves(classEntries) : null;
   const strMods = getStrengthModifiers(character.str, character.str_exceptional ?? undefined);
   const dexMods = getDexterityModifiers(character.dex);
   const conMods = getConstitutionModifiers(character.con);
@@ -87,14 +102,13 @@ export function PrintSheet({ character }: PrintSheetProps) {
                   <span className="font-semibold">Rasse:</span> {race?.name ?? "—"}
                 </div>
                 <div>
-                  <span className="font-semibold">Klasse:</span> {cls?.name ?? "—"}
+                  <span className="font-semibold">Klasse:</span> {classNames || "—"}
                 </div>
                 <div>
-                  <span className="font-semibold">Stufe:</span> {character.level}
+                  <span className="font-semibold">Stufe:</span> {levelDisplay || character.level}
                 </div>
                 <div>
-                  <span className="font-semibold">Trefferwürfel:</span>{" "}
-                  {cls ? `d${cls.hitDie}` : "—"}
+                  <span className="font-semibold">Trefferwürfel:</span> {hitDice || "—"}
                 </div>
                 <div>
                   <span className="font-semibold">HP:</span> {character.hp_current}/
@@ -106,15 +120,15 @@ export function PrintSheet({ character }: PrintSheetProps) {
                 </div>
                 <div>
                   <span className="font-semibold">XP:</span>{" "}
-                  {character.xp_current.toLocaleString("de-DE")}
-                  {character.class_id &&
-                    (() => {
-                      const next = getXpForNextLevel(
-                        character.class_id as ClassId,
-                        character.level
-                      );
-                      return next ? ` / ${next.toLocaleString("de-DE")}` : " (Max)";
-                    })()}
+                  {activeClasses.length > 0
+                    ? activeClasses
+                        .map((cc) => {
+                          const name = CLASSES[cc.class_id as ClassId]?.name ?? cc.class_id;
+                          const next = getXpForNextLevel(cc.class_id as ClassId, cc.level);
+                          return `${name}: ${cc.xp_current.toLocaleString("de-DE")}${next ? ` / ${next.toLocaleString("de-DE")}` : " (Max)"}`;
+                        })
+                        .join("; ")
+                    : character.xp_current.toLocaleString("de-DE")}
                 </div>
                 <div>
                   <span className="font-semibold">Schatz:</span>{" "}
@@ -281,7 +295,7 @@ export function PrintSheet({ character }: PrintSheetProps) {
         )}
 
         {/* ── Racial & Class Abilities ──────────────────────────── */}
-        {(race?.racialAbilities?.length || cls?.classAbilities?.length) && (
+        {(race?.racialAbilities?.length || activeClasses.length > 0) && (
           <section className="mb-4" data-testid="print-section-abilities-list">
             <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
               Fähigkeiten
@@ -297,16 +311,20 @@ export function PrintSheet({ character }: PrintSheetProps) {
                   </ul>
                 </div>
               )}
-              {cls?.classAbilities && cls.classAbilities.length > 0 && (
-                <div>
-                  <h3 className="font-semibold">Klassenfähigkeiten ({cls.name})</h3>
-                  <ul className="mt-1 list-inside list-disc text-xs">
-                    {cls.classAbilities.map((a, i) => (
-                      <li key={i}>{a}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              {activeClasses.map((cc) => {
+                const clsDef = CLASSES[cc.class_id as ClassId];
+                if (!clsDef?.classAbilities?.length) return null;
+                return (
+                  <div key={cc.class_id}>
+                    <h3 className="font-semibold">Klassenfähigkeiten ({clsDef.name})</h3>
+                    <ul className="mt-1 list-inside list-disc text-xs">
+                      {clsDef.classAbilities.map((a, i) => (
+                        <li key={i}>{a}</li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
             </div>
           </section>
         )}

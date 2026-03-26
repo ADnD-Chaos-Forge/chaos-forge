@@ -1,13 +1,13 @@
 "use client";
 
 import { RACES } from "@/lib/rules/races";
-import { CLASSES, getClassGroup } from "@/lib/rules/classes";
-import { getThac0 } from "@/lib/rules/combat";
+import { CLASSES } from "@/lib/rules/classes";
 import {
   getStrengthModifiers,
   getDexterityModifiers,
   getConstitutionModifiers,
 } from "@/lib/rules/abilities";
+import { getMulticlassThac0 } from "@/lib/rules/multiclass";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { WizardState } from "./wizard-types";
@@ -18,12 +18,13 @@ interface StepSummaryProps {
 
 export function StepSummary({ state }: StepSummaryProps) {
   const race = state.raceId ? RACES[state.raceId] : null;
-  const cls = state.classId ? CLASSES[state.classId] : null;
-  const classGroup = state.classId ? getClassGroup(state.classId) : null;
-  const thac0 = classGroup ? getThac0(classGroup, state.level) : 20;
+  const classEntries = state.classIds.map((id) => ({ classId: id, level: state.level }));
+  const thac0 = classEntries.length > 0 ? getMulticlassThac0(classEntries) : 20;
   const strMods = getStrengthModifiers(state.str, state.strExceptional ?? undefined);
   const dexMods = getDexterityModifiers(state.dex);
   const conMods = getConstitutionModifiers(state.con);
+
+  const classNames = state.classIds.map((id) => CLASSES[id].name).join(" / ");
 
   return (
     <div className="flex flex-col gap-4" data-testid="wizard-step-summary">
@@ -31,7 +32,7 @@ export function StepSummary({ state }: StepSummaryProps) {
 
       <div className="flex flex-wrap gap-2">
         {race && <Badge>{race.name}</Badge>}
-        {cls && <Badge>{cls.name}</Badge>}
+        {classNames && <Badge>{classNames}</Badge>}
         <Badge variant="outline">Stufe {state.level}</Badge>
       </div>
 

@@ -116,6 +116,16 @@ export default function ImportCharacterPage() {
         return;
       }
 
+      // Also insert into character_classes
+      if (scanned.class) {
+        await supabase.from("character_classes").insert({
+          character_id: data.id,
+          class_id: scanned.class,
+          level: scanned.level,
+          xp_current: 0,
+        });
+      }
+
       router.push(`/characters/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Fehler beim Erstellen.");

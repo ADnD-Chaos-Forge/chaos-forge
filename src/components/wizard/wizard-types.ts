@@ -16,8 +16,8 @@ export interface WizardState {
   cha: number;
   // Step 3: Race
   raceId: RaceId | null;
-  // Step 4: Class
-  classId: ClassId | null;
+  // Step 4: Class (supports multiclass)
+  classIds: ClassId[];
   // Step 5: Combat (calculated + HP input)
   hpMax: number;
 }
@@ -34,7 +34,7 @@ export const INITIAL_WIZARD_STATE: WizardState = {
   wis: 10,
   cha: 10,
   raceId: null,
-  classId: null,
+  classIds: [],
   hpMax: 1,
 };
 
