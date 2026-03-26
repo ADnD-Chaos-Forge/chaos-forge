@@ -33,11 +33,11 @@ Die App richtet sich an eine private Spielgruppe ("Chaos RPG") mit maximal 10 Nu
 
 ## Epic 2: AD&D Core-Regelwerk (Engine)
 
-- [ ] Datenstruktur für Attribute (inkl. 18/xx Stärke), Rassen und Klassen.
-- [ ] Logik für absteigende Rüstungsklasse (RK) und ETW0 (THAC0).
-- [ ] Implementierung des Magiesystems (Schulen für Magier, Sphären für Priester).
-- [ ] Datenbank-Seeding mit grundlegenden Waffen, Rüstungen und Zaubern.
-- [ ] Passendes Einbauen der Logos und Favicons aus dem Ordner Ressources in das Design
+- [x] Datenstruktur für Attribute (inkl. 18/xx Stärke), 7 Rassen und 16 Klassen.
+- [x] Logik für absteigende Rüstungsklasse (RK) und ETW0 (THAC0) + Rettungswürfe.
+- [x] Implementierung des Magiesystems (8 Schulen für Magier, 16 Sphären für Priester).
+- [x] Datenbank-Seeding mit 12 Rüstungen, 16 Waffen und 18 Beispielzaubern.
+- [x] Logos (WebP) und Favicons aus Ressources ins Design eingebaut.
 
 ## Epic 3: Charakter-Management
 
