@@ -1,0 +1,169 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { CLASSES } from "@/lib/rules/classes";
+import { StepBasics } from "./step-basics";
+import { StepAbilities } from "./step-abilities";
+import { StepRace } from "./step-race";
+import { StepClass } from "./step-class";
+import { StepCombat } from "./step-combat";
+import { StepSummary } from "./step-summary";
+import { WIZARD_STEPS, INITIAL_WIZARD_STATE, type WizardState } from "./wizard-types";
+
+export function CharacterWizard() {
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [state, setState] = useState<WizardState>(INITIAL_WIZARD_STATE);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function updateState(updates: Partial<WizardState>) {
+    setState((prev) => ({ ...prev, ...updates }));
+  }
+
+  function canProceed(): boolean {
+    switch (WIZARD_STEPS[currentStep].id) {
+      case "basics":
+        return state.name.trim().length > 0 && state.level >= 1;
+      case "abilities":
+        return true;
+      case "race":
+        return state.raceId !== null;
+      case "class":
+        return state.classId !== null;
+      case "combat":
+        return state.hpMax >= 1;
+      case "summary":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  const isWarriorClass =
+    state.classId ? CLASSES[state.classId]?.exceptionalStrength ?? false : false;
+
+  async function handleCreate() {
+    setSaving(true);
+    setError(null);
+
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setError("Nicht eingeloggt.");
+      setSaving(false);
+      return;
+    }
+
+    const { data, error: insertError } = await supabase
+      .from("characters")
+      .insert({
+        user_id: user.id,
+        name: state.name.trim(),
+        level: state.level,
+        race_id: state.raceId,
+        class_id: state.classId,
+        str: state.str,
+        str_exceptional: isWarriorClass && state.str === 18 ? state.strExceptional : null,
+        dex: state.dex,
+        con: state.con,
+        int: state.int,
+        wis: state.wis,
+        cha: state.cha,
+        hp_current: state.hpMax,
+        hp_max: state.hpMax,
+      })
+      .select("id")
+      .single();
+
+    if (insertError) {
+      setError(insertError.message);
+      setSaving(false);
+      return;
+    }
+
+    router.push(`/characters/${data.id}`);
+  }
+
+  const isLastStep = currentStep === WIZARD_STEPS.length - 1;
+
+  return (
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6" data-testid="character-wizard">
+      {/* Progress indicator */}
+      <div className="flex gap-1">
+        {WIZARD_STEPS.map((step, i) => (
+          <div
+            key={step.id}
+            className={`h-1.5 flex-1 rounded-full transition-colors ${
+              i <= currentStep ? "bg-primary" : "bg-muted"
+            }`}
+          />
+        ))}
+      </div>
+
+      <h2 className="font-heading text-2xl text-primary">
+        {WIZARD_STEPS[currentStep].label}
+      </h2>
+
+      {/* Step content */}
+      {WIZARD_STEPS[currentStep].id === "basics" && (
+        <StepBasics state={state} onChange={updateState} />
+      )}
+      {WIZARD_STEPS[currentStep].id === "abilities" && (
+        <StepAbilities state={state} onChange={updateState} showExceptionalStr={isWarriorClass} />
+      )}
+      {WIZARD_STEPS[currentStep].id === "race" && (
+        <StepRace state={state} onChange={updateState} />
+      )}
+      {WIZARD_STEPS[currentStep].id === "class" && (
+        <StepClass state={state} onChange={updateState} />
+      )}
+      {WIZARD_STEPS[currentStep].id === "combat" && (
+        <StepCombat state={state} onChange={updateState} />
+      )}
+      {WIZARD_STEPS[currentStep].id === "summary" && <StepSummary state={state} />}
+
+      {/* Navigation */}
+      <div className="flex justify-between">
+        <Button
+          variant="outline"
+          onClick={() => setCurrentStep((s) => s - 1)}
+          disabled={currentStep === 0}
+          data-testid="wizard-prev-button"
+        >
+          Zur&uuml;ck
+        </Button>
+
+        {isLastStep ? (
+          <Button
+            onClick={handleCreate}
+            disabled={saving || !canProceed()}
+            data-testid="wizard-create-button"
+          >
+            {saving ? "Erstelle Charakter..." : "Charakter erstellen"}
+          </Button>
+        ) : (
+          <Button
+            onClick={() => setCurrentStep((s) => s + 1)}
+            disabled={!canProceed()}
+            data-testid="wizard-next-button"
+          >
+            Weiter
+          </Button>
+        )}
+      </div>
+
+      {error && (
+        <p className="text-sm text-destructive" data-testid="wizard-error">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
