@@ -10,14 +10,50 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Tech-Stack
 
-- **Frontend/Backend:** Next.js (oder SvelteKit — noch zu entscheiden)
-- **Datenbank & Auth:** Supabase (oder Firebase — noch zu entscheiden)
-- **E2E-Testing:** Playwright
-- **Unit-Testing:** Vitest (oder äquivalent — noch zu entscheiden)
-- **Hosting:** Vercel/Netlify (Free-Tier)
-- **UI-Theme:** AD&D-Nostalgie-Look (Serifen, Texturen, Mobile-Friendly)
+- **Framework:** Next.js 16 (App Router) mit TypeScript
+- **Datenbank & Auth:** Supabase (PostgreSQL + Row Level Security)
+- **Styling:** Tailwind CSS v4 + shadcn/ui
+- **Unit-/Integrationstests:** Vitest + React Testing Library
+- **E2E-Tests:** Playwright (Chromium)
+- **Linting/Formatting:** ESLint (next config) + Prettier
+- **Hosting:** Vercel (Free-Tier)
+- **UI-Theme:** AD&D-Nostalgie-Look (Cinzel für Headings, Crimson Text für Body)
 
-> **Hinweis:** Der Tech-Stack ist noch nicht finalisiert. Sobald das Projekt initialisiert ist, sollte dieser Abschnitt mit konkreten Build-/Test-/Lint-Befehlen aktualisiert werden.
+## Befehle
+
+| Befehl                 | Beschreibung                       |
+| ---------------------- | ---------------------------------- |
+| `npm run dev`          | Dev-Server starten (Turbopack)     |
+| `npm run build`        | Production Build                   |
+| `npm run lint`         | ESLint ausführen                   |
+| `npm run format`       | Prettier: alle Dateien formatieren |
+| `npm run format:check` | Prettier: Formatierung prüfen      |
+| `npm test`             | Unit-Tests einmalig ausführen      |
+| `npm run test:watch`   | Unit-Tests im Watch-Modus          |
+| `npm run test:e2e`     | Playwright E2E-Tests ausführen     |
+| `npm run test:e2e:ui`  | Playwright im UI-Modus             |
+
+## Projektstruktur
+
+```
+src/
+  app/              # Next.js App Router (Pages, Layouts)
+  components/ui/    # shadcn/ui Komponenten
+  lib/
+    supabase/       # Supabase Client-Helfer (client.ts, server.ts, middleware.ts)
+    utils.ts        # Utility-Funktionen (cn helper)
+  middleware.ts     # Next.js Middleware (Supabase Session-Refresh)
+  test/             # Vitest Setup & Smoke-Tests
+e2e/                # Playwright E2E-Tests
+supabase/
+  migrations/       # SQL-Migrationen (Supabase Schema)
+```
+
+## Supabase
+
+- **Client-Helfer:** `src/lib/supabase/client.ts` (Browser), `server.ts` (Server Components), `middleware.ts` (Session-Refresh)
+- **Env-Variablen:** `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` (siehe `.env.local.example`)
+- **RLS:** Alle Tabellen nutzen Row Level Security — User sehen nur ihre eigenen Daten
 
 ## AD&D 2e Regelwerk-Spezifika
 
@@ -35,17 +71,21 @@ Das Datenmodell und die Regelwerk-Engine müssen folgende AD&D 2e Besonderheiten
 Für jedes neue Feature wird **immer ein neuer Branch** angelegt. Die Entwicklung durchläuft zwingend diese 4 Phasen in Reihenfolge:
 
 ### Phase 1: Requirements Engineering
+
 Analysiere Anforderungen, sammle offene Fragen und Edge Cases, generiere Lösungsvorschläge mit Empfehlung. **Warte auf Freigabe durch den User, bevor Code geschrieben wird.**
 
 ### Phase 2: Implementierung
+
 - Strikt nach **Test-Driven Development (TDD)** und **Clean Code**
 - Tests gemäß Testpyramide: Unit > Integration > E2E
 - Explorative Tests via `playwright-cli` durchführen; für jeden gefundenen Bug erst einen fehlschlagenden Test schreiben, dann beheben
 
 ### Phase 3: Code Review
+
 Eigenen Code kritisch prüfen (Architektur, Lesbarkeit, Performance). Mängel beheben, bevor Phase 4 beginnt.
 
 ### Phase 4: Qualitätssicherung
+
 Finaler explorativer Test mit etablierten Testing-Heuristiken und gezielten "Testing Touren".
 
 ## Roadmap-Überblick
