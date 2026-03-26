@@ -8,6 +8,7 @@ export interface RaceDefinition {
   levelLimits: Partial<Record<ClassId, number>>; // missing = unlimited (humans)
   multiclassOptions: ClassId[][]; // available multiclass combinations
   infravision: number; // in feet, 0 = none
+  baseMovement: number; // base movement rate (e.g. 12 for humans)
   abilityMinimums?: Partial<Record<AbilityName, number>>;
   abilityMaximums?: Partial<Record<AbilityName, number>>;
   racialAbilities: string[];
@@ -53,6 +54,7 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     levelLimits: {},
     multiclassOptions: [],
     infravision: 0,
+    baseMovement: 12,
     racialAbilities: [
       "Keine Klassen- oder Level-Beschränkungen",
       "Dualclass möglich (einzige Rasse)",
@@ -87,6 +89,7 @@ export const RACES: Record<RaceId, RaceDefinition> = {
       ["fighter", "mage", "thief"],
     ],
     infravision: 60,
+    baseMovement: 12,
     abilityMinimums: { int: 8, dex: 6 },
     abilityMaximums: { con: 17 },
     racialAbilities: [
@@ -140,6 +143,7 @@ export const RACES: Record<RaceId, RaceDefinition> = {
       ["fighter", "mage", "thief"],
     ],
     infravision: 30,
+    baseMovement: 12,
     abilityMinimums: { int: 4, con: 4 },
     racialAbilities: [
       "Infravision 30 Fuß",
@@ -160,6 +164,7 @@ export const RACES: Record<RaceId, RaceDefinition> = {
       ["fighter", "thief"],
     ],
     infravision: 60,
+    baseMovement: 6,
     abilityMinimums: { str: 8, con: 11 },
     abilityMaximums: { cha: 16 },
     racialAbilities: [
@@ -184,6 +189,7 @@ export const RACES: Record<RaceId, RaceDefinition> = {
       ["illusionist", "thief"],
     ],
     infravision: 60,
+    baseMovement: 6,
     abilityMinimums: { int: 6, con: 8 },
     abilityMaximums: { str: 17, wis: 17 },
     racialAbilities: [
@@ -203,6 +209,7 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     levelLimits: { fighter: 9, cleric: 8, thief: 15 },
     multiclassOptions: [["fighter", "thief"]],
     infravision: 30,
+    baseMovement: 6,
     abilityMinimums: { dex: 7, con: 10, str: 7 },
     abilityMaximums: { str: 17, wis: 17 },
     racialAbilities: [
@@ -226,6 +233,7 @@ export const RACES: Record<RaceId, RaceDefinition> = {
       ["cleric", "thief"],
     ],
     infravision: 60,
+    baseMovement: 12,
     abilityMinimums: { str: 6, con: 13 },
     abilityMaximums: { int: 17, wis: 14, cha: 12 },
     racialAbilities: ["Infravision 60 Fuß"],

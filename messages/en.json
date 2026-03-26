@@ -185,7 +185,13 @@
     "ranged": "Ranged",
     "both": "Both",
     "createAndAdd": "Create & Add",
-    "noItems": "No equipment available."
+    "noItems": "No equipment available.",
+    "acBreakdown": "AC Breakdown",
+    "baseMovement": "Base Movement",
+    "currentMovement": "Current Movement",
+    "inventoryTitle": "General Inventory",
+    "noInventory": "No items in inventory.",
+    "customItemPlaceholder": "Custom item (free text)..."
   },
   "spells": {
     "title": "Spells",

@@ -185,7 +185,13 @@
     "ranged": "Fernkampf",
     "both": "Beides",
     "createAndAdd": "Erstellen & Hinzufügen",
-    "noItems": "Keine Ausrüstung vorhanden."
+    "noItems": "Keine Ausrüstung vorhanden.",
+    "acBreakdown": "RK-Aufschlüsselung",
+    "baseMovement": "Basis-Bewegung",
+    "currentMovement": "Aktuelle Bewegung",
+    "inventoryTitle": "Allgemeines Inventar",
+    "noInventory": "Keine Gegenstände im Inventar.",
+    "customItemPlaceholder": "Eigenes Item (Freitext)..."
   },
   "spells": {
     "title": "Zauber",

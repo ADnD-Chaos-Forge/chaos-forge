@@ -5,8 +5,20 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { calculateEncumbrance, getEncumbranceLabel, calculateAC } from "@/lib/rules/equipment";
-import type { CharacterEquipmentWithDetails, WeaponRow, ArmorRow } from "@/lib/supabase/types";
+import {
+  calculateEncumbrance,
+  getEncumbranceLabel,
+  calculateAC,
+  getMovementRate,
+} from "@/lib/rules/equipment";
+import { useTranslations } from "next-intl";
+import type {
+  CharacterEquipmentWithDetails,
+  WeaponRow,
+  ArmorRow,
+  CharacterInventoryWithDetails,
+  GeneralItemRow,
+} from "@/lib/supabase/types";
 
 interface TabEquipmentProps {
   characterId: string;
@@ -16,6 +28,9 @@ interface TabEquipmentProps {
   allArmor: ArmorRow[];
   strWeightAllow: number;
   dexDefenseAdj: number;
+  inventory: CharacterInventoryWithDetails[];
+  allGeneralItems: GeneralItemRow[];
+  baseMovement: number;
 }
 
 export function TabEquipment({
@@ -26,8 +41,12 @@ export function TabEquipment({
   allArmor,
   strWeightAllow,
   dexDefenseAdj,
+  inventory,
+  allGeneralItems,
+  baseMovement,
 }: TabEquipmentProps) {
   const router = useRouter();
+  const t = useTranslations("equipment");
   const [loading, setLoading] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [addTab, setAddTab] = useState<"weapons" | "armor">("weapons");
@@ -47,10 +66,21 @@ export function TabEquipment({
   });
   const [customArmor, setCustomArmor] = useState({ name: "", ac: "", weight: "", cost_gp: "" });
 
-  const totalWeight = equipment.reduce((sum, item) => {
+  const [showAddInventory, setShowAddInventory] = useState(false);
+  const [inventorySearch, setInventorySearch] = useState("");
+  const [customItemName, setCustomItemName] = useState("");
+
+  const equipmentWeight = equipment.reduce((sum, item) => {
     const weight = item.weapon?.weight ?? item.armor?.weight ?? 0;
     return sum + weight * item.quantity;
   }, 0);
+
+  const inventoryWeight = inventory.reduce((sum, item) => {
+    const weight = item.item?.weight ?? 0;
+    return sum + weight * item.quantity;
+  }, 0);
+
+  const totalWeight = equipmentWeight + inventoryWeight;
 
   const encumbranceLevel = calculateEncumbrance(totalWeight, strWeightAllow);
   const encumbranceLabel = getEncumbranceLabel(encumbranceLevel);
@@ -208,6 +238,38 @@ export function TabEquipment({
       default:
         return "secondary" as const;
     }
+  }
+
+  const movementRate = getMovementRate(baseMovement, encumbranceLevel);
+
+  async function addInventoryItem(itemId: string | null, name: string | null) {
+    setLoading(true);
+    const supabase = createClient();
+    await supabase.from("character_inventory").insert({
+      character_id: characterId,
+      item_id: itemId,
+      custom_name: name,
+      quantity: 1,
+    });
+    setLoading(false);
+    setShowAddInventory(false);
+    setInventorySearch("");
+    setCustomItemName("");
+    router.refresh();
+  }
+
+  async function removeInventoryItem(id: string) {
+    setLoading(true);
+    const supabase = createClient();
+    await supabase.from("character_inventory").delete().eq("id", id);
+    setLoading(false);
+    router.refresh();
+  }
+
+  async function updateInventoryQuantity(id: string, quantity: number) {
+    const supabase = createClient();
+    await supabase.from("character_inventory").update({ quantity }).eq("id", id);
+    router.refresh();
   }
 
   function getItemName(item: CharacterEquipmentWithDetails): string {
@@ -725,6 +787,203 @@ export function TabEquipment({
           </div>
         </div>
       )}
+
+      {/* ── Weapon Details (Equipped Weapons) ──────────────────── */}
+      {equippedItems.filter((e) => e.weapon).length > 0 && (
+        <div>
+          <h3 className="mb-3 font-heading text-lg">{t("weapons")}</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                  <th className="py-2">{t("name")}</th>
+                  <th className="py-2 text-center">{t("damageSM")}</th>
+                  <th className="py-2 text-center">{t("damageL")}</th>
+                  <th className="py-2 text-center">{t("speed")}</th>
+                  <th className="py-2 text-center">{t("weight")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {equippedItems
+                  .filter((e) => e.weapon)
+                  .map((item) => (
+                    <tr key={item.id} className="border-b border-border/50">
+                      <td className="py-2 font-medium">{item.weapon!.name}</td>
+                      <td className="py-2 text-center font-mono">{item.weapon!.damage_sm}</td>
+                      <td className="py-2 text-center font-mono">{item.weapon!.damage_l}</td>
+                      <td className="py-2 text-center font-mono">{item.weapon!.speed}</td>
+                      <td className="py-2 text-center font-mono">{item.weapon!.weight}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── AC Breakdown ──────────────────────────────────────── */}
+      <div>
+        <h3 className="mb-3 font-heading text-lg">{t("acBreakdown")}</h3>
+        <div className="grid grid-cols-5 gap-2 text-center text-sm">
+          <div className="rounded-md border border-border p-2">
+            <div className="text-xs text-muted-foreground">Basis</div>
+            <div className="font-mono text-lg">10</div>
+          </div>
+          <div className="rounded-md border border-border p-2">
+            <div className="text-xs text-muted-foreground">{t("armor")}</div>
+            <div className="font-mono text-lg">{equippedArmor ? equippedArmor.armor!.ac : "—"}</div>
+          </div>
+          <div className="rounded-md border border-border p-2">
+            <div className="text-xs text-muted-foreground">Schild</div>
+            <div className="font-mono text-lg">{shieldEquipped ? "-1" : "—"}</div>
+          </div>
+          <div className="rounded-md border border-border p-2">
+            <div className="text-xs text-muted-foreground">DEX</div>
+            <div className="font-mono text-lg">
+              {dexDefenseAdj !== 0 ? `${dexDefenseAdj >= 0 ? "+" : ""}${dexDefenseAdj}` : "—"}
+            </div>
+          </div>
+          <div className="rounded-md border border-primary p-2">
+            <div className="text-xs text-muted-foreground">RK</div>
+            <div className="font-heading text-lg text-primary">{currentAC}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Movement & Encumbrance ────────────────────────────── */}
+      <div>
+        <h3 className="mb-3 font-heading text-lg">{t("movement")}</h3>
+        <div className="grid grid-cols-3 gap-3 text-center text-sm">
+          <div className="rounded-md border border-border p-3">
+            <div className="text-xs text-muted-foreground">{t("baseMovement")}</div>
+            <div className="font-heading text-2xl text-primary">{baseMovement}</div>
+          </div>
+          <div className="rounded-md border border-border p-3">
+            <div className="text-xs text-muted-foreground">{t("currentMovement")}</div>
+            <div className="font-heading text-2xl text-primary" data-testid="equipment-movement">
+              {movementRate}
+            </div>
+          </div>
+          <div className="rounded-md border border-border p-3">
+            <div className="text-xs text-muted-foreground">{t("encumbrance")}</div>
+            <Badge variant={getEncumbranceBadgeVariant(encumbranceLevel)}>{encumbranceLabel}</Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* ── General Inventory ─────────────────────────────────── */}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-heading text-lg">{t("inventoryTitle")}</h3>
+          <Button
+            size="sm"
+            onClick={() => setShowAddInventory(true)}
+            data-testid="add-inventory-btn"
+          >
+            {t("addItem")}
+          </Button>
+        </div>
+
+        {inventory.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("noInventory")}</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {inventory.map((inv) => (
+              <div
+                key={inv.id}
+                className="flex items-center justify-between rounded-md border border-border p-2"
+                data-testid={`inventory-item-${inv.id}`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-medium">{inv.item?.name ?? inv.custom_name ?? "—"}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {inv.item ? `${inv.item.weight} lbs` : ""}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    value={inv.quantity}
+                    onChange={(e) =>
+                      updateInventoryQuantity(inv.id, Math.max(1, parseInt(e.target.value) || 1))
+                    }
+                    className="w-14 rounded border border-input bg-input px-2 py-1 text-center text-sm"
+                  />
+                  <Button variant="ghost" size="sm" onClick={() => removeInventoryItem(inv.id)}>
+                    ✕
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Add Inventory Dialog */}
+        {showAddInventory && (
+          <div className="mt-3 rounded-md border border-border p-4">
+            <input
+              type="text"
+              placeholder="Suche..."
+              value={inventorySearch}
+              onChange={(e) => setInventorySearch(e.target.value)}
+              className="mb-3 w-full rounded-md border border-input bg-input px-3 py-2 text-sm"
+              data-testid="inventory-search"
+            />
+            <div className="mb-3 max-h-48 overflow-y-auto">
+              {allGeneralItems
+                .filter(
+                  (item) =>
+                    item.name.toLowerCase().includes(inventorySearch.toLowerCase()) ||
+                    (item.name_en ?? "").toLowerCase().includes(inventorySearch.toLowerCase())
+                )
+                .map((item) => (
+                  <button
+                    key={item.id}
+                    className="flex w-full items-center justify-between px-2 py-1 text-left text-sm hover:bg-muted"
+                    onClick={() => addInventoryItem(item.id, null)}
+                    data-testid={`inventory-option-${item.id}`}
+                  >
+                    <span>{item.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {item.weight > 0 ? `${item.weight} lbs` : ""}{" "}
+                      {item.cost_gp > 0 ? `${item.cost_gp} GP` : ""}
+                    </span>
+                  </button>
+                ))}
+            </div>
+            <div className="flex gap-2 border-t border-border pt-3">
+              <input
+                type="text"
+                placeholder={t("customItemPlaceholder")}
+                value={customItemName}
+                onChange={(e) => setCustomItemName(e.target.value)}
+                className="flex-1 rounded-md border border-input bg-input px-3 py-2 text-sm"
+                data-testid="custom-item-name"
+              />
+              <Button
+                size="sm"
+                disabled={!customItemName.trim()}
+                onClick={() => addInventoryItem(null, customItemName.trim())}
+                data-testid="add-custom-item-btn"
+              >
+                {t("addItem")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowAddInventory(false);
+                  setInventorySearch("");
+                  setCustomItemName("");
+                }}
+              >
+                ✕
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

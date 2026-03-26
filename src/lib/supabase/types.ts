@@ -216,3 +216,27 @@ export interface CharacterClassRow {
   xp_current: number;
   is_active: boolean;
 }
+
+export interface GeneralItemRow {
+  id: string;
+  name: string;
+  name_en: string | null;
+  weight: number;
+  cost_gp: number;
+  category: string;
+  is_custom: boolean;
+  created_by: string | null;
+}
+
+export interface CharacterInventoryRow {
+  id: string;
+  character_id: string;
+  item_id: string | null;
+  custom_name: string | null;
+  quantity: number;
+  notes: string;
+}
+
+export interface CharacterInventoryWithDetails extends CharacterInventoryRow {
+  item: GeneralItemRow | null;
+}

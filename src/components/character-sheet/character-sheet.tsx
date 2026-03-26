@@ -49,6 +49,8 @@ import type {
   CharacterNWPWithDetails,
   NonweaponProficiencyRow,
   CharacterLanguageRow,
+  CharacterInventoryWithDetails,
+  GeneralItemRow,
 } from "@/lib/supabase/types";
 
 interface CharacterSheetProps {
@@ -62,6 +64,8 @@ interface CharacterSheetProps {
   allSpells: SpellRow[];
   weaponProficiencies: CharacterWeaponProficiencyRow[];
   nonweaponProficiencies: CharacterNWPWithDetails[];
+  inventory: CharacterInventoryWithDetails[];
+  allGeneralItems: GeneralItemRow[];
   allNonweaponProficiencies: NonweaponProficiencyRow[];
   languages: CharacterLanguageRow[];
 }
@@ -78,6 +82,8 @@ export function CharacterSheet({
   weaponProficiencies,
   nonweaponProficiencies,
   allNonweaponProficiencies,
+  inventory,
+  allGeneralItems,
   languages,
 }: CharacterSheetProps) {
   const router = useRouter();
@@ -896,6 +902,9 @@ export function CharacterSheet({
             allArmor={allArmor}
             strWeightAllow={strMods.weightAllow}
             dexDefenseAdj={dexMods.defensiveAdj}
+            inventory={inventory}
+            allGeneralItems={allGeneralItems}
+            baseMovement={race?.baseMovement ?? 12}
           />
         </TabsContent>
 
