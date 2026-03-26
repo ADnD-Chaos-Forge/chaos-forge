@@ -1,10 +1,12 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useTheme } from "./theme-provider";
 import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
+  const t = useTranslations("theme");
 
   return (
     <Button
@@ -12,7 +14,7 @@ export function ThemeToggle() {
       size="sm"
       onClick={toggleTheme}
       data-testid="theme-toggle"
-      aria-label={theme === "dark" ? "Zum hellen Modus wechseln" : "Zum dunklen Modus wechseln"}
+      aria-label={t(theme === "dark" ? "toggleLight" : "toggleDark")}
     >
       {theme === "dark" ? "☀️" : "🌙"}
     </Button>

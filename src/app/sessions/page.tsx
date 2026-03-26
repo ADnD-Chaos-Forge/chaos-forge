@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ const TAG_COLORS: Record<string, string> = {
 };
 
 export default async function SessionsPage() {
+  const t = await getTranslations("sessions");
   const supabase = await createClient();
 
   const { data: sessions } = await supabase
@@ -39,9 +41,9 @@ export default async function SessionsPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-6" data-testid="sessions-page">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-3xl text-primary">Die Chronik des Chaos</h1>
+        <h1 className="font-heading text-3xl text-primary">{t("title")}</h1>
         <Link href="/sessions/new">
-          <Button data-testid="create-session-button">Neue Session</Button>
+          <Button data-testid="create-session-button">{t("newSession")}</Button>
         </Link>
       </div>
 
@@ -50,11 +52,9 @@ export default async function SessionsPage() {
           className="flex flex-1 flex-col items-center justify-center gap-4 text-center"
           data-testid="no-sessions"
         >
-          <p className="text-lg text-muted-foreground">
-            Noch keine Sessions in der Chronik. Zeit, das erste Abenteuer festzuhalten!
-          </p>
+          <p className="text-lg text-muted-foreground">{t("noSessions")}</p>
           <Link href="/sessions/new">
-            <Button size="lg">Erste Session erstellen</Button>
+            <Button size="lg">{t("createFirst")}</Button>
           </Link>
         </div>
       ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { WizardState } from "./wizard-types";
@@ -10,33 +11,27 @@ interface StepAbilitiesProps {
   showExceptionalStr: boolean;
 }
 
-const ABILITIES = [
-  { key: "str" as const, label: "Stärke (STR)", min: 3, max: 18 },
-  { key: "dex" as const, label: "Geschicklichkeit (DEX)", min: 3, max: 18 },
-  { key: "con" as const, label: "Konstitution (CON)", min: 3, max: 18 },
-  { key: "int" as const, label: "Intelligenz (INT)", min: 3, max: 18 },
-  { key: "wis" as const, label: "Weisheit (WIS)", min: 3, max: 18 },
-  { key: "cha" as const, label: "Charisma (CHA)", min: 3, max: 18 },
-];
+const ABILITY_KEYS = ["str", "dex", "con", "int", "wis", "cha"] as const;
 
 export function StepAbilities({ state, onChange, showExceptionalStr }: StepAbilitiesProps) {
+  const t = useTranslations("wizard");
+  const ta = useTranslations("abilityNames");
+
   return (
     <div className="flex flex-col gap-4" data-testid="wizard-step-abilities">
-      <p className="text-sm text-muted-foreground">
-        Trage die Attributwerte deines Charakters ein (3-18).
-      </p>
+      <p className="text-sm text-muted-foreground">{t("abilitiesHint")}</p>
       <div className="grid gap-4 sm:grid-cols-2">
-        {ABILITIES.map(({ key, label, min, max }) => (
+        {ABILITY_KEYS.map((key) => (
           <div key={key} className="flex flex-col gap-1">
-            <Label htmlFor={`ability-${key}`}>{label}</Label>
+            <Label htmlFor={`ability-${key}`}>{ta(key)}</Label>
             <Input
               id={`ability-${key}`}
               type="number"
-              min={min}
-              max={max}
+              min={3}
+              max={18}
               value={state[key]}
               onChange={(e) => {
-                const val = Math.max(min, Math.min(max, parseInt(e.target.value) || min));
+                const val = Math.max(3, Math.min(18, parseInt(e.target.value) || 3));
                 onChange({ [key]: val });
               }}
               data-testid={`wizard-ability-${key}`}
@@ -47,7 +42,7 @@ export function StepAbilities({ state, onChange, showExceptionalStr }: StepAbili
 
       {showExceptionalStr && state.str === 18 && (
         <div className="flex flex-col gap-1 rounded-md border border-primary/30 bg-primary/5 p-3">
-          <Label htmlFor="str-exceptional">Ausnahmest&auml;rke (18/xx)</Label>
+          <Label htmlFor="str-exceptional">{t("exceptionalStrLabel")}</Label>
           <Input
             id="str-exceptional"
             type="number"
@@ -63,9 +58,7 @@ export function StepAbilities({ state, onChange, showExceptionalStr }: StepAbili
             placeholder="01-00 (100)"
             data-testid="wizard-ability-str-exceptional"
           />
-          <p className="text-xs text-muted-foreground">
-            Nur f&uuml;r Krieger-Klassen mit STR 18. Wert 1-100 (100 = &quot;18/00&quot;).
-          </p>
+          <p className="text-xs text-muted-foreground">{t("exceptionalStrHint")}</p>
         </div>
       )}
     </div>

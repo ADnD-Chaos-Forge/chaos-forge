@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function NewSessionPage() {
+  const t = useTranslations("sessions");
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split("T")[0]);
@@ -59,23 +61,23 @@ export default function NewSessionPage() {
     <div className="flex flex-1 items-start justify-center p-6" data-testid="new-session-page">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="font-heading text-2xl text-primary">Neue Session</CardTitle>
+          <CardTitle className="font-heading text-2xl text-primary">{t("newSession")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleCreate} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="session-title">Titel</Label>
+              <Label htmlFor="session-title">{t("sessionTitle")}</Label>
               <Input
                 id="session-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="z.B. Die Katakomben von Darkhold"
+                placeholder={t("sessionTitlePlaceholder")}
                 required
                 data-testid="session-title-input"
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="session-date">Datum der Sitzung</Label>
+              <Label htmlFor="session-date">{t("sessionDate")}</Label>
               <Input
                 id="session-date"
                 type="date"
@@ -90,7 +92,7 @@ export default function NewSessionPage() {
               disabled={saving || !title.trim()}
               data-testid="session-create-button"
             >
-              {saving ? "Erstelle..." : "Session erstellen"}
+              {saving ? t("creating") : t("createSession")}
             </Button>
             {error && (
               <p className="text-sm text-destructive" data-testid="session-create-error">
