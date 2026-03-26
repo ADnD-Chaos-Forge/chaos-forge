@@ -10,3 +10,4 @@ export * from "./classes";
 export * from "./magic";
 export * from "./multiclass";
 export * from "./spellslots";
+export * from "./thief";

@@ -7,6 +7,8 @@ import { getAlignmentLabel } from "@/lib/rules/alignment";
 import { getXpForNextLevel } from "@/lib/rules/experience";
 import type { ClassId } from "@/lib/rules/types";
 import { getMulticlassThac0, getMulticlassSaves } from "@/lib/rules/multiclass";
+import { getAttacksPerRound } from "@/lib/rules/combat";
+import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import {
   getStrengthModifiers,
   getDexterityModifiers,
@@ -268,6 +270,26 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
                 {strMods.dmgAdj}
               </div>
             </div>
+            <div className="rounded border border-gray-300 p-2">
+              <div className="text-xs text-gray-500">Angriffe/Runde</div>
+              <div className="font-mono text-xl font-bold">
+                {classEntries.length > 0
+                  ? classEntries
+                      .map((ce) =>
+                        getAttacksPerRound(CLASSES[ce.classId]?.group ?? "warrior", ce.level)
+                      )
+                      .filter((v, i, a) => a.indexOf(v) === i)
+                      .join(" / ")
+                  : "1"}
+              </div>
+            </div>
+            <div className="rounded border border-gray-300 p-2">
+              <div className="text-xs text-gray-500">Initiative</div>
+              <div className="font-mono text-xl font-bold">
+                {dexMods.reactionAdj >= 0 ? "+" : ""}
+                {dexMods.reactionAdj}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -325,6 +347,37 @@ export function PrintSheet({ character, characterClasses }: PrintSheetProps) {
                   </div>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {/* ── Thief Skills ──────────────────────────────────────── */}
+        {hasThiefSkills(activeClasses.map((cc) => cc.class_id as ClassId)) && (
+          <section className="mb-4" data-testid="print-section-thief">
+            <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+              Diebesfähigkeiten
+            </h2>
+            <div className="grid grid-cols-4 gap-2 text-center text-sm">
+              {[
+                { label: "Schlösser", value: character.thief_pick_locks },
+                { label: "Fallen", value: character.thief_find_traps },
+                { label: "Lautlos", value: character.thief_move_silently },
+                { label: "Verbergen", value: character.thief_hide_shadows },
+                { label: "Klettern", value: character.thief_climb_walls },
+                { label: "Geräusche", value: character.thief_detect_noise },
+                { label: "Sprachen", value: character.thief_read_languages },
+                {
+                  label: "Hinterhalt",
+                  value: `x${getBackstabMultiplier(activeClasses.find((cc) => cc.class_id === "thief" || cc.class_id === "bard")?.level ?? 1)}`,
+                },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded border border-gray-300 p-2">
+                  <div className="text-xs text-gray-500">{label}</div>
+                  <div className="font-mono text-lg font-bold">
+                    {typeof value === "number" ? `${value}%` : value}
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         )}

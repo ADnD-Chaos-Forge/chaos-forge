@@ -146,7 +146,19 @@
     "saveBreath": "Odemwaffe",
     "saveSpell": "Zauber",
     "notesLabel": "Notizen",
-    "notesPlaceholder": "Hintergrundgeschichte, wichtige Items, Quests..."
+    "notesPlaceholder": "Hintergrundgeschichte, wichtige Items, Quests...",
+    "thiefSkills": "Diebesfähigkeiten",
+    "pickLocks": "Schlösser öffnen",
+    "findTraps": "Fallen finden",
+    "moveSilently": "Lautlos bewegen",
+    "hideInShadows": "Im Schatten verbergen",
+    "climbWalls": "Mauern erklimmen",
+    "detectNoise": "Geräusche hören",
+    "readLanguages": "Sprachen lesen",
+    "backstabMultiplier": "Hinterhalt-Multiplikator",
+    "attacksPerRound": "Angriffe/Runde",
+    "initiative": "Initiative-Modifikator",
+    "baseValue": "Basiswert"
   },
   "equipment": {
     "title": "Ausrüstung",

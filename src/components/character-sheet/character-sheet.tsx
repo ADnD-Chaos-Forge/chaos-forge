@@ -14,7 +14,7 @@ import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
 import { getAlignmentLabel } from "@/lib/rules/alignment";
 import { getXpForNextLevel, getXpThreshold } from "@/lib/rules/experience";
-import type { ClassId } from "@/lib/rules/types";
+import type { ClassId, RaceId } from "@/lib/rules/types";
 import {
   getMulticlassThac0,
   getMulticlassSaves,
@@ -29,12 +29,15 @@ import {
   getWisdomModifiers,
   getCharismaModifiers,
 } from "@/lib/rules/abilities";
+import { getAttacksPerRound } from "@/lib/rules/combat";
+import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import Link from "next/link";
 import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
 import { TabEquipment } from "./tab-equipment";
 import { TabSpells } from "./tab-spells";
+import { TabThiefSkills } from "./tab-thief-skills";
 import { TabProficiencies } from "./tab-proficiencies";
 import type {
   CharacterEquipmentWithDetails,
@@ -113,6 +116,7 @@ export function CharacterSheet({
   // For spells tab: show if any class group is wizard/priest, or bard
   const showSpells =
     classGroups.includes("wizard") || classGroups.includes("priest") || classIds.includes("bard");
+  const showThiefSkills = hasThiefSkills(classIds);
 
   // For spells/proficiencies: use primary (first) class
   const primaryClassId: ClassId | null = classIds[0] ?? ((character.class_id as ClassId) || null);
@@ -182,6 +186,13 @@ export function CharacterSheet({
         wis_willpower: character.wis_willpower,
         cha_leadership: character.cha_leadership,
         cha_appearance: character.cha_appearance,
+        thief_pick_locks: character.thief_pick_locks,
+        thief_find_traps: character.thief_find_traps,
+        thief_move_silently: character.thief_move_silently,
+        thief_hide_shadows: character.thief_hide_shadows,
+        thief_climb_walls: character.thief_climb_walls,
+        thief_detect_noise: character.thief_detect_noise,
+        thief_read_languages: character.thief_read_languages,
       })
       .eq("id", character.id);
 
@@ -280,6 +291,7 @@ export function CharacterSheet({
           <TabsTrigger value="notes">{t("notes")}</TabsTrigger>
           <TabsTrigger value="equipment">{t("equipment")}</TabsTrigger>
           {showSpells && <TabsTrigger value="spells">{t("spells")}</TabsTrigger>}
+          {showThiefSkills && <TabsTrigger value="thief-skills">{t("thiefSkills")}</TabsTrigger>}
           <TabsTrigger value="proficiencies">{t("proficiencies")}</TabsTrigger>
         </TabsList>
 
@@ -808,6 +820,37 @@ export function CharacterSheet({
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div className="rounded-md border border-border p-4 text-center">
+              <div className="text-xs text-muted-foreground">{t("attacksPerRound")}</div>
+              <div className="font-heading text-2xl text-primary" data-testid="sheet-attacks">
+                {classEntries.length > 0
+                  ? classEntries
+                      .map((ce) =>
+                        getAttacksPerRound(CLASSES[ce.classId]?.group ?? "warrior", ce.level)
+                      )
+                      .filter((v, i, a) => a.indexOf(v) === i)
+                      .join(" / ")
+                  : "1"}
+              </div>
+            </div>
+            <div className="rounded-md border border-border p-4 text-center">
+              <div className="text-xs text-muted-foreground">{t("initiative")}</div>
+              <div className="font-heading text-2xl text-primary" data-testid="sheet-initiative">
+                {dexMods.reactionAdj >= 0 ? "+" : ""}
+                {dexMods.reactionAdj}
+              </div>
+            </div>
+            {showThiefSkills && (
+              <div className="rounded-md border border-border p-4 text-center">
+                <div className="text-xs text-muted-foreground">{t("backstabMultiplier")}</div>
+                <div className="font-heading text-2xl text-primary" data-testid="sheet-backstab">
+                  x{getBackstabMultiplier(primaryLevel)}
+                </div>
+              </div>
+            )}
+          </div>
+
           {saves && (
             <div>
               <h3 className="mb-3 font-heading text-lg">{t("savingThrows")}</h3>
@@ -868,6 +911,17 @@ export function CharacterSheet({
               wisScore={character.wis}
               spells={spells}
               allSpells={allSpells}
+            />
+          </TabsContent>
+        )}
+
+        {showThiefSkills && (
+          <TabsContent value="thief-skills">
+            <TabThiefSkills
+              character={character}
+              raceId={(character.race_id as RaceId) ?? "human"}
+              level={primaryLevel}
+              onUpdate={update}
             />
           </TabsContent>
         )}

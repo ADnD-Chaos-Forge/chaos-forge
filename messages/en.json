@@ -146,7 +146,19 @@
     "saveBreath": "Breath Weapon",
     "saveSpell": "Spell",
     "notesLabel": "Notes",
-    "notesPlaceholder": "Background story, important items, quests..."
+    "notesPlaceholder": "Background story, important items, quests...",
+    "thiefSkills": "Thief Skills",
+    "pickLocks": "Pick Locks",
+    "findTraps": "Find Traps",
+    "moveSilently": "Move Silently",
+    "hideInShadows": "Hide in Shadows",
+    "climbWalls": "Climb Walls",
+    "detectNoise": "Detect Noise",
+    "readLanguages": "Read Languages",
+    "backstabMultiplier": "Backstab Multiplier",
+    "attacksPerRound": "Attacks/Round",
+    "initiative": "Initiative Modifier",
+    "baseValue": "Base Value"
   },
   "equipment": {
     "title": "Equipment",
