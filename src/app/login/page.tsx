@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function LoginPage() {
   const t = useTranslations("login");
@@ -88,7 +89,14 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" disabled={loading} data-testid="login-submit-button">
-              {loading ? t("submitting") : t("submit")}
+              {loading ? (
+                <>
+                  <Spinner className="mr-2" />
+                  {t("submitting")}
+                </>
+              ) : (
+                t("submit")
+              )}
             </Button>
             {message && (
               <p className="text-sm text-green-500" data-testid="login-success-message">

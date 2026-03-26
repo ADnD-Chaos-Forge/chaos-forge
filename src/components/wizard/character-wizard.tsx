@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { multiclassHasExceptionalStr } from "@/lib/rules/multiclass";
+import { Spinner } from "@/components/ui/spinner";
 import { StepBasics } from "./step-basics";
 import { StepAbilities } from "./step-abilities";
 import { StepRace } from "./step-race";
@@ -169,7 +170,14 @@ export function CharacterWizard() {
             disabled={saving || !canProceed()}
             data-testid="wizard-create-button"
           >
-            {saving ? t("creating") : t("createCharacter")}
+            {saving ? (
+              <>
+                <Spinner className="mr-2" />
+                {t("creating")}
+              </>
+            ) : (
+              t("createCharacter")
+            )}
           </Button>
         ) : (
           <Button
