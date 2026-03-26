@@ -34,7 +34,9 @@ export function CharacterSheet({ character: initial }: CharacterSheetProps) {
 
   const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
   const cls = character.class_id ? CLASSES[character.class_id as keyof typeof CLASSES] : null;
-  const classGroup = character.class_id ? getClassGroup(character.class_id as keyof typeof CLASSES) : null;
+  const classGroup = character.class_id
+    ? getClassGroup(character.class_id as keyof typeof CLASSES)
+    : null;
   const thac0 = classGroup ? getThac0(classGroup, character.level) : 20;
   const saves = classGroup ? getSavingThrows(classGroup, character.level) : null;
   const strMods = getStrengthModifiers(character.str, character.str_exceptional ?? undefined);
@@ -107,12 +109,42 @@ export function CharacterSheet({ character: initial }: CharacterSheetProps) {
             <h3 className="mb-3 font-heading text-lg">Attribute</h3>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {[
-                { key: "str" as const, label: "STR", value: character.str, mods: `Treffer ${strMods.hitAdj >= 0 ? "+" : ""}${strMods.hitAdj}, Schaden ${strMods.dmgAdj >= 0 ? "+" : ""}${strMods.dmgAdj}` },
-                { key: "dex" as const, label: "DEX", value: character.dex, mods: `RK ${dexMods.defensiveAdj >= 0 ? "+" : ""}${dexMods.defensiveAdj}` },
-                { key: "con" as const, label: "CON", value: character.con, mods: `HP ${conMods.hpAdj >= 0 ? "+" : ""}${conMods.hpAdj}/Stufe` },
-                { key: "int" as const, label: "INT", value: character.int, mods: `${intMods.numberOfLanguages} Sprachen` },
-                { key: "wis" as const, label: "WIS", value: character.wis, mods: `Mag.Abwehr ${wisMods.magicalDefenseAdj >= 0 ? "+" : ""}${wisMods.magicalDefenseAdj}` },
-                { key: "cha" as const, label: "CHA", value: character.cha, mods: `${chaMods.maxHenchmen} Gefolgsleute` },
+                {
+                  key: "str" as const,
+                  label: "STR",
+                  value: character.str,
+                  mods: `Treffer ${strMods.hitAdj >= 0 ? "+" : ""}${strMods.hitAdj}, Schaden ${strMods.dmgAdj >= 0 ? "+" : ""}${strMods.dmgAdj}`,
+                },
+                {
+                  key: "dex" as const,
+                  label: "DEX",
+                  value: character.dex,
+                  mods: `RK ${dexMods.defensiveAdj >= 0 ? "+" : ""}${dexMods.defensiveAdj}`,
+                },
+                {
+                  key: "con" as const,
+                  label: "CON",
+                  value: character.con,
+                  mods: `HP ${conMods.hpAdj >= 0 ? "+" : ""}${conMods.hpAdj}/Stufe`,
+                },
+                {
+                  key: "int" as const,
+                  label: "INT",
+                  value: character.int,
+                  mods: `${intMods.numberOfLanguages} Sprachen`,
+                },
+                {
+                  key: "wis" as const,
+                  label: "WIS",
+                  value: character.wis,
+                  mods: `Mag.Abwehr ${wisMods.magicalDefenseAdj >= 0 ? "+" : ""}${wisMods.magicalDefenseAdj}`,
+                },
+                {
+                  key: "cha" as const,
+                  label: "CHA",
+                  value: character.cha,
+                  mods: `${chaMods.maxHenchmen} Gefolgsleute`,
+                },
               ].map(({ key, label, value, mods }) => (
                 <div key={key} className="rounded-md border border-border p-3">
                   <Label htmlFor={`sheet-${key}`} className="text-xs text-muted-foreground">
@@ -124,7 +156,9 @@ export function CharacterSheet({ character: initial }: CharacterSheetProps) {
                     min={3}
                     max={18}
                     value={value}
-                    onChange={(e) => update(key, Math.max(3, Math.min(18, parseInt(e.target.value) || 3)))}
+                    onChange={(e) =>
+                      update(key, Math.max(3, Math.min(18, parseInt(e.target.value) || 3)))
+                    }
                     className="mt-1 text-center font-mono text-lg"
                     data-testid={`sheet-ability-${key}`}
                   />
@@ -177,17 +211,23 @@ export function CharacterSheet({ character: initial }: CharacterSheetProps) {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div className="rounded-md border border-border p-4 text-center">
               <div className="text-xs text-muted-foreground">ETW0 (THAC0)</div>
-              <div className="font-heading text-3xl text-primary" data-testid="sheet-thac0">{thac0}</div>
+              <div className="font-heading text-3xl text-primary" data-testid="sheet-thac0">
+                {thac0}
+              </div>
             </div>
             <div className="rounded-md border border-border p-4 text-center">
               <div className="text-xs text-muted-foreground">R&uuml;stungsklasse</div>
-              <div className="font-heading text-3xl text-primary" data-testid="sheet-ac">{baseAC}</div>
+              <div className="font-heading text-3xl text-primary" data-testid="sheet-ac">
+                {baseAC}
+              </div>
               <div className="text-xs text-muted-foreground">Basis (ohne R&uuml;stung)</div>
             </div>
             <div className="rounded-md border border-border p-4 text-center">
               <div className="text-xs text-muted-foreground">Treffer / Schaden</div>
               <div className="font-heading text-2xl text-primary">
-                {strMods.hitAdj >= 0 ? "+" : ""}{strMods.hitAdj} / {strMods.dmgAdj >= 0 ? "+" : ""}{strMods.dmgAdj}
+                {strMods.hitAdj >= 0 ? "+" : ""}
+                {strMods.hitAdj} / {strMods.dmgAdj >= 0 ? "+" : ""}
+                {strMods.dmgAdj}
               </div>
             </div>
           </div>

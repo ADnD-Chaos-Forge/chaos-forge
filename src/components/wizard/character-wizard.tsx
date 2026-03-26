@@ -43,8 +43,9 @@ export function CharacterWizard() {
     }
   }
 
-  const isWarriorClass =
-    state.classId ? CLASSES[state.classId]?.exceptionalStrength ?? false : false;
+  const isWarriorClass = state.classId
+    ? (CLASSES[state.classId]?.exceptionalStrength ?? false)
+    : false;
 
   async function handleCreate() {
     setSaving(true);
@@ -94,7 +95,10 @@ export function CharacterWizard() {
   const isLastStep = currentStep === WIZARD_STEPS.length - 1;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6" data-testid="character-wizard">
+    <div
+      className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6"
+      data-testid="character-wizard"
+    >
       {/* Progress indicator */}
       <div className="flex gap-1">
         {WIZARD_STEPS.map((step, i) => (
@@ -107,9 +111,7 @@ export function CharacterWizard() {
         ))}
       </div>
 
-      <h2 className="font-heading text-2xl text-primary">
-        {WIZARD_STEPS[currentStep].label}
-      </h2>
+      <h2 className="font-heading text-2xl text-primary">{WIZARD_STEPS[currentStep].label}</h2>
 
       {/* Step content */}
       {WIZARD_STEPS[currentStep].id === "basics" && (
@@ -118,9 +120,7 @@ export function CharacterWizard() {
       {WIZARD_STEPS[currentStep].id === "abilities" && (
         <StepAbilities state={state} onChange={updateState} showExceptionalStr={isWarriorClass} />
       )}
-      {WIZARD_STEPS[currentStep].id === "race" && (
-        <StepRace state={state} onChange={updateState} />
-      )}
+      {WIZARD_STEPS[currentStep].id === "race" && <StepRace state={state} onChange={updateState} />}
       {WIZARD_STEPS[currentStep].id === "class" && (
         <StepClass state={state} onChange={updateState} />
       )}

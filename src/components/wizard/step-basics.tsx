@@ -30,7 +30,9 @@ export function StepBasics({ state, onChange }: StepBasicsProps) {
           min={1}
           max={20}
           value={state.level}
-          onChange={(e) => onChange({ level: Math.max(1, Math.min(20, parseInt(e.target.value) || 1)) })}
+          onChange={(e) =>
+            onChange({ level: Math.max(1, Math.min(20, parseInt(e.target.value) || 1)) })
+          }
           data-testid="wizard-level-input"
         />
         <p className="text-xs text-muted-foreground">

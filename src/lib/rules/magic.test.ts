@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  getSpecialist,
-  getOppositionSchools,
-  getPriestSpheres,
-  hasSphereAccess,
-} from "./magic";
+import { getSpecialist, getOppositionSchools, getPriestSpheres, hasSphereAccess } from "./magic";
 
 describe("Wizard Specialists", () => {
   it("should return null for a generic mage", () => {

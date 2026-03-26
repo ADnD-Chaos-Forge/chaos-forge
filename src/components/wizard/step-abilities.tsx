@@ -55,7 +55,9 @@ export function StepAbilities({ state, onChange, showExceptionalStr }: StepAbili
             max={100}
             value={state.strExceptional ?? ""}
             onChange={(e) => {
-              const val = e.target.value ? Math.max(1, Math.min(100, parseInt(e.target.value) || 1)) : null;
+              const val = e.target.value
+                ? Math.max(1, Math.min(100, parseInt(e.target.value) || 1))
+                : null;
               onChange({ strExceptional: val });
             }}
             placeholder="01-00 (100)"

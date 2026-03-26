@@ -52,7 +52,9 @@ export default function LoginPage() {
     <div className="flex flex-1 items-center justify-center px-6" data-testid="login-page">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="font-heading text-2xl text-primary">Willkommen, Abenteurer</CardTitle>
+          <CardTitle className="font-heading text-2xl text-primary">
+            Willkommen, Abenteurer
+          </CardTitle>
           <CardDescription>
             Melde dich mit deiner E-Mail an — wir senden dir einen magischen Link.
           </CardDescription>

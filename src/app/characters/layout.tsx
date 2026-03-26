@@ -3,11 +3,7 @@ import { requireAuth } from "@/lib/supabase/auth";
 import { LogoutButton } from "@/components/logout-button";
 import { Button } from "@/components/ui/button";
 
-export default async function CharactersLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function CharactersLayout({ children }: { children: React.ReactNode }) {
   await requireAuth();
 
   return (

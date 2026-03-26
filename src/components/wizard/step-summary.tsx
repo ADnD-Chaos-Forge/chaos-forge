@@ -3,7 +3,11 @@
 import { RACES } from "@/lib/rules/races";
 import { CLASSES, getClassGroup } from "@/lib/rules/classes";
 import { getThac0 } from "@/lib/rules/combat";
-import { getStrengthModifiers, getDexterityModifiers, getConstitutionModifiers } from "@/lib/rules/abilities";
+import {
+  getStrengthModifiers,
+  getDexterityModifiers,
+  getConstitutionModifiers,
+} from "@/lib/rules/abilities";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { WizardState } from "./wizard-types";
@@ -35,7 +39,13 @@ export function StepSummary({ state }: StepSummaryProps) {
 
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
         {[
-          { label: "STR", value: state.str, extra: state.strExceptional ? `/${state.strExceptional === 100 ? "00" : String(state.strExceptional).padStart(2, "0")}` : "" },
+          {
+            label: "STR",
+            value: state.str,
+            extra: state.strExceptional
+              ? `/${state.strExceptional === 100 ? "00" : String(state.strExceptional).padStart(2, "0")}`
+              : "",
+          },
           { label: "DEX", value: state.dex, extra: "" },
           { label: "CON", value: state.con, extra: "" },
           { label: "INT", value: state.int, extra: "" },
@@ -45,7 +55,8 @@ export function StepSummary({ state }: StepSummaryProps) {
           <div key={label} className="rounded-md border border-border p-2 text-center">
             <div className="text-xs text-muted-foreground">{label}</div>
             <div className="font-mono text-lg">
-              {value}{extra}
+              {value}
+              {extra}
             </div>
           </div>
         ))}
@@ -69,13 +80,16 @@ export function StepSummary({ state }: StepSummaryProps) {
         <div className="rounded-md border border-border p-2 text-center">
           <div className="text-xs text-muted-foreground">Treffer/Schaden</div>
           <div className="font-mono text-lg">
-            {strMods.hitAdj >= 0 ? "+" : ""}{strMods.hitAdj}/{strMods.dmgAdj >= 0 ? "+" : ""}{strMods.dmgAdj}
+            {strMods.hitAdj >= 0 ? "+" : ""}
+            {strMods.hitAdj}/{strMods.dmgAdj >= 0 ? "+" : ""}
+            {strMods.dmgAdj}
           </div>
         </div>
       </div>
 
       <div className="text-sm text-muted-foreground">
-        HP-Mod (CON): {conMods.hpAdj >= 0 ? "+" : ""}{conMods.hpAdj}/Stufe
+        HP-Mod (CON): {conMods.hpAdj >= 0 ? "+" : ""}
+        {conMods.hpAdj}/Stufe
       </div>
     </div>
   );

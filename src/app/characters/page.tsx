@@ -25,7 +25,10 @@ export default async function CharactersPage() {
       </div>
 
       {!characters || characters.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center" data-testid="no-characters">
+        <div
+          className="flex flex-1 flex-col items-center justify-center gap-4 text-center"
+          data-testid="no-characters"
+        >
           <p className="text-lg text-muted-foreground">
             Noch keine Charaktere erstellt. Zeit, deine Legende zu schmieden!
           </p>
@@ -37,11 +40,16 @@ export default async function CharactersPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {characters.map((character) => {
             const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
-            const cls = character.class_id ? CLASSES[character.class_id as keyof typeof CLASSES] : null;
+            const cls = character.class_id
+              ? CLASSES[character.class_id as keyof typeof CLASSES]
+              : null;
 
             return (
               <Link key={character.id} href={`/characters/${character.id}`}>
-                <Card className="transition-colors hover:border-primary/50" data-testid={`character-card-${character.id}`}>
+                <Card
+                  className="transition-colors hover:border-primary/50"
+                  data-testid={`character-card-${character.id}`}
+                >
                   <CardHeader>
                     <CardTitle className="font-heading text-xl">{character.name}</CardTitle>
                   </CardHeader>

@@ -16,8 +16,7 @@ export function StepRace({ state, onChange }: StepRaceProps) {
 
   function handleSelect(raceId: RaceId) {
     // Reset class if the new race doesn't allow it
-    const newClassId =
-      state.classId && canPlayClass(raceId, state.classId) ? state.classId : null;
+    const newClassId = state.classId && canPlayClass(raceId, state.classId) ? state.classId : null;
     onChange({ raceId, classId: newClassId });
   }
 

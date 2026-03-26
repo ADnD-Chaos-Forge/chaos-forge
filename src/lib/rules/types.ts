@@ -74,14 +74,7 @@ export interface SavingThrows {
 }
 
 /** Race identifiers */
-export type RaceId =
-  | "human"
-  | "elf"
-  | "half_elf"
-  | "dwarf"
-  | "gnome"
-  | "halfling"
-  | "half_orc";
+export type RaceId = "human" | "elf" | "half_elf" | "dwarf" | "gnome" | "halfling" | "half_orc";
 
 /** Class identifiers */
 export type ClassId =
