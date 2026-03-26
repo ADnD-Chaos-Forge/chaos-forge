@@ -54,5 +54,13 @@ Die App richtet sich an eine private Spielgruppe ("Chaos RPG") mit maximal 10 Nu
 
 ## Epic 5: Advanced Features
 
-- [ ] OCR/Vision-Import zum Scannen alter Charakterbögen.
-- [ ] Gruppen-Dashboard für den Spielleiter.
+- [x] OCR/Vision-Import (Claude Vision API, Foto + PDF).
+- [x] Gruppen-Dashboard (alle Charaktere, HP-Ampel, Statistiken).
+- [x] CRUD komplett (Delete für Charaktere/Sessions/Beiträge, Edit für Beiträge).
+- [x] Kompletter Charakterbogen (Ausrüstung, Zauber, Fertigkeiten, Sprachen, XP, Gold, Alignment).
+- [x] ~231 Zauber, ~46 Waffen, ~20 Rüstungen, ~63 Fertigkeiten geseeded.
+- [x] Eigene Items/Zauber/Fertigkeiten erstellbar.
+- [x] Lockere Regeln (Warnings statt Blocking).
+- [x] Dark/Light Mode.
+- [x] Test-Login Bypass (christoph@chaos-forge.de).
+- [ ] i18n (Deutsch/Englisch) mit next-intl.
