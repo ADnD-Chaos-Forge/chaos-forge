@@ -53,3 +53,35 @@ export interface CharacterSpellRow {
   spell_id: string;
   prepared: boolean;
 }
+
+export interface SessionRow {
+  id: string;
+  title: string;
+  session_date: string;
+  summary: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SessionEntryRow {
+  id: string;
+  session_id: string;
+  character_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TagRow {
+  id: string;
+  name: string;
+  type: "npc" | "location" | "item" | "quest";
+  color: string;
+}
+
+export interface SessionTagRow {
+  session_id: string;
+  tag_id: string;
+}

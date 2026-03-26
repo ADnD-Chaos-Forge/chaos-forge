@@ -1,11 +1,11 @@
 import { requireAuth } from "@/lib/supabase/auth";
 import { AppNav } from "@/components/app-nav";
 
-export default async function CharactersLayout({ children }: { children: React.ReactNode }) {
+export default async function SessionsLayout({ children }: { children: React.ReactNode }) {
   await requireAuth();
 
   return (
-    <div className="flex flex-1 flex-col" data-testid="characters-layout">
+    <div className="flex flex-1 flex-col" data-testid="sessions-layout">
       <AppNav />
       <div className="flex flex-1 flex-col">{children}</div>
     </div>
