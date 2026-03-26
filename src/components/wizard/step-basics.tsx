@@ -2,6 +2,8 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ALL_ALIGNMENTS, getAlignmentLabel, getAllowedAlignments } from "@/lib/rules/alignment";
+import type { AlignmentId } from "@/lib/rules/alignment";
 import type { WizardState } from "./wizard-types";
 
 interface StepBasicsProps {
@@ -10,6 +12,9 @@ interface StepBasicsProps {
 }
 
 export function StepBasics({ state, onChange }: StepBasicsProps) {
+  const allowedAlignments = state.classId ? getAllowedAlignments(state.classId) : ALL_ALIGNMENTS;
+  const isAlignmentWarning = state.classId && !allowedAlignments.includes(state.alignment);
+
   return (
     <div className="flex flex-col gap-4" data-testid="wizard-step-basics">
       <div className="flex flex-col gap-2">
@@ -38,6 +43,28 @@ export function StepBasics({ state, onChange }: StepBasicsProps) {
         <p className="text-xs text-muted-foreground">
           Charaktere k&ouml;nnen auf jeder Stufe erstellt werden (1-20).
         </p>
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="char-alignment">Gesinnung (Alignment)</Label>
+        <select
+          id="char-alignment"
+          value={state.alignment}
+          onChange={(e) => onChange({ alignment: e.target.value as AlignmentId })}
+          className="rounded-md border border-input bg-input px-3 py-2 text-sm"
+          data-testid="wizard-alignment-select"
+        >
+          {ALL_ALIGNMENTS.map((id) => (
+            <option key={id} value={id}>
+              {getAlignmentLabel(id)}
+            </option>
+          ))}
+        </select>
+        {isAlignmentWarning && (
+          <p className="text-xs text-yellow-400">
+            Warnung: Diese Gesinnung verst&ouml;&szlig;t gegen die offiziellen AD&amp;D 2e Regeln
+            f&uuml;r die gew&auml;hlte Klasse.
+          </p>
+        )}
       </div>
     </div>
   );

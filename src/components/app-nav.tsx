@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/logout-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppNav() {
   return (
@@ -9,6 +10,11 @@ export function AppNav() {
       data-testid="app-nav"
     >
       <div className="flex items-center gap-4">
+        <Link href="/dashboard">
+          <Button variant="ghost" size="sm" data-testid="nav-dashboard">
+            Dashboard
+          </Button>
+        </Link>
         <Link href="/characters">
           <Button variant="ghost" size="sm" data-testid="nav-characters">
             Charaktere
@@ -19,8 +25,16 @@ export function AppNav() {
             Chronik
           </Button>
         </Link>
+        <Link href="/characters/import">
+          <Button variant="ghost" size="sm" data-testid="nav-import">
+            Import
+          </Button>
+        </Link>
       </div>
-      <LogoutButton />
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <LogoutButton />
+      </div>
     </nav>
   );
 }

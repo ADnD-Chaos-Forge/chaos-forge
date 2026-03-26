@@ -1,9 +1,11 @@
 import type { RaceId, ClassId } from "@/lib/rules/types";
+import type { AlignmentId } from "@/lib/rules/alignment";
 
 export interface WizardState {
   // Step 1: Basics
   name: string;
   level: number;
+  alignment: AlignmentId;
   // Step 2: Abilities
   str: number;
   strExceptional: number | null;
@@ -18,13 +20,12 @@ export interface WizardState {
   classId: ClassId | null;
   // Step 5: Combat (calculated + HP input)
   hpMax: number;
-  // Step 6-7: Equipment & Spells (deferred to character edit for MVP)
-  // Step 8: Summary
 }
 
 export const INITIAL_WIZARD_STATE: WizardState = {
   name: "",
   level: 1,
+  alignment: "true_neutral",
   str: 10,
   strExceptional: null,
   dex: 10,

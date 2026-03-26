@@ -10,6 +10,8 @@ export interface RaceDefinition {
   infravision: number; // in feet, 0 = none
   abilityMinimums?: Partial<Record<AbilityName, number>>;
   abilityMaximums?: Partial<Record<AbilityName, number>>;
+  racialAbilities: string[];
+  defaultLanguages: string[];
 }
 
 const ALL_CLASSES: ClassId[] = [
@@ -51,6 +53,11 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     levelLimits: {},
     multiclassOptions: [],
     infravision: 0,
+    racialAbilities: [
+      "Keine Klassen- oder Level-Beschränkungen",
+      "Dualclass möglich (einzige Rasse)",
+    ],
+    defaultLanguages: ["Common"],
   },
 
   elf: {
@@ -82,6 +89,13 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     infravision: 60,
     abilityMinimums: { int: 8, dex: 6 },
     abilityMaximums: { con: 17 },
+    racialAbilities: [
+      "Infravision 60 Fuß",
+      "Resistenz gegen Schlaf- und Bezauberungszauber (90%)",
+      "Geheimtüren entdecken (1-auf-6 passiv, 2-auf-6 aktiv)",
+      "+1 Treffer mit Langschwertern und Bögen",
+    ],
+    defaultLanguages: ["Common", "Elfisch"],
   },
 
   half_elf: {
@@ -127,6 +141,12 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     ],
     infravision: 30,
     abilityMinimums: { int: 4, con: 4 },
+    racialAbilities: [
+      "Infravision 30 Fuß",
+      "Resistenz gegen Schlaf- und Bezauberungszauber (30%)",
+      "Geheimtüren entdecken (1-auf-6 passiv, 2-auf-6 aktiv)",
+    ],
+    defaultLanguages: ["Common", "Elfisch"],
   },
 
   dwarf: {
@@ -142,6 +162,12 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     infravision: 60,
     abilityMinimums: { str: 8, con: 11 },
     abilityMaximums: { cha: 16 },
+    racialAbilities: [
+      "Infravision 60 Fuß",
+      "Rettungswurf-Bonus gegen Gift und Magie (+1 pro 3,5 CON)",
+      "Steinbearbeitung erkennen (Neigung, neue Tunnel, Fallen)",
+    ],
+    defaultLanguages: ["Common", "Zwergisch"],
   },
 
   gnome: {
@@ -160,6 +186,13 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     infravision: 60,
     abilityMinimums: { int: 6, con: 8 },
     abilityMaximums: { str: 17, wis: 17 },
+    racialAbilities: [
+      "Infravision 60 Fuß",
+      "Rettungswurf-Bonus gegen Magie (+1 pro 3,5 CON)",
+      "+1 Treffer gegen Kobolde und Goblins",
+      "Große Gegner (Oger, Trolle) haben -4 auf Angriffe",
+    ],
+    defaultLanguages: ["Common", "Gnomisch"],
   },
 
   halfling: {
@@ -172,6 +205,13 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     infravision: 30,
     abilityMinimums: { dex: 7, con: 10, str: 7 },
     abilityMaximums: { str: 17, wis: 17 },
+    racialAbilities: [
+      "Infravision 30 Fuß",
+      "Rettungswurf-Bonus gegen Gift und Magie (+1 pro 3,5 CON)",
+      "+1 Treffer mit Schleudern und Wurfwaffen",
+      "Überraschungsbonus: -4 auf feindliche Überraschungswürfe",
+    ],
+    defaultLanguages: ["Common", "Halblingisch"],
   },
 
   half_orc: {
@@ -188,6 +228,8 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     infravision: 60,
     abilityMinimums: { str: 6, con: 13 },
     abilityMaximums: { int: 17, wis: 14, cha: 12 },
+    racialAbilities: ["Infravision 60 Fuß"],
+    defaultLanguages: ["Common", "Orkisch"],
   },
 };
 

@@ -68,6 +68,7 @@ export function CharacterWizard() {
         user_id: user.id,
         name: state.name.trim(),
         level: state.level,
+        alignment: state.alignment,
         race_id: state.raceId,
         class_id: state.classId,
         str: state.str,

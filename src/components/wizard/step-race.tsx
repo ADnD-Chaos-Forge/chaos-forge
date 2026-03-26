@@ -15,9 +15,8 @@ export function StepRace({ state, onChange }: StepRaceProps) {
   const races = getAllRaces();
 
   function handleSelect(raceId: RaceId) {
-    // Reset class if the new race doesn't allow it
-    const newClassId = state.classId && canPlayClass(raceId, state.classId) ? state.classId : null;
-    onChange({ raceId, classId: newClassId });
+    // Don't reset class — allow all combinations, show warnings instead
+    onChange({ raceId });
   }
 
   return (
