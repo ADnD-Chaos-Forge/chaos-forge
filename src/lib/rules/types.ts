@@ -1,0 +1,145 @@
+/** Core AD&D 2nd Edition type definitions */
+
+export interface AbilityScores {
+  str: number; // 3-18
+  strExceptional?: number; // 1-100, only for warrior classes with STR 18
+  dex: number; // 3-18
+  con: number; // 3-18
+  int: number; // 3-18
+  wis: number; // 3-18
+  cha: number; // 3-18
+}
+
+export type AbilityName = "str" | "dex" | "con" | "int" | "wis" | "cha";
+
+/** STR modifiers */
+export interface StrengthModifiers {
+  hitAdj: number;
+  dmgAdj: number;
+  weightAllow: number; // in lbs
+  maxPress: number; // in lbs
+  openDoors: number; // on d20
+  bendBars: number; // percentage
+}
+
+/** DEX modifiers */
+export interface DexterityModifiers {
+  reactionAdj: number;
+  missileAdj: number;
+  defensiveAdj: number;
+}
+
+/** CON modifiers */
+export interface ConstitutionModifiers {
+  hpAdj: number;
+  systemShock: number; // percentage
+  resurrectionSurvival: number; // percentage
+  poisonSave: number;
+  regeneration: number | null;
+}
+
+/** INT modifiers */
+export interface IntelligenceModifiers {
+  numberOfLanguages: number;
+  spellLevel: number | null; // max spell level for mages, null if non-caster
+  chanceToLearn: number; // percentage
+  maxSpellsPerLevel: number | string; // number or "All"
+  spellImmunity: number | null; // immune to spells of this level and below
+}
+
+/** WIS modifiers */
+export interface WisdomModifiers {
+  magicalDefenseAdj: number;
+  bonusSpells: number[]; // bonus spell slots by spell level [1st, 2nd, ...]
+  spellFailure: number; // percentage
+}
+
+/** CHA modifiers */
+export interface CharismaModifiers {
+  maxHenchmen: number;
+  loyaltyBase: number;
+  reactionAdj: number;
+}
+
+/** Class groups for THAC0 / saving throw progression */
+export type ClassGroup = "warrior" | "priest" | "rogue" | "wizard";
+
+/** Saving throw categories */
+export interface SavingThrows {
+  paralyzation: number; // Paralyzation, Poison, Death Magic
+  rod: number; // Rod, Staff, Wand
+  petrification: number; // Petrification, Polymorph
+  breath: number; // Breath Weapon
+  spell: number; // Spell
+}
+
+/** Race identifiers */
+export type RaceId =
+  | "human"
+  | "elf"
+  | "half_elf"
+  | "dwarf"
+  | "gnome"
+  | "halfling"
+  | "half_orc";
+
+/** Class identifiers */
+export type ClassId =
+  | "fighter"
+  | "ranger"
+  | "paladin"
+  | "mage"
+  | "abjurer"
+  | "conjurer"
+  | "diviner"
+  | "enchanter"
+  | "illusionist"
+  | "invoker"
+  | "necromancer"
+  | "transmuter"
+  | "cleric"
+  | "druid"
+  | "thief"
+  | "bard";
+
+/** Magic school identifiers */
+export type MagicSchool =
+  | "abjuration"
+  | "alteration"
+  | "conjuration"
+  | "divination"
+  | "enchantment"
+  | "illusion"
+  | "invocation"
+  | "necromancy";
+
+/** Priest sphere identifiers */
+export type PriestSphere =
+  | "all"
+  | "animal"
+  | "astral"
+  | "charm"
+  | "combat"
+  | "creation"
+  | "divination"
+  | "elemental"
+  | "guardian"
+  | "healing"
+  | "necromantic"
+  | "plant"
+  | "protection"
+  | "summoning"
+  | "sun"
+  | "weather";
+
+/** Sphere access levels */
+export type SphereAccess = "major" | "minor";
+
+/** Multiclass / Dualclass support */
+export type MulticlassCombination = ClassId[];
+
+export interface DualclassInfo {
+  originalClass: ClassId;
+  newClass: ClassId;
+  switchLevel: number;
+}
