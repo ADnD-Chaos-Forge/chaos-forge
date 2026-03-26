@@ -274,11 +274,14 @@ export function TabSpells({
   async function handleLearnSpell(spellId: string) {
     setLoading(true);
     const supabase = createClient();
-    await supabase.from("character_spells").insert({
+    const { error } = await supabase.from("character_spells").insert({
       character_id: characterId,
       spell_id: spellId,
       prepared: false,
     });
+    if (error) {
+      console.error("Failed to learn spell:", error);
+    }
     setLoading(false);
     setLearnDialogOpen(false);
     setLearnSearchQuery("");

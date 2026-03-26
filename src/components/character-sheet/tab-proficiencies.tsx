@@ -157,11 +157,16 @@ export function TabProficiencies({
 
     setLoading(true);
     const supabase = createClient();
-    await supabase.from("character_weapon_proficiencies").insert({
+    const { error } = await supabase.from("character_weapon_proficiencies").insert({
       character_id: characterId,
       weapon_name: trimmed,
       specialization: newWeaponSpecialized,
     });
+    if (error) {
+      console.error("Failed to add weapon proficiency:", error);
+      setLoading(false);
+      return;
+    }
     setNewWeaponName("");
     setNewWeaponSpecialized(false);
     setLoading(false);
@@ -190,10 +195,13 @@ export function TabProficiencies({
   async function addNonweaponProficiency(nwpId: string) {
     setLoading(true);
     const supabase = createClient();
-    await supabase.from("character_nonweapon_proficiencies").insert({
+    const { error } = await supabase.from("character_nonweapon_proficiencies").insert({
       character_id: characterId,
       proficiency_id: nwpId,
     });
+    if (error) {
+      console.error("Failed to add NWP:", error);
+    }
     setLoading(false);
     router.refresh();
   }

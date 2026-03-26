@@ -31,6 +31,7 @@ import {
 } from "@/lib/rules/abilities";
 import { getAttacksPerRound } from "@/lib/rules/combat";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
+import { Spinner } from "@/components/ui/spinner";
 import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import Link from "next/link";
@@ -267,7 +268,14 @@ export function CharacterSheet({
           </Link>
           {dirty && (
             <Button onClick={handleSave} disabled={saving} data-testid="sheet-save-button">
-              {saving ? tcom("saving") : tcom("save")}
+              {saving ? (
+                <>
+                  <Spinner className="mr-2" />
+                  {tcom("saving")}
+                </>
+              ) : (
+                tcom("save")
+              )}
             </Button>
           )}
           {isOwner && (
