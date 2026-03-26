@@ -37,6 +37,7 @@ Die App richtet sich an eine private Spielgruppe ("Chaos RPG") mit maximal 10 Nu
 - [ ] Logik für absteigende Rüstungsklasse (RK) und ETW0 (THAC0).
 - [ ] Implementierung des Magiesystems (Schulen für Magier, Sphären für Priester).
 - [ ] Datenbank-Seeding mit grundlegenden Waffen, Rüstungen und Zaubern.
+- [ ] Passendes Einbauen der Logos und Favicons aus dem Ordner Ressources in das Design
 
 ## Epic 3: Charakter-Management
 

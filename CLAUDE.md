@@ -40,14 +40,33 @@ src/
   app/              # Next.js App Router (Pages, Layouts)
   components/ui/    # shadcn/ui Komponenten
   lib/
+    rules/          # AD&D 2e Regelwerk-Engine (reine TypeScript-Logik)
+      types.ts      # Zentrale Typdefinitionen (AbilityScores, ClassId, RaceId, etc.)
+      abilities.ts  # Attribut-Modifikator-Tabellen (STR inkl. 18/xx, DEX, CON, INT, WIS, CHA)
+      combat.ts     # THAC0-Berechnung, Angriffswürfe, Rettungswürfe
+      races.ts      # Rassen-Definitionen, Klassen-Restriktionen, Level-Caps
+      classes.ts    # Klassen-Definitionen, Attribut-Anforderungen
+      magic.ts      # Magie-Schulen, Priester-Sphären, Zauber-Datenstruktur
+      index.ts      # Barrel-Export
     supabase/       # Supabase Client-Helfer (client.ts, server.ts, middleware.ts)
     utils.ts        # Utility-Funktionen (cn helper)
   middleware.ts     # Next.js Middleware (Supabase Session-Refresh)
   test/             # Vitest Setup & Smoke-Tests
 e2e/                # Playwright E2E-Tests
 supabase/
-  migrations/       # SQL-Migrationen (Supabase Schema)
+  migrations/       # SQL-Migrationen (Supabase Schema + Seed-Daten)
 ```
+
+## Regelwerk-Engine (`src/lib/rules/`)
+
+Die AD&D-Regeln sind als **reine TypeScript-Funktionen** implementiert (kein DB-Zugriff, kein Framework). Stammdaten (Rassen, Klassen, Waffen, Rüstungen, Zauber) liegen zusätzlich in Supabase.
+
+- `getStrengthModifiers(str, exceptional?)` — inkl. 18/xx Ausnahmestärke
+- `getThac0(classGroup, level)` — THAC0-Berechnung pro Klassengruppe
+- `getSavingThrows(classGroup, level)` — Rettungswürfe
+- `canPlayClass(raceId, classId)` / `getLevelLimit(raceId, classId)`
+- `getOppositionSchools(classId)` — Verbotene Schulen für Spezialisten
+- `hasSphereAccess(classId, sphere, level)` — Priester-Sphären-Zugang
 
 ## Supabase
 
@@ -72,7 +91,7 @@ Für jedes neue Feature wird **immer ein neuer Branch** angelegt. Die Entwicklun
 
 ### Phase 1: Requirements Engineering
 
-Analysiere Anforderungen, sammle offene Fragen und Edge Cases, generiere Lösungsvorschläge mit Empfehlung. **Warte auf Freigabe durch den User, bevor Code geschrieben wird.**
+Analysiere Anforderungen, sammle offene Fragen und Edge Cases, generiere Lösungsvorschläge mit Empfehlung. Betrachte auch immer die UI und UX in den Anforderungen! Versetze dich dazu in die Personas die die App nutzen werden. **Warte auf Freigabe durch den User, bevor Code geschrieben wird.**
 
 ### Phase 2: Implementierung
 
