@@ -24,6 +24,7 @@ import {
 } from "@/lib/rules/combat";
 import { getNonproficiencyPenalty } from "@/lib/rules/proficiencies";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
+import { getKit, getEffectiveHitDie } from "@/lib/rules/kits";
 import { calculateAC } from "@/lib/rules/equipment";
 import { feetToMeters, lbsToKg } from "@/lib/utils/units";
 import { localized } from "@/lib/utils/localize";
@@ -158,7 +159,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
   const hitDice = activeClasses
     .map((cc) => {
       const def = CLASSES[cc.class_id as ClassId];
-      return def ? `d${def.hitDie}` : "—";
+      return def ? `d${getEffectiveHitDie(def.hitDie, character.kit)}` : "—";
     })
     .join("/");
 
@@ -243,9 +244,12 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
     .filter(Boolean)
     .join(", ");
 
+  const kitDef = character.kit ? getKit(character.kit) : null;
+
   const headerLines: string[] = [
     `Race: ${race ? localized(race.name, race.name_en, props.locale) : "—"}  |  Class: ${classNames || "—"}  |  Level: ${levelDisplay || character.level}`,
     `Hit Die: ${hitDice || "—"}  |  HP: ${character.hp_current}/${character.hp_max}  |  Alignment: ${getAlignmentLabel(character.alignment, props.locale)}`,
+    ...(kitDef ? [`Kit: ${localized(kitDef.name, kitDef.name_en, props.locale)}`] : []),
     `XP: ${xpDisplay}`,
     `Treasure: ${treasureDisplay}`,
   ];
@@ -300,6 +304,85 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
     },
   ];
 
+  // Sub-stats for each ability (Player's Option)
+  const subStats: { key: string; parts: string[] }[] = [
+    {
+      key: "str",
+      parts: [
+        ...(character.str_stamina != null ? [`Stamina: ${character.str_stamina}`] : []),
+        ...(character.str_muscle != null ? [`Muscle: ${character.str_muscle}`] : []),
+      ],
+    },
+    {
+      key: "dex",
+      parts: [
+        ...(character.dex_aim != null ? [`Aim: ${character.dex_aim}`] : []),
+        ...(character.dex_balance != null ? [`Balance: ${character.dex_balance}`] : []),
+      ],
+    },
+    {
+      key: "con",
+      parts: [
+        ...(character.con_health != null ? [`Health: ${character.con_health}`] : []),
+        ...(character.con_fitness != null ? [`Fitness: ${character.con_fitness}`] : []),
+      ],
+    },
+    {
+      key: "int",
+      parts: [
+        ...(character.int_reason != null ? [`Reason: ${character.int_reason}`] : []),
+        ...(character.int_knowledge != null ? [`Knowledge: ${character.int_knowledge}`] : []),
+      ],
+    },
+    {
+      key: "wis",
+      parts: [
+        ...(character.wis_intuition != null ? [`Intuition: ${character.wis_intuition}`] : []),
+        ...(character.wis_willpower != null ? [`Willpower: ${character.wis_willpower}`] : []),
+      ],
+    },
+    {
+      key: "cha",
+      parts: [
+        ...(character.cha_leadership != null ? [`Leadership: ${character.cha_leadership}`] : []),
+        ...(character.cha_appearance != null ? [`Appearance: ${character.cha_appearance}`] : []),
+      ],
+    },
+  ];
+
+  const abilityTableRows: TableRow[] = [];
+  const abilityKeys = ["str", "dex", "con", "int", "wis", "cha"];
+  for (let i = 0; i < abilityRows.length; i++) {
+    const row = abilityRows[i];
+    abilityTableRows.push(
+      new TableRow({
+        children: [
+          cell(row.name, { width: 25 }),
+          cell(row.value, {
+            width: 10,
+            alignment: AlignmentType.CENTER,
+            bold: true,
+            font: "Courier New",
+          }),
+          cell(row.mods, { width: 65, size: 18 }),
+        ],
+      })
+    );
+    const sub = subStats.find((s) => s.key === abilityKeys[i]);
+    if (sub && sub.parts.length > 0) {
+      abilityTableRows.push(
+        new TableRow({
+          children: [
+            cell(`    ${sub.parts.join(", ")}`, {
+              columnSpan: 3,
+              size: 16,
+            }),
+          ],
+        })
+      );
+    }
+  }
+
   children.push(
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
@@ -312,21 +395,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
             headerCell("Modifiers", { width: 65 }),
           ],
         }),
-        ...abilityRows.map(
-          (row) =>
-            new TableRow({
-              children: [
-                cell(row.name, { width: 25 }),
-                cell(row.value, {
-                  width: 10,
-                  alignment: AlignmentType.CENTER,
-                  bold: true,
-                  font: "Courier New",
-                }),
-                cell(row.mods, { width: 65, size: 18 }),
-              ],
-            })
-        ),
+        ...abilityTableRows,
       ],
     })
   );
@@ -447,6 +516,134 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
         ],
       })
     );
+  }
+
+  // ── 4b. Racial & Class Abilities ─────────────────────────────────────────
+  const hasRacialAbilities = race?.racialAbilities && race.racialAbilities.length > 0;
+  const classAbilitiesEntries = activeClasses
+    .map((cc) => {
+      const clsDef = CLASSES[cc.class_id as ClassId];
+      return clsDef?.classAbilities?.length ? { clsDef, classId: cc.class_id } : null;
+    })
+    .filter(Boolean) as { clsDef: (typeof CLASSES)[ClassId]; classId: string }[];
+  const kitAbilities = kitDef?.abilities?.length ? kitDef.abilities : [];
+
+  if (hasRacialAbilities || classAbilitiesEntries.length > 0 || kitAbilities.length > 0) {
+    children.push(sectionHeading("Racial & Class Abilities"));
+
+    if (hasRacialAbilities && race?.racialAbilities) {
+      children.push(
+        new Paragraph({
+          spacing: { after: 60 },
+          children: [
+            new TextRun({
+              text: `Racial Abilities (${localized(race.name, race.name_en, props.locale)})`,
+              bold: true,
+              font: "Calibri",
+              size: 22,
+            }),
+          ],
+        })
+      );
+      for (const a of race.racialAbilities) {
+        children.push(
+          new Paragraph({
+            spacing: { after: 20 },
+            indent: { left: 360 },
+            bullet: { level: 0 },
+            children: [
+              new TextRun({
+                text: localized(a.name, a.name_en, props.locale),
+                bold: true,
+                font: "Calibri",
+                size: 20,
+              }),
+              new TextRun({
+                text: ` — ${localized(a.description, a.description_en, props.locale)}`,
+                font: "Calibri",
+                size: 20,
+              }),
+            ],
+          })
+        );
+      }
+    }
+
+    for (const entry of classAbilitiesEntries) {
+      children.push(
+        new Paragraph({
+          spacing: { before: 120, after: 60 },
+          children: [
+            new TextRun({
+              text: `Class Abilities (${localized(entry.clsDef.name, entry.clsDef.name_en, props.locale)})`,
+              bold: true,
+              font: "Calibri",
+              size: 22,
+            }),
+          ],
+        })
+      );
+      for (const a of entry.clsDef.classAbilities!) {
+        children.push(
+          new Paragraph({
+            spacing: { after: 20 },
+            indent: { left: 360 },
+            bullet: { level: 0 },
+            children: [
+              new TextRun({
+                text: localized(a.name, a.name_en, props.locale),
+                bold: true,
+                font: "Calibri",
+                size: 20,
+              }),
+              new TextRun({
+                text: ` — ${localized(a.description, a.description_en, props.locale)}`,
+                font: "Calibri",
+                size: 20,
+              }),
+            ],
+          })
+        );
+      }
+    }
+
+    if (kitAbilities.length > 0 && kitDef) {
+      children.push(
+        new Paragraph({
+          spacing: { before: 120, after: 60 },
+          children: [
+            new TextRun({
+              text: `Kit Abilities (${localized(kitDef.name, kitDef.name_en, props.locale)})`,
+              bold: true,
+              font: "Calibri",
+              size: 22,
+            }),
+          ],
+        })
+      );
+      for (const a of kitAbilities) {
+        children.push(
+          new Paragraph({
+            spacing: { after: 20 },
+            indent: { left: 360 },
+            bullet: { level: 0 },
+            children: [
+              new TextRun({
+                text: localized(a.name, a.name_en, props.locale),
+                bold: true,
+                font: "Calibri",
+                size: 20,
+              }),
+              new TextRun({
+                text: ` — ${localized(a.description, a.description_en, props.locale)}`,
+                font: "Calibri",
+                size: 20,
+              }),
+            ],
+          })
+        );
+      }
+    }
   }
 
   // ── 5. AC Breakdown ───────────────────────────────────────────────────────
