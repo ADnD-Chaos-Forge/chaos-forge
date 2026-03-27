@@ -1,8 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { validateImportFiles } from "@/app/characters/import/import-validation";
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
+type ImageMediaType = "image/jpeg" | "image/png" | "image/webp" | "image/gif";
+
+function buildContentBlock(
+  base64: string,
+  mediaType: string,
+  isPdf: boolean
+):
+  | { type: "document"; source: { type: "base64"; media_type: "application/pdf"; data: string } }
+  | { type: "image"; source: { type: "base64"; media_type: ImageMediaType; data: string } } {
+  if (isPdf) {
+    return {
+      type: "document" as const,
+      source: { type: "base64" as const, media_type: "application/pdf" as const, data: base64 },
+    };
+  }
+  return {
+    type: "image" as const,
+    source: {
+      type: "base64" as const,
+      media_type: mediaType as ImageMediaType,
+      data: base64,
+    },
+  };
+}
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -24,41 +48,46 @@ export async function POST(request: NextRequest) {
 
   try {
     const formData = await request.formData();
-    const file = formData.get("image") as File | null;
 
-    if (!file) {
-      return NextResponse.json({ error: "Kein Bild hochgeladen." }, { status: 400 });
+    // Support both old "image" field (single file) and new "files" field (multiple files)
+    const files = formData.getAll("files") as File[];
+    const legacyFile = formData.get("image") as File | null;
+
+    const allFiles = files.length > 0 ? files : legacyFile ? [legacyFile] : [];
+
+    const validation = validateImportFiles(allFiles);
+    if (!validation.valid) {
+      const errorMessages: Record<string, string> = {
+        noFiles: "Keine Dateien hochgeladen.",
+        tooManyFiles: "Maximal 5 Dateien erlaubt.",
+        fileTooLarge: `Datei "${validation.errorParams?.name ?? ""}" ist zu groß (max. 10 MB pro Datei).`,
+        totalTooLarge: "Gesamtgröße darf 50 MB nicht überschreiten.",
+      };
+      return NextResponse.json(
+        { error: errorMessages[validation.errorKey ?? "noFiles"] },
+        { status: 400 }
+      );
     }
 
-    if (file.size > MAX_IMAGE_SIZE) {
-      return NextResponse.json({ error: "Bild darf maximal 5 MB groß sein." }, { status: 400 });
+    // Build content blocks for all files
+    const contentBlocks: Array<
+      | {
+          type: "document";
+          source: { type: "base64"; media_type: "application/pdf"; data: string };
+        }
+      | { type: "image"; source: { type: "base64"; media_type: ImageMediaType; data: string } }
+    > = [];
+
+    for (const file of allFiles) {
+      const bytes = await file.arrayBuffer();
+      const base64 = Buffer.from(bytes).toString("base64");
+      const isPdf = file.type === "application/pdf";
+      contentBlocks.push(buildContentBlock(base64, file.type, isPdf));
     }
 
-    const bytes = await file.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString("base64");
-    const isPdf = file.type === "application/pdf";
-    const mediaType = file.type as
-      | "image/jpeg"
-      | "image/png"
-      | "image/webp"
-      | "image/gif"
-      | "application/pdf";
+    const isMultiFile = allFiles.length > 1;
 
     const client = new Anthropic({ apiKey });
-
-    const contentBlock = isPdf
-      ? {
-          type: "document" as const,
-          source: { type: "base64" as const, media_type: "application/pdf" as const, data: base64 },
-        }
-      : {
-          type: "image" as const,
-          source: {
-            type: "base64" as const,
-            media_type: mediaType as "image/jpeg" | "image/png" | "image/webp" | "image/gif",
-            data: base64,
-          },
-        };
 
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -67,12 +96,12 @@ export async function POST(request: NextRequest) {
         {
           role: "user",
           content: [
-            contentBlock,
+            ...contentBlocks,
             {
               type: "text",
               text: `Analysiere diesen AD&D 2nd Edition Charakterbogen und extrahiere die folgenden Werte als JSON.
 Antworte NUR mit validem JSON, kein anderer Text.
-
+${isMultiFile ? "\nDieser Charakterbogen erstreckt sich über mehrere Seiten/Dateien. Kombiniere die Informationen aus allen Seiten zu einem einzelnen Charakter.\n" : ""}
 Erwartetes Format:
 {
   "name": "Charaktername",

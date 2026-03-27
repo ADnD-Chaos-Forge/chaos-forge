@@ -61,8 +61,7 @@
     "level": "Stufe",
     "deleteTitle": "Charakter löschen",
     "deleteMessage": "Möchtest du \"{name}\" wirklich unwiderruflich löschen?",
-    "printView": "Druckansicht",
-    "spellbook": "Zauberbuch"
+    "printView": "Druckansicht"
   },
   "wizard": {
     "basics": "Grunddaten",
@@ -345,13 +344,20 @@
   },
   "import": {
     "title": "Charakterbogen importieren",
-    "description": "Lade ein Foto oder PDF eines AD&D-Charakterbogens hoch. Die KI extrahiert die Werte automatisch.",
-    "dropzone": "Klicke hier um ein Foto oder PDF auszuwählen",
+    "description": "Lade Fotos oder PDFs eines AD&D-Charakterbogens hoch. Die KI extrahiert die Werte automatisch.",
+    "dropzone": "Klicke hier um Fotos oder PDFs auszuwählen",
+    "dropzoneHint": "Bis zu 5 Dateien (je max. 10 MB)",
     "scanning": "Scanne Charakterbogen...",
     "pdfUploaded": "PDF hochgeladen",
     "resultTitle": "Erkannte Werte — bitte prüfen",
-    "newPhoto": "Neues Foto",
-    "createCharacter": "Charakter erstellen"
+    "newPhoto": "Neue Dateien",
+    "createCharacter": "Charakter erstellen",
+    "filesSelected": "{count} Datei(en) ausgewählt",
+    "removeFile": "Datei entfernen",
+    "tooManyFiles": "Maximal 5 Dateien erlaubt.",
+    "fileTooLarge": "Datei \"{name}\" ist zu groß (max. 10 MB pro Datei).",
+    "totalTooLarge": "Gesamtgröße darf 50 MB nicht überschreiten.",
+    "noFiles": "Keine Dateien ausgewählt."
   },
   "print": {
     "print": "Drucken (Cmd+P)",

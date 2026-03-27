@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import type { RaceId, ClassId } from "@/lib/rules/types";
+import { validateImportFiles } from "./import-validation";
 
 interface ScannedCharacter {
   name: string;
@@ -25,6 +26,11 @@ interface ScannedCharacter {
   hpMax: number;
 }
 
+interface FilePreview {
+  file: File;
+  previewUrl: string | null; // null for PDFs
+}
+
 export default function ImportCharacterPage() {
   const router = useRouter();
   const t = useTranslations("import");
@@ -33,20 +39,62 @@ export default function ImportCharacterPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scanned, setScanned] = useState<ScannedCharacter | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [filePreviews, setFilePreviews] = useState<FilePreview[]>([]);
 
-  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const validateFiles = useCallback(
+    (files: File[]): string | null => {
+      const result = validateImportFiles(files);
+      if (!result.valid && result.errorKey) {
+        return t(result.errorKey, result.errorParams);
+      }
+      return null;
+    },
+    [t]
+  );
 
-    // Show preview (images only, not PDFs)
-    setPreview(file.type.startsWith("image/") ? URL.createObjectURL(file) : "pdf");
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const selectedFiles = Array.from(e.target.files ?? []);
+    if (selectedFiles.length === 0) return;
+
+    const validationError = validateFiles(selectedFiles);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    const previews: FilePreview[] = selectedFiles.map((file) => ({
+      file,
+      previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+    }));
+
+    setFilePreviews(previews);
+    setError(null);
+  }
+
+  function removeFile(index: number) {
+    setFilePreviews((prev) => {
+      const removed = prev[index];
+      if (removed.previewUrl) {
+        URL.revokeObjectURL(removed.previewUrl);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
+  }
+
+  async function handleScan() {
+    if (filePreviews.length === 0) {
+      setError(t("noFiles"));
+      return;
+    }
+
     setError(null);
     setScanning(true);
 
     try {
       const formData = new FormData();
-      formData.append("image", file);
+      for (const { file } of filePreviews) {
+        formData.append("files", file);
+      }
 
       const res = await fetch("/api/scan-character", {
         method: "POST",
@@ -140,31 +188,89 @@ export default function ImportCharacterPage() {
 
       {/* Upload area */}
       {!scanned && (
-        <div
-          className="flex cursor-pointer flex-col items-center gap-4 rounded-md border-2 border-dashed border-border p-12 transition-colors hover:border-primary/50"
-          onClick={() => fileInputRef.current?.click()}
-          data-testid="import-dropzone"
-        >
-          {preview ? (
-            preview === "pdf" ? (
-              <p className="text-lg text-primary">{t("pdfUploaded")}</p>
+        <>
+          <div
+            className="flex cursor-pointer flex-col items-center gap-4 rounded-md border-2 border-dashed border-border p-12 transition-colors hover:border-primary/50"
+            onClick={() => fileInputRef.current?.click()}
+            data-testid="import-dropzone"
+          >
+            {filePreviews.length === 0 ? (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-muted-foreground">{t("dropzone")}</p>
+                <p className="text-xs text-muted-foreground/70">{t("dropzoneHint")}</p>
+              </div>
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview} alt="Vorschau" className="max-h-64 rounded" />
-            )
-          ) : (
-            <p className="text-muted-foreground">{t("dropzone")}</p>
+              <p className="text-sm text-primary">
+                {t("filesSelected", { count: filePreviews.length })}
+              </p>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,application/pdf"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+              data-testid="import-file-input"
+            />
+          </div>
+
+          {/* Preview grid */}
+          {filePreviews.length > 0 && (
+            <div
+              className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5"
+              data-testid="import-preview-grid"
+            >
+              {filePreviews.map((fp, index) => (
+                <div
+                  key={`${fp.file.name}-${index}`}
+                  className="group relative flex flex-col items-center gap-2 rounded-md border border-border p-2"
+                  data-testid={`import-preview-${index}`}
+                >
+                  {fp.previewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={fp.previewUrl}
+                      alt={fp.file.name}
+                      className="h-24 w-full rounded object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-24 w-full items-center justify-center rounded bg-muted text-sm font-medium text-primary">
+                      PDF
+                    </div>
+                  )}
+                  <p className="w-full truncate text-center text-xs text-muted-foreground">
+                    {fp.file.name}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFile(index);
+                    }}
+                    className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground shadow-sm hover:bg-destructive/80"
+                    aria-label={t("removeFile")}
+                    data-testid={`import-remove-file-${index}`}
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
-          {scanning && <p className="text-sm text-primary">{t("scanning")}</p>}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,application/pdf"
-            onChange={handleFileSelect}
-            className="hidden"
-            data-testid="import-file-input"
-          />
-        </div>
+
+          {/* Scan button */}
+          {filePreviews.length > 0 && (
+            <Button
+              onClick={handleScan}
+              disabled={scanning}
+              className="self-center"
+              data-testid="import-scan-button"
+            >
+              {scanning ? t("scanning") : t("title")}
+            </Button>
+          )}
+        </>
       )}
 
       {/* Scanned result — editable */}
@@ -238,7 +344,11 @@ export default function ImportCharacterPage() {
                 variant="outline"
                 onClick={() => {
                   setScanned(null);
-                  setPreview(null);
+                  // Clean up preview URLs
+                  for (const fp of filePreviews) {
+                    if (fp.previewUrl) URL.revokeObjectURL(fp.previewUrl);
+                  }
+                  setFilePreviews([]);
                 }}
               >
                 {t("newPhoto")}
