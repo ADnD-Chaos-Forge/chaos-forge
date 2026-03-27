@@ -4,6 +4,10 @@ export class LoginPage {
   readonly page: Page;
   readonly emailInput: Locator;
   readonly submitButton: Locator;
+  readonly codeInput: Locator;
+  readonly verifyButton: Locator;
+  readonly resendButton: Locator;
+  readonly changeEmailButton: Locator;
   readonly successMessage: Locator;
   readonly errorMessage: Locator;
 
@@ -11,6 +15,12 @@ export class LoginPage {
     this.page = page;
     this.emailInput = page.getByTestId("login-email-input");
     this.submitButton = page.getByTestId("login-submit-button");
+    this.codeInput = page.getByTestId("login-code-input");
+    this.verifyButton = page.getByTestId("login-verify-button");
+    this.resendButton = page.getByTestId("login-resend-button");
+    this.changeEmailButton = page
+      .locator("text=Use a different email")
+      .or(page.locator("text=Andere E-Mail verwenden"));
     this.successMessage = page.getByTestId("login-success-message");
     this.errorMessage = page.getByTestId("login-error-message");
   }
@@ -25,5 +35,13 @@ export class LoginPage {
 
   async submit() {
     await this.submitButton.click();
+  }
+
+  async fillCode(code: string) {
+    await this.codeInput.fill(code);
+  }
+
+  async verify() {
+    await this.verifyButton.click();
   }
 }

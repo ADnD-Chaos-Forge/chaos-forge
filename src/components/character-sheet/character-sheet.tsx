@@ -302,13 +302,31 @@ export function CharacterSheet({
 
       <Tabs defaultValue="stats" className="w-full">
         <TabsList className="w-full justify-start" data-testid="sheet-tabs">
-          <TabsTrigger value="stats">{t("stats")}</TabsTrigger>
-          <TabsTrigger value="combat">{t("combat")}</TabsTrigger>
-          <TabsTrigger value="notes">{t("notes")}</TabsTrigger>
-          <TabsTrigger value="equipment">{t("equipment")}</TabsTrigger>
-          {showSpells && <TabsTrigger value="spells">{t("spells")}</TabsTrigger>}
-          {showThiefSkills && <TabsTrigger value="thief-skills">{t("thiefSkills")}</TabsTrigger>}
-          <TabsTrigger value="proficiencies">{t("proficiencies")}</TabsTrigger>
+          <TabsTrigger value="stats" data-testid="tab-trigger-stats">
+            {t("stats")}
+          </TabsTrigger>
+          <TabsTrigger value="combat" data-testid="tab-trigger-combat">
+            {t("combat")}
+          </TabsTrigger>
+          <TabsTrigger value="notes" data-testid="tab-trigger-notes">
+            {t("notes")}
+          </TabsTrigger>
+          <TabsTrigger value="equipment" data-testid="tab-trigger-equipment">
+            {t("equipment")}
+          </TabsTrigger>
+          {showSpells && (
+            <TabsTrigger value="spells" data-testid="tab-trigger-spells">
+              {t("spells")}
+            </TabsTrigger>
+          )}
+          {showThiefSkills && (
+            <TabsTrigger value="thief-skills" data-testid="tab-trigger-thief-skills">
+              {t("thiefSkills")}
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="proficiencies" data-testid="tab-trigger-proficiencies">
+            {t("proficiencies")}
+          </TabsTrigger>
         </TabsList>
 
         {/* Stats Tab */}
