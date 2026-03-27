@@ -61,7 +61,8 @@
     "level": "Stufe",
     "deleteTitle": "Charakter löschen",
     "deleteMessage": "Möchtest du \"{name}\" wirklich unwiderruflich löschen?",
-    "printView": "Druckansicht"
+    "printView": "Druckansicht",
+    "spellbook": "Zauberbuch"
   },
   "wizard": {
     "basics": "Grunddaten",
