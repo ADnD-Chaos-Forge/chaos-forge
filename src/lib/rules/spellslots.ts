@@ -224,3 +224,68 @@ export function canLearnSpell(
 
   return { allowed: true };
 }
+
+// ─── RANGER SPELL SLOTS (PHB Ch3: Ranger) ───────────────────────────────────
+
+// Rangers gain druid spells at level 8 and wizard spells at level 9
+const RANGER_DRUID_SLOTS: Record<number, number[]> = {
+  8: [1, 0, 0],
+  9: [1, 0, 0],
+  10: [2, 0, 0],
+  11: [2, 0, 0],
+  12: [2, 1, 0],
+  13: [2, 1, 0],
+  14: [2, 2, 0],
+  15: [2, 2, 1],
+  16: [3, 2, 1],
+  17: [3, 2, 2],
+  18: [3, 3, 2],
+  19: [3, 3, 3],
+  20: [3, 3, 3],
+};
+
+const RANGER_WIZARD_SLOTS: Record<number, number[]> = {
+  9: [1, 0],
+  10: [1, 0],
+  11: [1, 0],
+  12: [1, 0],
+  13: [1, 1],
+  14: [1, 1],
+  15: [2, 1],
+  16: [2, 1],
+  17: [2, 2],
+  18: [2, 2],
+  19: [3, 2],
+  20: [3, 2],
+};
+
+export function getRangerSpellSlots(level: number): {
+  druid: number[];
+  wizard: number[];
+} {
+  const druid = RANGER_DRUID_SLOTS[Math.min(level, 20)] ?? [0, 0, 0];
+  const wizard = RANGER_WIZARD_SLOTS[Math.min(level, 20)] ?? [0, 0];
+  return { druid, wizard };
+}
+
+// ─── PALADIN SPELL SLOTS (PHB Ch3: Paladin) ─────────────────────────────────
+
+// Paladins gain priest spells at level 9
+const PALADIN_PRIEST_SLOTS: Record<number, number[]> = {
+  9: [1, 0, 0, 0],
+  10: [2, 0, 0, 0],
+  11: [2, 1, 0, 0],
+  12: [2, 2, 0, 0],
+  13: [2, 2, 1, 0],
+  14: [3, 2, 1, 0],
+  15: [3, 2, 1, 1],
+  16: [3, 3, 2, 1],
+  17: [3, 3, 3, 1],
+  18: [3, 3, 3, 2],
+  19: [3, 3, 3, 2],
+  20: [3, 3, 3, 3],
+};
+
+export function getPaladinSpellSlots(level: number): number[] {
+  return PALADIN_PRIEST_SLOTS[Math.min(level, 20)] ?? [0, 0, 0, 0];
+}

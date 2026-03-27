@@ -8,7 +8,7 @@ import {
   getMulticlassGroups,
 } from "./multiclass";
 
-describe("getMulticlassThac0", () => {
+describe("MULTI-001: getMulticlassThac0", () => {
   it("returns 20 for empty class list", () => {
     expect(getMulticlassThac0([])).toBe(20);
   });
@@ -53,7 +53,7 @@ describe("getMulticlassThac0", () => {
   });
 });
 
-describe("getMulticlassSaves", () => {
+describe("MULTI-002: getMulticlassSaves", () => {
   it("returns worst saves for empty list", () => {
     const saves = getMulticlassSaves([]);
     expect(saves.paralyzation).toBe(20);
@@ -87,7 +87,7 @@ describe("getMulticlassSaves", () => {
   });
 });
 
-describe("getMulticlassHpDivisor", () => {
+describe("MULTI-003: getMulticlassHpDivisor", () => {
   it("returns 1 for single class", () => {
     expect(getMulticlassHpDivisor(1)).toBe(1);
   });
@@ -105,7 +105,7 @@ describe("getMulticlassHpDivisor", () => {
   });
 });
 
-describe("isRuleCompliantMulticlass", () => {
+describe("MULTI-004: isRuleCompliantMulticlass", () => {
   it("returns true for single class", () => {
     expect(isRuleCompliantMulticlass("elf", ["fighter"])).toBe(true);
   });
@@ -141,7 +141,7 @@ describe("isRuleCompliantMulticlass", () => {
   });
 });
 
-describe("multiclassHasExceptionalStr", () => {
+describe("MULTI-005: multiclassHasExceptionalStr", () => {
   it("returns true for Fighter/Mage", () => {
     expect(multiclassHasExceptionalStr(["fighter", "mage"])).toBe(true);
   });

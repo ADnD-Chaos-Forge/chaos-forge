@@ -6,7 +6,7 @@ import {
   hasThiefSkills,
 } from "./thief";
 
-describe("getBaseThiefSkills", () => {
+describe("THIEF-001: getBaseThiefSkills", () => {
   it("returns base percentages at level 1", () => {
     const skills = getBaseThiefSkills(1);
     expect(skills.pickLocks).toBe(15);
@@ -25,7 +25,7 @@ describe("getBaseThiefSkills", () => {
   });
 });
 
-describe("getRacialThiefAdjustments", () => {
+describe("THIEF-002: getRacialThiefAdjustments", () => {
   it("returns dwarven bonuses", () => {
     const adj = getRacialThiefAdjustments("dwarf");
     expect(adj.pickLocks).toBe(10);
@@ -59,7 +59,7 @@ describe("getRacialThiefAdjustments", () => {
   });
 });
 
-describe("getBackstabMultiplier", () => {
+describe("THIEF-003: getBackstabMultiplier", () => {
   it("returns x2 at level 1-4", () => {
     expect(getBackstabMultiplier(1)).toBe(2);
     expect(getBackstabMultiplier(4)).toBe(2);
@@ -81,7 +81,7 @@ describe("getBackstabMultiplier", () => {
   });
 });
 
-describe("hasThiefSkills", () => {
+describe("THIEF-004: hasThiefSkills", () => {
   it("returns true for thief", () => {
     expect(hasThiefSkills(["thief"])).toBe(true);
   });

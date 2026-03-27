@@ -13,8 +13,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Framework:** Next.js 16 (App Router) mit TypeScript
 - **Datenbank & Auth:** Supabase (PostgreSQL + Row Level Security)
 - **Styling:** Tailwind CSS v4 + shadcn/ui
+- **i18n:** next-intl (Cookie-basiert, DE/EN)
 - **Unit-/Integrationstests:** Vitest + React Testing Library
-- **E2E-Tests:** Playwright (Chromium)
+- **E2E-Tests:** Playwright (Chromium, POM-Pattern, getByTestId)
 - **Linting/Formatting:** ESLint (next config) + Prettier
 - **Hosting:** Vercel (Free-Tier)
 - **UI-Theme:** AD&D-Nostalgie-Look (Cinzel für Headings, Crimson Text für Body)
@@ -37,42 +38,123 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 src/
-  app/              # Next.js App Router (Pages, Layouts)
-  components/ui/    # shadcn/ui Komponenten
+  app/                    # Next.js App Router (Pages, Layouts)
+    characters/[id]/      # Charakterbogen, Druckansicht, Zauberbuch
+  components/
+    character-sheet/      # Tabs: Stats, Combat, Equipment, Spells, Proficiencies, Thief Skills
+    spellbook/            # Standalone Spellbook-Seite (Suche, Filter, Prepare, Learn)
+    print-sheet/          # Druckansicht
+    ui/                   # shadcn/ui Komponenten
   lib/
-    rules/          # AD&D 2e Regelwerk-Engine (reine TypeScript-Logik)
-      types.ts      # Zentrale Typdefinitionen (AbilityScores, ClassId, RaceId, etc.)
-      abilities.ts  # Attribut-Modifikator-Tabellen (STR inkl. 18/xx, DEX, CON, INT, WIS, CHA)
-      combat.ts     # THAC0-Berechnung, Angriffswürfe, Rettungswürfe
-      races.ts      # Rassen-Definitionen, Klassen-Restriktionen, Level-Caps
-      classes.ts    # Klassen-Definitionen, Attribut-Anforderungen
-      magic.ts      # Magie-Schulen, Priester-Sphären, Zauber-Datenstruktur
-      index.ts      # Barrel-Export
-    supabase/       # Supabase Client-Helfer (client.ts, server.ts, middleware.ts)
-    utils.ts        # Utility-Funktionen (cn helper)
-  middleware.ts     # Next.js Middleware (Supabase Session-Refresh)
-  test/             # Vitest Setup & Smoke-Tests
-e2e/                # Playwright E2E-Tests
+    rules/                # AD&D 2e Regelwerk-Engine (reine TypeScript-Logik)
+      spec/               # Regelwerk-Spezifikation + Coverage-Meta-Test
+      abilities.ts        # Attribut-Modifikator-Tabellen (STR inkl. 18/xx, DEX, CON, INT, WIS, CHA)
+      alignment.ts        # 9 Gesinnungen, Klassen-Restriktionen
+      classes.ts          # 16 Klassen-Definitionen, Attribut-Anforderungen, Fähigkeiten
+      combat.ts           # THAC0, Angriffswürfe, Rettungswürfe, Angriffe/Runde
+      equipment.ts        # RK-Berechnung, Belastung, Bewegungsrate
+      experience.ts       # XP-Tabellen, Stufen-Berechnung
+      magic.ts            # Magie-Schulen, Priester-Sphären, Spezialisten
+      multiclass.ts       # THAC0/Saves-Optimierung, Regeltreue-Check, HP-Divisor
+      proficiencies.ts    # Waffen-/NWP-Slots, Spezialisierung, Abzüge
+      races.ts            # 7 Rassen, Attribut-Adj., Level-Limits, Infravision
+      spellslots.ts       # Wizard Slots, Priest Slots/Bonus, Spell Points, canLearnSpell
+      thief.ts            # Diebesfähigkeiten, Rassen-Adj., Backstab-Multiplikator
+      types.ts            # Zentrale Typdefinitionen
+      index.ts            # Barrel-Export
+    supabase/             # Supabase Client-Helfer (client.ts, server.ts, middleware.ts)
+    utils/                # Hilfsfunktionen (cn, units: lbsToKg, feetToMeters)
+  middleware.ts           # Next.js Middleware (Supabase Session-Refresh)
+  test/                   # Vitest Setup, Smoke- & Regressionstests
+e2e/                      # Playwright E2E-Tests
+  pages/                  # Page Object Models (character-sheet, spellbook, login)
+  helpers/                # Auth-Helper (Cookie-basierter Test-Login)
+messages/                 # i18n-Dateien (de.json, en.json)
 supabase/
-  migrations/       # SQL-Migrationen (Supabase Schema + Seed-Daten)
+  migrations/             # SQL-Migrationen (Supabase Schema + Seed-Daten)
 ```
 
 ## Regelwerk-Engine (`src/lib/rules/`)
 
 Die AD&D-Regeln sind als **reine TypeScript-Funktionen** implementiert (kein DB-Zugriff, kein Framework). Stammdaten (Rassen, Klassen, Waffen, Rüstungen, Zauber) liegen zusätzlich in Supabase.
 
+### Kernfunktionen
+
+**Attribute:**
+
 - `getStrengthModifiers(str, exceptional?)` — inkl. 18/xx Ausnahmestärke
-- `getThac0(classGroup, level)` — THAC0-Berechnung pro Klassengruppe
-- `getSavingThrows(classGroup, level)` — Rettungswürfe
-- `canPlayClass(raceId, classId)` / `getLevelLimit(raceId, classId)`
-- `getOppositionSchools(classId)` — Verbotene Schulen für Spezialisten
-- `hasSphereAccess(classId, sphere, level)` — Priester-Sphären-Zugang
+- `getDexterityModifiers(dex)` / `getConstitutionModifiers(con)` / `getIntelligenceModifiers(int)` / `getWisdomModifiers(wis)` / `getCharismaModifiers(cha)`
+
+**Klassen & Rassen:**
+
+- `getClass(classId)` / `getAllClasses()` / `getClassGroup(classId)` / `meetsAbilityRequirements(classId, abilities)`
+- `getRace(raceId)` / `getAllRaces()` / `canPlayClass(raceId, classId)` / `getLevelLimit(raceId, classId)`
+
+**Kampf:**
+
+- `getThac0(classGroup, level)` / `getAttackRoll(thac0, targetAC)` / `getSavingThrows(classGroup, level)` / `getAttacksPerRound(classGroup, level)`
+
+**Magie:**
+
+- `getWizardSpellSlots(level)` / `getPriestSpellSlots(level)` / `getPriestBonusSlots(wisScore)`
+- `getPriestSpellPoints(level)` / `getPriestBonusSpellPoints(wis)` / `getPriestSpellCost(spellLevel)`
+- `canLearnSpell(classId, school?, sphere?, level, intScore)` / `getOppositionSchools(classId)` / `hasSphereAccess(classId, sphere, level)`
+
+**Multiclass:**
+
+- `getMulticlassThac0(classes)` / `getMulticlassSaves(classes)` / `getMulticlassHpDivisor(count)` / `isRuleCompliantMulticlass(raceId, classIds)` / `multiclassHasExceptionalStr(classIds)`
+
+**Fertigkeiten & Ausrüstung:**
+
+- `getWeaponProficiencySlots(classGroup, level)` / `getNonweaponProficiencySlots(classGroup, level)` / `canSpecialize(classId)`
+- `calculateAC(armorAC, shield, dexAdj)` / `calculateEncumbrance(weight, strAllow)` / `getMovementRate(base, encumbrance)`
+
+**Dieb:**
+
+- `getBaseThiefSkills(level)` / `getRacialThiefAdjustments(raceId)` / `getBackstabMultiplier(level)` / `hasThiefSkills(classIds)`
+
+**Sonstiges:**
+
+- `getAlignmentLabel(id)` / `getAllowedAlignments(classId)`
+- `getXpForNextLevel(classId, level)` / `getXpThreshold(classId, level)`
+
+### Regelwerk-Spezifikation (`src/lib/rules/spec/`)
+
+`character-creation-rules.ts` katalogisiert alle PHB-Regeln zur Charaktererstellung mit eindeutigen IDs. Bei neuen Regel-Implementierungen:
+
+1. Regel in der Spec von `missing` auf `implemented` setzen
+2. `implementationFiles` und `implementationFunctions` eintragen
+3. `testFiles` und `scenarios` pflegen
+4. `coverage.test.ts` verifiziert automatisch die Abdeckung
+
+**Regel-ID-Schema:**
+
+- `ABILITY-xxx` — Attribut-Tabellen und -Generierung
+- `RACE-xxx` — Rassen-Definitionen und -Tabellen
+- `CLASS-xxx` — Klassen, HP, Dual-Class
+- `ALIGN-xxx` — Gesinnungs-Regeln
+- `PROF-xxx` — Fertigkeiten
+- `EQUIP-xxx` — Ausrüstung und Gold
+- `MAGIC-xxx` — Magie-System
+- `XP-xxx` — Erfahrungspunkte
+- `COMBAT-xxx` — Kampfwerte
+- `MULTI-xxx` — Multiclass-Regeln
+- `THIEF-xxx` — Diebes-Fertigkeiten
+
+## Hausregeln
+
+Diese Abweichungen vom Standard-PHB gelten für die "Chaos RPG"-Gruppe:
+
+- **Multiclass/Dualclass:** Alle Rassen dürfen ohne Einschränkungen Multi-/Dualclass wählen. Die Engine zeigt nur **Warnungen**, blockiert aber nie.
+- **Metrisches System:** Die DB speichert imperiale Werte (lbs, ft), die UI zeigt metrisch (kg, m) via `lbsToKg()`/`feetToMeters()`.
+- **Priester-Zauberpunkte:** Statt des Standard-Slot-Systems nutzen wir das Player's Option Spell Points System.
+- **Keine Restriktionen:** Klassen-/Rassen-Kombinationen, NWP-Gruppen etc. werden nie blockiert — immer nur Warnhinweise.
 
 ## Supabase
 
 - **Client-Helfer:** `src/lib/supabase/client.ts` (Browser), `server.ts` (Server Components), `middleware.ts` (Session-Refresh)
 - **Env-Variablen:** `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` (siehe `.env.local.example`)
-- **RLS:** Alle Tabellen nutzen Row Level Security — User sehen nur ihre eigenen Daten
+- **RLS:** Alle Tabellen nutzen Row Level Security — SELECT für alle Authentifizierten, INSERT/UPDATE/DELETE nur für Owner
 
 ## AD&D 2e Regelwerk-Spezifika
 

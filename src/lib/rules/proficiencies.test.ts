@@ -4,9 +4,10 @@ import {
   getNonweaponProficiencySlots,
   getNonproficiencyPenalty,
   canSpecialize,
+  getWeaponSpeedFactor,
 } from "./proficiencies";
 
-describe("Weapon Proficiency Slots", () => {
+describe("PROF-001: Weapon Proficiency Slots", () => {
   it("should give warriors 4 slots at level 1", () => {
     expect(getWeaponProficiencySlots("warrior", 1)).toBe(4);
   });
@@ -32,7 +33,7 @@ describe("Weapon Proficiency Slots", () => {
   });
 });
 
-describe("Non-Weapon Proficiency Slots", () => {
+describe("PROF-002: Non-Weapon Proficiency Slots", () => {
   it("should give warriors 3 base slots at level 1", () => {
     expect(getNonweaponProficiencySlots("warrior", 1, 10)).toBe(3);
   });
@@ -51,7 +52,7 @@ describe("Non-Weapon Proficiency Slots", () => {
   });
 });
 
-describe("Non-proficiency Penalty", () => {
+describe("PROF-003: Non-proficiency Penalty", () => {
   it("should give warriors -2 penalty", () => {
     expect(getNonproficiencyPenalty("warrior")).toBe(-2);
   });
@@ -69,7 +70,7 @@ describe("Non-proficiency Penalty", () => {
   });
 });
 
-describe("Weapon Specialization", () => {
+describe("PROF-004: Weapon Specialization", () => {
   it("should allow fighter to specialize", () => {
     expect(canSpecialize("fighter")).toBe(true);
   });
@@ -84,5 +85,23 @@ describe("Weapon Specialization", () => {
 
   it("should not allow mage to specialize", () => {
     expect(canSpecialize("mage")).toBe(false);
+  });
+});
+
+describe("PROF-005: getWeaponSpeedFactor", () => {
+  it("dagger has speed factor 2", () => {
+    expect(getWeaponSpeedFactor("dagger")).toBe(2);
+  });
+
+  it("two-handed sword has speed factor 10", () => {
+    expect(getWeaponSpeedFactor("two-handed_sword")).toBe(10);
+  });
+
+  it("long sword has speed factor 5", () => {
+    expect(getWeaponSpeedFactor("long_sword")).toBe(5);
+  });
+
+  it("unknown weapon returns null", () => {
+    expect(getWeaponSpeedFactor("unknown_weapon")).toBeNull();
   });
 });

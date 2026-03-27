@@ -385,3 +385,46 @@ const CHA_TABLE: CharismaModifiers[] = [
 export function getCharismaModifiers(cha: number): CharismaModifiers {
   return { ...CHA_TABLE[cha - 3] };
 }
+
+// ─── ABILITY SCORE GENERATION METHODS ────────────────────────────────────────
+
+function rollDie(sides: number): number {
+  return Math.floor(Math.random() * sides) + 1;
+}
+
+function roll3d6(): number {
+  return rollDie(6) + rollDie(6) + rollDie(6);
+}
+
+function roll4d6DropLowest(): number {
+  const dice = [rollDie(6), rollDie(6), rollDie(6), rollDie(6)];
+  dice.sort((a, b) => a - b);
+  return dice[1] + dice[2] + dice[3];
+}
+
+/** Method I: 3d6 in order for STR, DEX, CON, INT, WIS, CHA */
+export function rollAbilityScoresMethodI(): number[] {
+  return [roll3d6(), roll3d6(), roll3d6(), roll3d6(), roll3d6(), roll3d6()];
+}
+
+/** Method II: 3d6 twice per ability, keep the higher */
+export function rollAbilityScoresMethodII(): number[] {
+  return Array.from({ length: 6 }, () => Math.max(roll3d6(), roll3d6()));
+}
+
+/** Method III: 3d6 six times, player arranges freely */
+export function rollAbilityScoresMethodIII(): number[] {
+  return [roll3d6(), roll3d6(), roll3d6(), roll3d6(), roll3d6(), roll3d6()];
+}
+
+/** Method IV: 3d6 twelve times, pick best 6 (returned sorted descending) */
+export function rollAbilityScoresMethodIV(): number[] {
+  const rolls = Array.from({ length: 12 }, () => roll3d6());
+  rolls.sort((a, b) => b - a);
+  return rolls.slice(0, 6);
+}
+
+/** Method V: 4d6 drop lowest, six times, player arranges freely */
+export function rollAbilityScoresMethodV(): number[] {
+  return Array.from({ length: 6 }, () => roll4d6DropLowest());
+}

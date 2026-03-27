@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { getClass, getAllClasses, getClassGroup, meetsAbilityRequirements } from "./classes";
 
-describe("Classes", () => {
-  it("should define 16 classes total", () => {
+describe("CLASS-005 CLASS-006: Classes", () => {
+  it("CLASS-001: should define 16 classes total", () => {
     expect(getAllClasses()).toHaveLength(16);
   });
 
-  it("should categorize fighter as warrior group", () => {
+  it("CLASS-004: should categorize fighter as warrior group", () => {
     expect(getClassGroup("fighter")).toBe("warrior");
   });
 
@@ -22,7 +22,7 @@ describe("Classes", () => {
     expect(getClassGroup("thief")).toBe("rogue");
   });
 
-  it("should give warriors d10 hit dice", () => {
+  it("CLASS-003: should give warriors d10 hit dice", () => {
     expect(getClass("fighter").hitDie).toBe(10);
     expect(getClass("ranger").hitDie).toBe(10);
     expect(getClass("paladin").hitDie).toBe(10);
@@ -33,14 +33,14 @@ describe("Classes", () => {
     expect(getClass("illusionist").hitDie).toBe(4);
   });
 
-  it("should allow exceptional strength only for warrior group", () => {
+  it("ABILITY-008: should allow exceptional strength only for warrior group", () => {
     expect(getClass("fighter").exceptionalStrength).toBe(true);
     expect(getClass("ranger").exceptionalStrength).toBe(true);
     expect(getClass("mage").exceptionalStrength).toBe(false);
     expect(getClass("thief").exceptionalStrength).toBe(false);
   });
 
-  it("should check ability requirements correctly", () => {
+  it("CLASS-002: should check ability requirements correctly", () => {
     const abilities = { str: 16, dex: 14, con: 15, int: 10, wis: 14, cha: 17 };
     expect(meetsAbilityRequirements("paladin", abilities)).toBe(true);
   });
