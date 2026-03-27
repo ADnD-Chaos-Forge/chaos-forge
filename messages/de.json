@@ -241,7 +241,17 @@
     "encLight": "Leicht belastet",
     "encModerate": "Mäßig belastet",
     "encHeavy": "Schwer belastet",
-    "encSevere": "Überbelastet"
+    "encSevere": "Überbelastet",
+    "thac0Melee": "ETW0 Nahkampf",
+    "thac0Ranged": "ETW0 Fernkampf",
+    "weaponType": "Waffentyp",
+    "range": "Reichweite",
+    "attacksPerRound": "Angriffe/Runde",
+    "damageSMWithStr": "Schaden S/M",
+    "damageLWithStr": "Schaden L",
+    "proficient": "Geübt",
+    "notProficient": "Ungeübt",
+    "rangeShortMediumLong": "{short}/{medium}/{long} m"
   },
   "spells": {
     "title": "Zauber",
@@ -463,7 +473,22 @@
     "intuition": "Intuition",
     "willpower": "Willenskraft",
     "leadership": "Führung",
-    "appearance": "Erscheinung"
+    "appearance": "Erscheinung",
+    "thac0Melee": "ETW0 Nah",
+    "thac0Ranged": "ETW0 Fern",
+    "damageSM": "Schaden S/M",
+    "damageL": "Schaden L",
+    "speed": "Geschw.",
+    "range": "Reichweite",
+    "attacksPerRound": "Ang./Rnd",
+    "acBreakdown": "RK-Aufschlüsselung",
+    "acArmor": "Rüstung",
+    "acShield": "Schild",
+    "acDex": "DEX",
+    "acFinal": "Gesamt",
+    "weaponsTitle": "Waffen",
+    "armorTitle": "Rüstungen & Inventar",
+    "name": "Name"
   },
   "theme": {
     "toggleDark": "Zum dunklen Modus wechseln",

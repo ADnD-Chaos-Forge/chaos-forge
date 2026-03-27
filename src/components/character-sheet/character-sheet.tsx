@@ -30,6 +30,7 @@ import {
   getCharismaModifiers,
 } from "@/lib/rules/abilities";
 import { getAttacksPerRound } from "@/lib/rules/combat";
+import { calculateAC } from "@/lib/rules/equipment";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import { Spinner } from "@/components/ui/spinner";
 import { AvatarUpload } from "@/components/avatar-upload";
@@ -139,7 +140,16 @@ export function CharacterSheet({
   const intMods = getIntelligenceModifiers(character.int);
   const wisMods = getWisdomModifiers(character.wis);
   const chaMods = getCharismaModifiers(character.cha);
-  const baseAC = 10 + dexMods.defensiveAdj;
+  // AC calculation using equipped armor + shield + DEX
+  const equippedArmor = equipment.find((e) => e.equipped && e.armor && e.armor.name !== "Shield");
+  const hasShield = equipment.some(
+    (e) => e.equipped && e.armor && e.armor.name.toLowerCase().includes("shield")
+  );
+  const effectiveAC = calculateAC(
+    equippedArmor?.armor?.ac ?? null,
+    hasShield,
+    dexMods.defensiveAdj
+  );
 
   function update(field: keyof CharacterRow, value: string | number | null) {
     if (!isOwner) return;
@@ -346,10 +356,7 @@ export function CharacterSheet({
       )}
 
       <Tabs defaultValue="stats" className="w-full">
-        <TabsList
-          className="no-scrollbar flex w-full !max-w-full flex-nowrap justify-start overflow-x-auto overflow-y-hidden scroll-smooth"
-          data-testid="sheet-tabs"
-        >
+        <TabsList className="flex w-full flex-wrap justify-start gap-0.5" data-testid="sheet-tabs">
           <TabsTrigger value="stats" data-testid="tab-trigger-stats">
             {t("stats")}
           </TabsTrigger>
@@ -902,9 +909,8 @@ export function CharacterSheet({
             <div className="rounded-md border border-border p-4 text-center">
               <div className="text-xs text-muted-foreground">{t("armorClass")}</div>
               <div className="font-heading text-3xl text-primary" data-testid="sheet-ac">
-                {baseAC}
+                {effectiveAC}
               </div>
-              <div className="text-xs text-muted-foreground">{t("acBase")}</div>
             </div>
             <div className="rounded-md border border-border p-4 text-center">
               <div className="text-xs text-muted-foreground">{t("hitDamage")}</div>
@@ -996,6 +1002,11 @@ export function CharacterSheet({
             allGeneralItems={allGeneralItems}
             baseMovement={race?.baseMovement ?? 12}
             readOnly={!isOwner}
+            characterStr={character.str}
+            characterStrExceptional={character.str_exceptional}
+            characterDex={character.dex}
+            characterClasses={charClasses}
+            weaponProficiencies={weaponProficiencies}
           />
         </TabsContent>
 

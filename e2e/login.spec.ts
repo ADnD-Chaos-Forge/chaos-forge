@@ -8,7 +8,7 @@ test.describe("Login Page", () => {
 
     await expect(loginPage.emailInput).toBeVisible();
     await expect(loginPage.submitButton).toBeVisible();
-    await expect(loginPage.submitButton).toHaveText("Magic Link senden");
+    await expect(loginPage.submitButton).toHaveText("Code senden");
   });
 
   test("should require email before submitting", async ({ page }) => {

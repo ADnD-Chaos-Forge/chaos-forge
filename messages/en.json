@@ -241,7 +241,17 @@
     "encLight": "Lightly encumbered",
     "encModerate": "Moderately encumbered",
     "encHeavy": "Heavily encumbered",
-    "encSevere": "Severely encumbered"
+    "encSevere": "Severely encumbered",
+    "thac0Melee": "THAC0 Melee",
+    "thac0Ranged": "THAC0 Ranged",
+    "weaponType": "Weapon Type",
+    "range": "Range",
+    "attacksPerRound": "Attacks/Round",
+    "damageSMWithStr": "Damage S/M",
+    "damageLWithStr": "Damage L",
+    "proficient": "Proficient",
+    "notProficient": "Not Proficient",
+    "rangeShortMediumLong": "{short}/{medium}/{long} m"
   },
   "spells": {
     "title": "Spells",
@@ -463,7 +473,22 @@
     "intuition": "Intuition",
     "willpower": "Willpower",
     "leadership": "Leadership",
-    "appearance": "Appearance"
+    "appearance": "Appearance",
+    "thac0Melee": "THAC0 Mel.",
+    "thac0Ranged": "THAC0 Rng.",
+    "damageSM": "Dmg S/M",
+    "damageL": "Dmg L",
+    "speed": "Spd",
+    "range": "Range",
+    "attacksPerRound": "Atk/Rnd",
+    "acBreakdown": "AC Breakdown",
+    "acArmor": "Armor",
+    "acShield": "Shield",
+    "acDex": "DEX",
+    "acFinal": "Final",
+    "weaponsTitle": "Weapons",
+    "armorTitle": "Armor & Inventory",
+    "name": "Name"
   },
   "theme": {
     "toggleDark": "Switch to dark mode",

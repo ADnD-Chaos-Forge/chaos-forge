@@ -7,8 +7,15 @@ import { getAlignmentLabel } from "@/lib/rules/alignment";
 import { getXpForNextLevel } from "@/lib/rules/experience";
 import type { ClassId } from "@/lib/rules/types";
 import { getMulticlassThac0, getMulticlassSaves } from "@/lib/rules/multiclass";
-import { getAttacksPerRound } from "@/lib/rules/combat";
+import {
+  getAttacksPerRound,
+  getAdjustedWeaponThac0,
+  formatDamageWithBonus,
+} from "@/lib/rules/combat";
+import { getNonproficiencyPenalty } from "@/lib/rules/proficiencies";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
+import { calculateAC } from "@/lib/rules/equipment";
+import { feetToMeters } from "@/lib/utils/units";
 import {
   getStrengthModifiers,
   getDexterityModifiers,
@@ -74,7 +81,25 @@ export function PrintSheet({
   const intMods = getIntelligenceModifiers(character.int);
   const wisMods = getWisdomModifiers(character.wis);
   const chaMods = getCharismaModifiers(character.cha);
-  const baseAC = 10 + dexMods.defensiveAdj;
+  // Correct AC with equipped armor + shield + DEX
+  const equippedArmorForAC = equipment.find(
+    (e) =>
+      e.armor &&
+      e.equipped &&
+      e.armor.name.toLowerCase() !== "schild" &&
+      e.armor.name.toLowerCase() !== "shield"
+  );
+  const hasShieldForAC = equipment.some(
+    (e) =>
+      e.armor &&
+      e.equipped &&
+      (e.armor.name.toLowerCase() === "schild" || e.armor.name.toLowerCase() === "shield")
+  );
+  const effectiveAC = calculateAC(
+    equippedArmorForAC?.armor?.ac ?? null,
+    hasShieldForAC,
+    dexMods.defensiveAdj
+  );
 
   const strDisplay =
     character.str === 18 && character.str_exceptional
@@ -345,7 +370,7 @@ export function PrintSheet({
             </div>
             <div className="rounded border border-gray-300 p-2">
               <div className="text-xs text-gray-500">{t("armorClass")}</div>
-              <div className="font-mono text-xl font-bold">{baseAC}</div>
+              <div className="font-mono text-xl font-bold">{effectiveAC}</div>
               <div className="text-xs text-gray-500">{t("base")}</div>
             </div>
             <div className="rounded border border-gray-300 p-2">
@@ -477,11 +502,183 @@ export function PrintSheet({
           </section>
         )}
 
-        {/* ── Equipment ─────────────────────────────────────────── */}
-        {equipment.length > 0 && (
+        {/* ── AC Breakdown ─────────────────────────────────────── */}
+        <section className="mb-4" data-testid="print-section-ac-breakdown">
+          <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+            {t("acBreakdown")}
+          </h2>
+          {(() => {
+            const equippedArmorItem = equipment.find(
+              (e) =>
+                e.armor &&
+                e.equipped &&
+                e.armor.name.toLowerCase() !== "schild" &&
+                e.armor.name.toLowerCase() !== "shield"
+            );
+            const shieldEquipped = equipment.some(
+              (e) =>
+                e.armor &&
+                e.equipped &&
+                (e.armor.name.toLowerCase() === "schild" || e.armor.name.toLowerCase() === "shield")
+            );
+            const finalAC = calculateAC(
+              equippedArmorItem?.armor?.ac ?? null,
+              shieldEquipped,
+              dexMods.defensiveAdj
+            );
+            return (
+              <div
+                className="grid grid-cols-5 gap-2 text-center text-sm"
+                data-testid="print-ac-breakdown-grid"
+              >
+                <div className="rounded border border-gray-300 p-2">
+                  <div className="text-xs text-gray-500">{t("base")}</div>
+                  <div className="font-mono text-lg font-bold" data-testid="print-ac-base">
+                    10
+                  </div>
+                </div>
+                <div className="rounded border border-gray-300 p-2">
+                  <div className="text-xs text-gray-500">{t("acArmor")}</div>
+                  <div className="font-mono text-lg font-bold" data-testid="print-ac-armor">
+                    {equippedArmorItem ? equippedArmorItem.armor!.ac : "—"}
+                  </div>
+                </div>
+                <div className="rounded border border-gray-300 p-2">
+                  <div className="text-xs text-gray-500">{t("acShield")}</div>
+                  <div className="font-mono text-lg font-bold" data-testid="print-ac-shield">
+                    {shieldEquipped ? "-1" : "—"}
+                  </div>
+                </div>
+                <div className="rounded border border-gray-300 p-2">
+                  <div className="text-xs text-gray-500">{t("acDex")}</div>
+                  <div className="font-mono text-lg font-bold" data-testid="print-ac-dex">
+                    {dexMods.defensiveAdj !== 0
+                      ? `${dexMods.defensiveAdj >= 0 ? "+" : ""}${dexMods.defensiveAdj}`
+                      : "—"}
+                  </div>
+                </div>
+                <div className="rounded border border-gray-400 p-2">
+                  <div className="text-xs text-gray-500">{t("acFinal")}</div>
+                  <div className="font-mono text-lg font-bold" data-testid="print-ac-final">
+                    {finalAC}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </section>
+
+        {/* ── Weapons Table ──────────────────────────────────────── */}
+        {equipment.filter((e) => e.weapon && e.equipped).length > 0 && (
+          <section className="mb-4" data-testid="print-section-weapons">
+            <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+              {t("weaponsTitle")}
+            </h2>
+            <table className="w-full text-sm" data-testid="print-weapons-table">
+              <thead>
+                <tr className="border-b border-gray-300 text-left text-xs">
+                  <th className="py-1">{t("name")}</th>
+                  <th className="py-1 text-center">{t("thac0Melee")}</th>
+                  <th className="py-1 text-center">{t("thac0Ranged")}</th>
+                  <th className="py-1 text-center">{t("damageSM")}</th>
+                  <th className="py-1 text-center">{t("damageL")}</th>
+                  <th className="py-1 text-center">{t("speed")}</th>
+                  <th className="py-1 text-center">{t("range")}</th>
+                  <th className="py-1 text-center">{t("attacksPerRound")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {equipment
+                  .filter((e) => e.weapon && e.equipped)
+                  .map((e) => {
+                    const weapon = e.weapon!;
+                    const isProficient = weaponProficiencies.some(
+                      (wp) => wp.weapon_name.toLowerCase() === weapon.name.toLowerCase()
+                    );
+                    const penalty = isProficient
+                      ? 0
+                      : getNonproficiencyPenalty(
+                          activeClasses.length > 0
+                            ? (CLASSES[activeClasses[0].class_id as ClassId]?.group ?? "warrior")
+                            : "warrior"
+                        );
+                    const weaponThac0 = getAdjustedWeaponThac0(
+                      thac0,
+                      strMods.hitAdj,
+                      dexMods.missileAdj,
+                      weapon.weapon_type,
+                      penalty
+                    );
+                    return (
+                      <tr
+                        key={e.id}
+                        className="border-b border-gray-200"
+                        data-testid={`print-weapon-row-${e.id}`}
+                      >
+                        <td className="py-1" data-testid={`print-weapon-name-${e.id}`}>
+                          {weapon.name}
+                          {!isProficient && <span className="text-xs text-gray-400"> *</span>}
+                        </td>
+                        <td
+                          className="py-1 text-center font-mono"
+                          data-testid={`print-weapon-thac0-melee-${e.id}`}
+                        >
+                          {weaponThac0.melee}
+                        </td>
+                        <td
+                          className="py-1 text-center font-mono"
+                          data-testid={`print-weapon-thac0-ranged-${e.id}`}
+                        >
+                          {weaponThac0.ranged !== null ? weaponThac0.ranged : "—"}
+                        </td>
+                        <td
+                          className="py-1 text-center font-mono"
+                          data-testid={`print-weapon-damage-sm-${e.id}`}
+                        >
+                          {formatDamageWithBonus(weapon.damage_sm, strMods.dmgAdj)}
+                        </td>
+                        <td
+                          className="py-1 text-center font-mono"
+                          data-testid={`print-weapon-damage-l-${e.id}`}
+                        >
+                          {formatDamageWithBonus(weapon.damage_l, strMods.dmgAdj)}
+                        </td>
+                        <td
+                          className="py-1 text-center font-mono"
+                          data-testid={`print-weapon-speed-${e.id}`}
+                        >
+                          {weapon.speed}
+                        </td>
+                        <td
+                          className="py-1 text-center font-mono text-xs"
+                          data-testid={`print-weapon-range-${e.id}`}
+                        >
+                          {weapon.weapon_type !== "melee" &&
+                          weapon.range_short != null &&
+                          weapon.range_medium != null &&
+                          weapon.range_long != null
+                            ? `${feetToMeters(weapon.range_short)}/${feetToMeters(weapon.range_medium)}/${feetToMeters(weapon.range_long)}`
+                            : "—"}
+                        </td>
+                        <td
+                          className="py-1 text-center font-mono"
+                          data-testid={`print-weapon-apr-${e.id}`}
+                        >
+                          {attacksDisplay}
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {/* ── Equipment (Armor & Other) ──────────────────────────── */}
+        {equipment.filter((e) => e.armor || !e.equipped).length > 0 && (
           <section className="mb-4" data-testid="print-section-equipment">
             <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
-              {t("equipment")}
+              {t("armorTitle")}
             </h2>
             <table className="w-full text-sm">
               <thead>
@@ -493,20 +690,22 @@ export function PrintSheet({
                 </tr>
               </thead>
               <tbody>
-                {equipment.map((e) => (
-                  <tr key={e.id} className="border-b border-gray-200">
-                    <td className="py-1">{e.weapon?.name ?? e.armor?.name ?? "—"}</td>
-                    <td className="py-1 text-center text-xs">
-                      {e.weapon ? t("weaponType") : t("armorType")}
-                    </td>
-                    <td className="py-1 text-center text-xs">
-                      {lbsToKg(e.weapon?.weight ?? e.armor?.weight ?? 0)} kg
-                    </td>
-                    <td className="py-1 text-center text-xs">
-                      {e.equipped ? t("equippedStatus") : t("inventoryStatus")}
-                    </td>
-                  </tr>
-                ))}
+                {equipment
+                  .filter((e) => e.armor || (e.weapon && !e.equipped))
+                  .map((e) => (
+                    <tr key={e.id} className="border-b border-gray-200">
+                      <td className="py-1">{e.weapon?.name ?? e.armor?.name ?? "—"}</td>
+                      <td className="py-1 text-center text-xs">
+                        {e.weapon ? t("weaponType") : t("armorType")}
+                      </td>
+                      <td className="py-1 text-center text-xs">
+                        {lbsToKg(e.weapon?.weight ?? e.armor?.weight ?? 0)} kg
+                      </td>
+                      <td className="py-1 text-center text-xs">
+                        {e.equipped ? t("equippedStatus") : t("inventoryStatus")}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </section>

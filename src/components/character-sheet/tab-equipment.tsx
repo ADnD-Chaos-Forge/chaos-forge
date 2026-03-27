@@ -7,13 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { calculateEncumbrance, calculateAC, getMovementRate } from "@/lib/rules/equipment";
 import { useTranslations } from "next-intl";
-import { lbsToKg } from "@/lib/utils/units";
+import { lbsToKg, feetToMeters } from "@/lib/utils/units";
+import { getStrengthModifiers, getDexterityModifiers } from "@/lib/rules/abilities";
+import {
+  getAdjustedWeaponThac0,
+  formatDamageWithBonus,
+  getAttacksPerRound,
+} from "@/lib/rules/combat";
+import { getMulticlassThac0 } from "@/lib/rules/multiclass";
+import { getNonproficiencyPenalty } from "@/lib/rules/proficiencies";
+import { CLASSES } from "@/lib/rules/classes";
+import type { ClassId } from "@/lib/rules/types";
 import type {
   CharacterEquipmentWithDetails,
   WeaponRow,
   ArmorRow,
   CharacterInventoryWithDetails,
   GeneralItemRow,
+  CharacterClassRow,
+  CharacterWeaponProficiencyRow,
 } from "@/lib/supabase/types";
 
 interface TabEquipmentProps {
@@ -28,6 +40,11 @@ interface TabEquipmentProps {
   allGeneralItems: GeneralItemRow[];
   baseMovement: number;
   readOnly?: boolean;
+  characterStr: number;
+  characterStrExceptional: number | null;
+  characterDex: number;
+  characterClasses: CharacterClassRow[];
+  weaponProficiencies: CharacterWeaponProficiencyRow[];
 }
 
 export function TabEquipment({
@@ -42,6 +59,11 @@ export function TabEquipment({
   allGeneralItems,
   baseMovement,
   readOnly = false,
+  characterStr,
+  characterStrExceptional,
+  characterDex,
+  characterClasses,
+  weaponProficiencies,
 }: TabEquipmentProps) {
   const router = useRouter();
   const t = useTranslations("equipment");
@@ -91,7 +113,11 @@ export function TabEquipment({
   const encumbranceLabel = encumbranceLabelMap[encumbranceLevel];
 
   const equippedArmor = equipment.find(
-    (e) => e.armor && e.equipped && e.armor.name.toLowerCase() !== "schild"
+    (e) =>
+      e.armor &&
+      e.equipped &&
+      e.armor.name.toLowerCase() !== "schild" &&
+      e.armor.name.toLowerCase() !== "shield"
   );
   const shieldEquipped = equipment.some(
     (e) =>
@@ -298,6 +324,40 @@ export function TabEquipment({
     }
     if (item.armor) return t("armor");
     return "";
+  }
+
+  // ── Combat calculations for weapon display ──
+  const activeClasses = characterClasses.filter((cc) => cc.is_active);
+  const classEntries = activeClasses.map((cc) => ({
+    classId: cc.class_id as ClassId,
+    level: cc.level,
+  }));
+  const baseThac0 = classEntries.length > 0 ? getMulticlassThac0(classEntries) : 20;
+  const strMods = getStrengthModifiers(characterStr, characterStrExceptional ?? undefined);
+  const dexMods = getDexterityModifiers(characterDex);
+  const strHitAdj = strMods.hitAdj;
+  const strDmgAdj = strMods.dmgAdj;
+  const dexMissileAdj = dexMods.missileAdj;
+
+  // Determine primary class group for attacks per round
+  const primaryClassGroup =
+    activeClasses.length > 0
+      ? (CLASSES[activeClasses[0].class_id as ClassId]?.group ?? "warrior")
+      : "warrior";
+  const primaryLevel = activeClasses[0]?.level ?? 1;
+  const attacksPerRound = getAttacksPerRound(primaryClassGroup, primaryLevel);
+
+  function getWeaponProficiencyPenalty(weaponName: string): number {
+    const isProficient = weaponProficiencies.some(
+      (wp) => wp.weapon_name.toLowerCase() === weaponName.toLowerCase()
+    );
+    if (isProficient) return 0;
+    return getNonproficiencyPenalty(primaryClassGroup);
+  }
+
+  function getWeaponThac0(weapon: WeaponRow) {
+    const penalty = getWeaponProficiencyPenalty(weapon.name);
+    return getAdjustedWeaponThac0(baseThac0, strHitAdj, dexMissileAdj, weapon.weapon_type, penalty);
   }
 
   return (
@@ -815,35 +875,205 @@ export function TabEquipment({
 
       {/* ── Weapon Details (Equipped Weapons) ──────────────────── */}
       {equippedItems.filter((e) => e.weapon).length > 0 && (
-        <div>
+        <div data-testid="weapon-details-section">
           <h3 className="mb-3 font-heading text-lg">{t("weapons")}</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+
+          {/* Desktop table */}
+          <div className="hidden overflow-x-auto md:block">
+            <table className="w-full text-sm" data-testid="weapon-details-table">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th className="py-2">{t("name")}</th>
-                  <th className="py-2 text-center">{t("damageSM")}</th>
-                  <th className="py-2 text-center">{t("damageL")}</th>
+                  <th className="py-2 text-center">{t("weaponType")}</th>
+                  <th className="py-2 text-center">{t("thac0Melee")}</th>
+                  <th className="py-2 text-center">{t("thac0Ranged")}</th>
+                  <th className="py-2 text-center">{t("damageSMWithStr")}</th>
+                  <th className="py-2 text-center">{t("damageLWithStr")}</th>
                   <th className="py-2 text-center">{t("speed")}</th>
+                  <th className="py-2 text-center">{t("range")}</th>
+                  <th className="py-2 text-center">{t("attacksPerRound")}</th>
                   <th className="py-2 text-center">{t("weight")}</th>
                 </tr>
               </thead>
               <tbody>
                 {equippedItems
                   .filter((e) => e.weapon)
-                  .map((item) => (
-                    <tr key={item.id} className="border-b border-border/50">
-                      <td className="py-2 font-medium">{item.weapon!.name}</td>
-                      <td className="py-2 text-center font-mono">{item.weapon!.damage_sm}</td>
-                      <td className="py-2 text-center font-mono">{item.weapon!.damage_l}</td>
-                      <td className="py-2 text-center font-mono">{item.weapon!.speed}</td>
-                      <td className="py-2 text-center font-mono">
-                        {lbsToKg(item.weapon!.weight)} kg
-                      </td>
-                    </tr>
-                  ))}
+                  .map((item) => {
+                    const weapon = item.weapon!;
+                    const thac0s = getWeaponThac0(weapon);
+                    const isProficient = weaponProficiencies.some(
+                      (wp) => wp.weapon_name.toLowerCase() === weapon.name.toLowerCase()
+                    );
+                    return (
+                      <tr
+                        key={item.id}
+                        className="border-b border-border/50"
+                        data-testid={`weapon-row-${item.id}`}
+                      >
+                        <td className="py-2 font-medium" data-testid={`weapon-name-${item.id}`}>
+                          {weapon.name}
+                          {!isProficient && (
+                            <Badge
+                              variant="outline"
+                              className="ml-1 text-xs"
+                              data-testid={`weapon-nonprof-${item.id}`}
+                            >
+                              {t("notProficient")}
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="py-2 text-center" data-testid={`weapon-type-${item.id}`}>
+                          <Badge variant="outline">{getItemType(item)}</Badge>
+                        </td>
+                        <td
+                          className="py-2 text-center font-mono"
+                          data-testid={`weapon-thac0-melee-${item.id}`}
+                        >
+                          {thac0s.melee}
+                        </td>
+                        <td
+                          className="py-2 text-center font-mono"
+                          data-testid={`weapon-thac0-ranged-${item.id}`}
+                        >
+                          {thac0s.ranged !== null ? thac0s.ranged : "—"}
+                        </td>
+                        <td
+                          className="py-2 text-center font-mono"
+                          data-testid={`weapon-damage-sm-${item.id}`}
+                        >
+                          {formatDamageWithBonus(weapon.damage_sm, strDmgAdj)}
+                        </td>
+                        <td
+                          className="py-2 text-center font-mono"
+                          data-testid={`weapon-damage-l-${item.id}`}
+                        >
+                          {formatDamageWithBonus(weapon.damage_l, strDmgAdj)}
+                        </td>
+                        <td
+                          className="py-2 text-center font-mono"
+                          data-testid={`weapon-speed-${item.id}`}
+                        >
+                          {weapon.speed}
+                        </td>
+                        <td
+                          className="py-2 text-center font-mono"
+                          data-testid={`weapon-range-${item.id}`}
+                        >
+                          {weapon.weapon_type !== "melee" &&
+                          weapon.range_short != null &&
+                          weapon.range_medium != null &&
+                          weapon.range_long != null
+                            ? `${feetToMeters(weapon.range_short)}/${feetToMeters(weapon.range_medium)}/${feetToMeters(weapon.range_long)}`
+                            : "—"}
+                        </td>
+                        <td
+                          className="py-2 text-center font-mono"
+                          data-testid={`weapon-apr-${item.id}`}
+                        >
+                          {attacksPerRound}
+                        </td>
+                        <td
+                          className="py-2 text-center font-mono"
+                          data-testid={`weapon-weight-${item.id}`}
+                        >
+                          {lbsToKg(weapon.weight)} kg
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="flex flex-col gap-3 md:hidden" data-testid="weapon-details-cards">
+            {equippedItems
+              .filter((e) => e.weapon)
+              .map((item) => {
+                const weapon = item.weapon!;
+                const thac0s = getWeaponThac0(weapon);
+                const isProficient = weaponProficiencies.some(
+                  (wp) => wp.weapon_name.toLowerCase() === weapon.name.toLowerCase()
+                );
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-md border border-border p-3"
+                    data-testid={`weapon-card-${item.id}`}
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="font-medium" data-testid={`weapon-card-name-${item.id}`}>
+                        {weapon.name}
+                      </span>
+                      <div className="flex gap-1">
+                        <Badge variant="outline">{getItemType(item)}</Badge>
+                        {!isProficient && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs"
+                            data-testid={`weapon-card-nonprof-${item.id}`}
+                          >
+                            {t("notProficient")}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                      <div data-testid={`weapon-card-thac0-melee-${item.id}`}>
+                        <span className="text-xs text-muted-foreground">{t("thac0Melee")}:</span>{" "}
+                        <span className="font-mono">{thac0s.melee}</span>
+                      </div>
+                      <div data-testid={`weapon-card-thac0-ranged-${item.id}`}>
+                        <span className="text-xs text-muted-foreground">{t("thac0Ranged")}:</span>{" "}
+                        <span className="font-mono">
+                          {thac0s.ranged !== null ? thac0s.ranged : "—"}
+                        </span>
+                      </div>
+                      <div data-testid={`weapon-card-damage-sm-${item.id}`}>
+                        <span className="text-xs text-muted-foreground">
+                          {t("damageSMWithStr")}:
+                        </span>{" "}
+                        <span className="font-mono">
+                          {formatDamageWithBonus(weapon.damage_sm, strDmgAdj)}
+                        </span>
+                      </div>
+                      <div data-testid={`weapon-card-damage-l-${item.id}`}>
+                        <span className="text-xs text-muted-foreground">
+                          {t("damageLWithStr")}:
+                        </span>{" "}
+                        <span className="font-mono">
+                          {formatDamageWithBonus(weapon.damage_l, strDmgAdj)}
+                        </span>
+                      </div>
+                      <div data-testid={`weapon-card-speed-${item.id}`}>
+                        <span className="text-xs text-muted-foreground">{t("speed")}:</span>{" "}
+                        <span className="font-mono">{weapon.speed}</span>
+                      </div>
+                      <div data-testid={`weapon-card-apr-${item.id}`}>
+                        <span className="text-xs text-muted-foreground">
+                          {t("attacksPerRound")}:
+                        </span>{" "}
+                        <span className="font-mono">{attacksPerRound}</span>
+                      </div>
+                      <div data-testid={`weapon-card-weight-${item.id}`}>
+                        <span className="text-xs text-muted-foreground">{t("weight")}:</span>{" "}
+                        <span className="font-mono">{lbsToKg(weapon.weight)} kg</span>
+                      </div>
+                      <div data-testid={`weapon-card-range-${item.id}`}>
+                        <span className="text-xs text-muted-foreground">{t("range")}:</span>{" "}
+                        <span className="font-mono">
+                          {weapon.weapon_type !== "melee" &&
+                          weapon.range_short != null &&
+                          weapon.range_medium != null &&
+                          weapon.range_long != null
+                            ? `${feetToMeters(weapon.range_short)}/${feetToMeters(weapon.range_medium)}/${feetToMeters(weapon.range_long)}`
+                            : "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </div>
       )}
