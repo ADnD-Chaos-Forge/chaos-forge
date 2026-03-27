@@ -152,11 +152,11 @@ export default function LoginPage() {
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  maxLength={6}
+                  maxLength={8}
                   placeholder={t("codePlaceholder")}
                   value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  className="text-center font-mono text-2xl tracking-[0.5em]"
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                  className="text-center font-mono text-2xl tracking-[0.3em]"
                   autoFocus
                   required
                   data-testid="login-code-input"
@@ -164,7 +164,7 @@ export default function LoginPage() {
               </div>
               <Button
                 type="submit"
-                disabled={loading || code.length !== 6}
+                disabled={loading || code.length < 6}
                 data-testid="login-verify-button"
               >
                 {loading ? (
