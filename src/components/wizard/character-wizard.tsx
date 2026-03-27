@@ -11,11 +11,20 @@ import { StepBasics } from "./step-basics";
 import { StepAbilities } from "./step-abilities";
 import { StepRace } from "./step-race";
 import { StepClass } from "./step-class";
+import { StepKit } from "./step-kit";
 import { StepCombat } from "./step-combat";
 import { StepSummary } from "./step-summary";
 import { WIZARD_STEPS, INITIAL_WIZARD_STATE, type WizardState } from "./wizard-types";
 
-const STEP_LABEL_KEYS = ["basics", "abilities", "race", "class", "combat", "summary"] as const;
+const STEP_LABEL_KEYS = [
+  "basics",
+  "abilities",
+  "race",
+  "class",
+  "kit",
+  "combat",
+  "summary",
+] as const;
 
 export function CharacterWizard() {
   const router = useRouter();
@@ -40,6 +49,8 @@ export function CharacterWizard() {
         return state.raceId !== null;
       case "class":
         return state.classIds.length > 0;
+      case "kit":
+        return true;
       case "combat":
         return state.hpMax >= 1;
       case "summary":
@@ -85,6 +96,7 @@ export function CharacterWizard() {
         cha: state.cha,
         hp_current: state.hpMax,
         hp_max: state.hpMax,
+        kit: state.kit,
       })
       .select("id")
       .single();
@@ -148,6 +160,7 @@ export function CharacterWizard() {
       {WIZARD_STEPS[currentStep].id === "class" && (
         <StepClass state={state} onChange={updateState} />
       )}
+      {WIZARD_STEPS[currentStep].id === "kit" && <StepKit state={state} onChange={updateState} />}
       {WIZARD_STEPS[currentStep].id === "combat" && (
         <StepCombat state={state} onChange={updateState} />
       )}

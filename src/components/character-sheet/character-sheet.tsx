@@ -33,6 +33,7 @@ import {
 import { getAttacksPerRound } from "@/lib/rules/combat";
 import { calculateAC } from "@/lib/rules/equipment";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
+import { getKit, getEffectiveHitDie } from "@/lib/rules/kits";
 import { Spinner } from "@/components/ui/spinner";
 import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -284,6 +285,15 @@ export function CharacterSheet({
                   {t("multiclass")}
                 </Badge>
               )}
+              {character.kit &&
+                (() => {
+                  const kit = getKit(character.kit);
+                  return kit ? (
+                    <Badge variant="secondary" data-testid="badge-kit">
+                      {localized(kit.name, kit.name_en, locale)}
+                    </Badge>
+                  ) : null;
+                })()}
             </div>
           </div>
         </div>
@@ -799,6 +809,7 @@ export function CharacterSheet({
                             )
                           }
                           className="w-16 text-center font-mono text-sm"
+                          aria-label={`Level ${clsDef?.name ?? cc.class_id}`}
                           data-testid={`sheet-level-${cc.class_id}`}
                         />
                       </div>
@@ -816,6 +827,7 @@ export function CharacterSheet({
                           )
                         }
                         className="w-32 text-center font-mono text-sm"
+                        aria-label={`XP ${clsDef?.name ?? cc.class_id}`}
                         data-testid={`sheet-xp-input-${cc.class_id}`}
                       />
                       <div className="flex flex-1 flex-col gap-1">
@@ -914,6 +926,31 @@ export function CharacterSheet({
                 </div>
               );
             })}
+            {/* Show kit abilities */}
+            {character.kit &&
+              (() => {
+                const kitDef = getKit(character.kit);
+                if (!kitDef?.abilities?.length) return null;
+                return (
+                  <div className="mb-4" data-testid="sheet-kit-abilities">
+                    <h3 className="mb-2 font-heading text-lg">
+                      {t("kitAbilities")} — {localized(kitDef.name, kitDef.name_en, locale)}
+                    </h3>
+                    <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                      {kitDef.abilities.map((ability, i) => (
+                        <details key={i}>
+                          <summary className="cursor-pointer">
+                            {localized(ability.name, ability.name_en, locale)}
+                          </summary>
+                          <p className="mt-1 text-xs">
+                            {localized(ability.description, ability.description_en, locale)}
+                          </p>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
           </div>
         </TabsContent>
 

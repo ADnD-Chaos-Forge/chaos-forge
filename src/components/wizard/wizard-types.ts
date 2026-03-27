@@ -18,7 +18,9 @@ export interface WizardState {
   raceId: RaceId | null;
   // Step 4: Class (supports multiclass)
   classIds: ClassId[];
-  // Step 5: Combat (calculated + HP input)
+  // Step 5: Kit (optional)
+  kit: string | null;
+  // Step 6: Combat (calculated + HP input)
   hpMax: number;
 }
 
@@ -35,6 +37,7 @@ export const INITIAL_WIZARD_STATE: WizardState = {
   cha: 10,
   raceId: null,
   classIds: [],
+  kit: null,
   hpMax: 1,
 };
 
@@ -43,6 +46,7 @@ export const WIZARD_STEPS = [
   { id: "abilities", label: "Attribute" },
   { id: "race", label: "Rasse" },
   { id: "class", label: "Klasse" },
+  { id: "kit", label: "Kit" },
   { id: "combat", label: "Kampfwerte" },
   { id: "summary", label: "Zusammenfassung" },
 ] as const;

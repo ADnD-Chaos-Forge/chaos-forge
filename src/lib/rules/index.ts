@@ -12,3 +12,4 @@ export * from "./multiclass";
 export * from "./spellslots";
 export * from "./thief";
 export * from "./hitpoints";
+export * from "./kits";

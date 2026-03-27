@@ -105,7 +105,12 @@
     "savingThrows": "Saving Throws",
     "createCharacter": "Create Character",
     "creating": "Creating character...",
-    "infravision": "Infravision"
+    "infravision": "Infravision",
+    "kit": "Kit",
+    "kitDescription": "Optionally choose a kit for your character. Kits modify abilities and hit dice.",
+    "noKit": "No Kit",
+    "noKitDesc": "Standard class without kit modifications.",
+    "noKitsAvailable": "No kits available for the selected classes."
   },
   "sheet": {
     "stats": "Stats",
@@ -154,6 +159,7 @@
     "currencyCP": "Copper",
     "racialAbilities": "Racial Abilities",
     "classAbilities": "Class Abilities",
+    "kitAbilities": "Kit Abilities",
     "thac0": "THAC0",
     "armorClass": "Armor Class",
     "acBase": "Base (unarmored)",
@@ -425,6 +431,8 @@
     "abilities_section": "Abilities",
     "racialAbilities": "Racial Abilities",
     "classAbilities": "Class Abilities",
+    "kitAbilities": "Kit Abilities",
+    "kit": "Kit",
     "notes": "Notes",
     "footer": "Chaos Forge — AD&D 2nd Edition Manager",
     "createdAt": "Created on",
