@@ -61,8 +61,7 @@
     "level": "Stufe",
     "deleteTitle": "Charakter löschen",
     "deleteMessage": "Möchtest du \"{name}\" wirklich unwiderruflich löschen?",
-    "printView": "Druckansicht",
-    "spellbook": "Zauberbuch"
+    "printView": "Druckansicht"
   },
   "wizard": {
     "basics": "Grunddaten",
@@ -497,8 +496,10 @@
     "change": "Ändern",
     "uploadTitle": "Avatar hochladen",
     "dropzone": "Bild hierher ziehen oder klicken zum Auswählen",
-    "formats": "JPG, PNG oder WebP (max. 2 MB)",
-    "uploading": "Lade hoch..."
+    "formats": "JPG, PNG oder WebP (max. 10 MB)",
+    "uploading": "Lade hoch...",
+    "zoom": "Zoom",
+    "pickAnother": "Anderes Bild wählen"
   },
   "spellbook": {
     "title": "Zauberbuch",

@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/client";
-import { resizeImageToSquare } from "./resize";
+import { resizeImageToSquare, cropAndResize } from "./resize";
+import type { CropArea } from "./resize";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 export interface UploadResult {
   url: string | null;
@@ -14,7 +15,7 @@ export function validateFile(file: File): string | null {
     return "Nur JPG, PNG oder WebP Dateien sind erlaubt.";
   }
   if (file.size > MAX_FILE_SIZE) {
-    return "Die Datei darf maximal 2 MB groß sein.";
+    return "Die Datei darf maximal 10 MB groß sein.";
   }
   return null;
 }
@@ -22,7 +23,8 @@ export function validateFile(file: File): string | null {
 export async function uploadAvatar(
   file: File,
   userId: string,
-  characterId: string
+  characterId: string,
+  cropArea?: CropArea
 ): Promise<UploadResult> {
   const validationError = validateFile(file);
   if (validationError) {
@@ -30,7 +32,9 @@ export async function uploadAvatar(
   }
 
   try {
-    const resized = await resizeImageToSquare(file);
+    const resized = cropArea
+      ? await cropAndResize(file, cropArea)
+      : await resizeImageToSquare(file);
     const supabase = createClient();
     const path = `${userId}/${characterId}.webp`;
 

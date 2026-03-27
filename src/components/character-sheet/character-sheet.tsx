@@ -242,6 +242,8 @@ export function CharacterSheet({
             userId={userId}
             characterName={character.name}
             currentAvatarUrl={character.avatar_url}
+            size={120}
+            variant="square"
           />
           <div>
             <h1 className="font-heading text-3xl text-primary" data-testid="sheet-name">
