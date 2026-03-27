@@ -501,6 +501,19 @@
     "zoom": "Zoom",
     "pickAnother": "Pick a different image"
   },
+  "sharing": {
+    "title": "Share: {name}",
+    "shareButton": "Share",
+    "publicLabel": "Public",
+    "publicDescription": "Make visible to all players",
+    "sharedWith": "Shared with",
+    "noShares": "Not shared with anyone yet.",
+    "selectUser": "Select player...",
+    "badgePrivate": "Private",
+    "badgePublic": "Public",
+    "badgeShared": "Shared",
+    "sharedBy": "Shared by {player}"
+  },
   "spellbook": {
     "title": "Spellbook",
     "back": "Back to Character",

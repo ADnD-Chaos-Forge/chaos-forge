@@ -54,6 +54,7 @@ export interface CharacterRow {
   thief_climb_walls: number;
   thief_detect_noise: number;
   thief_read_languages: number;
+  is_public: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -246,4 +247,16 @@ export interface CharacterInventoryRow {
 
 export interface CharacterInventoryWithDetails extends CharacterInventoryRow {
   item: GeneralItemRow | null;
+}
+
+export interface CharacterShareRow {
+  id: string;
+  character_id: string;
+  shared_with_user_id: string;
+  created_at: string;
+}
+
+export interface AppUser {
+  id: string;
+  email: string;
 }

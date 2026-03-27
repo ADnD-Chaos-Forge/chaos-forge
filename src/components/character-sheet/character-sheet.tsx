@@ -34,6 +34,7 @@ import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import { Spinner } from "@/components/ui/spinner";
 import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { ShareDialog } from "./share-dialog";
 import Link from "next/link";
 import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
 import { TabEquipment } from "./tab-equipment";
@@ -91,11 +92,13 @@ export function CharacterSheet({
   const t = useTranslations("sheet");
   const tc = useTranslations("characters");
   const tcom = useTranslations("common");
+  const ts = useTranslations("sharing");
   const [character, setCharacter] = useState(initial);
   const [charClasses, setCharClasses] = useState(initialClasses);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   const isOwner = character.user_id === userId;
 
@@ -265,6 +268,15 @@ export function CharacterSheet({
           </div>
         </div>
         <div className="flex gap-2">
+          {isOwner && (
+            <Button
+              variant="outline"
+              onClick={() => setShowShareDialog(true)}
+              data-testid="sheet-share-button"
+            >
+              {ts("shareButton")}
+            </Button>
+          )}
           {showSpells && (
             <Link href={`/characters/${character.id}/spellbook`}>
               <Button variant="outline" data-testid="sheet-spellbook-button">
@@ -308,6 +320,19 @@ export function CharacterSheet({
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
+
+      {isOwner && (
+        <ShareDialog
+          open={showShareDialog}
+          characterId={character.id}
+          characterName={character.name}
+          isPublic={character.is_public}
+          onClose={() => setShowShareDialog(false)}
+          onVisibilityChange={(val) => {
+            setCharacter((prev) => ({ ...prev, is_public: val }));
+          }}
+        />
+      )}
 
       <Tabs defaultValue="stats" className="w-full">
         <TabsList className="w-full justify-start" data-testid="sheet-tabs">
@@ -613,7 +638,7 @@ export function CharacterSheet({
                               type="number"
                               min={3}
                               max={18}
-                              value={character[sub.key1] ?? ""}
+                              value={(character[sub.key1] as number) ?? ""}
                               onChange={(e) =>
                                 update(
                                   sub.key1,
@@ -638,7 +663,7 @@ export function CharacterSheet({
                               type="number"
                               min={3}
                               max={18}
-                              value={character[sub.key2] ?? ""}
+                              value={(character[sub.key2] as number) ?? ""}
                               onChange={(e) =>
                                 update(
                                   sub.key2,

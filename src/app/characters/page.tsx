@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/supabase/auth";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,10 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { AvatarDisplay } from "@/components/avatar-display";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
-import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
+import type { CharacterRow, CharacterClassRow, CharacterShareRow } from "@/lib/supabase/types";
 
 export default async function CharactersPage() {
   const t = await getTranslations("characters");
+  const ts = await getTranslations("sharing");
+  const user = await requireAuth();
   const supabase = await createClient();
   const { data: characters } = await supabase
     .from("characters")
@@ -23,6 +26,15 @@ export default async function CharactersPage() {
     .from("character_classes")
     .select("*")
     .returns<CharacterClassRow[]>();
+
+  // Load shares where the current user is the recipient (to detect shared characters)
+  const { data: myShares } = await supabase
+    .from("character_shares")
+    .select("*")
+    .eq("shared_with_user_id", user.id)
+    .returns<CharacterShareRow[]>();
+
+  const sharedCharacterIds = new Set((myShares ?? []).map((s) => s.character_id));
 
   const charClassMap = new Map<string, CharacterClassRow[]>();
   for (const cc of allCharClasses ?? []) {
@@ -68,6 +80,9 @@ export default async function CharactersPage() {
                 ? classes.map((cc) => cc.level).join("/")
                 : String(character.level);
 
+            const isOwner = character.user_id === user.id;
+            const isSharedWithMe = sharedCharacterIds.has(character.id);
+
             return (
               <Link key={character.id} href={`/characters/${character.id}`}>
                 <Card
@@ -81,7 +96,29 @@ export default async function CharactersPage() {
                         avatarUrl={character.avatar_url}
                         size={40}
                       />
-                      <CardTitle className="font-heading text-xl">{character.name}</CardTitle>
+                      <div className="flex flex-1 items-center gap-2">
+                        <CardTitle className="font-heading text-xl">{character.name}</CardTitle>
+                        {isOwner && !character.is_public && (
+                          <Badge variant="outline" data-testid="badge-private">
+                            {ts("badgePrivate")}
+                          </Badge>
+                        )}
+                        {isOwner && character.is_public && (
+                          <Badge variant="secondary" data-testid="badge-public">
+                            {ts("badgePublic")}
+                          </Badge>
+                        )}
+                        {!isOwner && isSharedWithMe && (
+                          <Badge variant="secondary" data-testid="badge-shared">
+                            {ts("badgeShared")}
+                          </Badge>
+                        )}
+                        {!isOwner && !isSharedWithMe && character.is_public && (
+                          <Badge variant="outline" data-testid="badge-public">
+                            {ts("badgePublic")}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="flex flex-col gap-2">
@@ -95,6 +132,11 @@ export default async function CharactersPage() {
                     <div className="text-sm text-muted-foreground">
                       HP: {character.hp_current}/{character.hp_max}
                     </div>
+                    {!isOwner && (
+                      <div className="text-xs text-muted-foreground">
+                        {ts("sharedBy", { player: character.player_name || "?" })}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </Link>
