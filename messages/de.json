@@ -288,7 +288,19 @@
     "spellPoints": "Zauberpunkte",
     "totalPoints": "Zauberpunkte gesamt",
     "spellCosts": "Kosten pro Stufe",
-    "spellSlots": "Zauberplätze"
+    "spellSlots": "Zauberplätze",
+    "learnSpellTitle": "Zauber erlernen",
+    "searchSpells": "Zauber suchen...",
+    "all": "Alle",
+    "noLearnableSpells": "Keine erlernbaren Zauber gefunden.",
+    "learn": "Erlernen",
+    "name": "Name",
+    "cancel": "Abbrechen",
+    "createAndLearn": "Erstellen & Erlernen",
+    "close": "Schließen",
+    "spellLevelGroup": "Zauber Stufe {level}",
+    "preparedCount": "({prepared}/{available} vorbereitet)",
+    "choose": "-- Wählen --"
   },
   "proficiencies": {
     "title": "Fertigkeiten",

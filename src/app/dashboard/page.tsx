@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { GlassCard } from "@/components/glass-card";
 import { CharacterCard } from "@/components/character-card";
 import { RACES } from "@/lib/rules/races";
@@ -10,6 +10,7 @@ import type { CharacterRow, CharacterClassRow, SessionRow } from "@/lib/supabase
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
   const ts = await getTranslations("sharing");
+  const locale = await getLocale();
   const supabase = await createClient();
 
   const { data: characters } = await supabase
@@ -140,6 +141,7 @@ export default async function DashboardPage() {
               badgePrivateLabel={ts("badgePrivate")}
               badgeSharedLabel={ts("badgeShared")}
               badgePublicLabel={ts("badgePublic")}
+              locale={locale}
             />
           ))}
         </div>

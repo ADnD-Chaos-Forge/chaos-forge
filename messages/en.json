@@ -288,7 +288,19 @@
     "spellPoints": "Spell Points",
     "totalPoints": "Total Spell Points",
     "spellCosts": "Cost per Level",
-    "spellSlots": "Spell Slots"
+    "spellSlots": "Spell Slots",
+    "learnSpellTitle": "Learn Spell",
+    "searchSpells": "Search spells...",
+    "all": "All",
+    "noLearnableSpells": "No learnable spells found.",
+    "learn": "Learn",
+    "name": "Name",
+    "cancel": "Cancel",
+    "createAndLearn": "Create & Learn",
+    "close": "Close",
+    "spellLevelGroup": "Level {level} Spells",
+    "preparedCount": "({prepared}/{available} prepared)",
+    "choose": "-- Choose --"
   },
   "proficiencies": {
     "title": "Proficiencies",

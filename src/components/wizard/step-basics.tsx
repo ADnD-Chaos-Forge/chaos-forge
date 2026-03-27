@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ALL_ALIGNMENTS, getAlignmentLabel, getAllowedAlignments } from "@/lib/rules/alignment";
@@ -14,6 +14,7 @@ interface StepBasicsProps {
 
 export function StepBasics({ state, onChange }: StepBasicsProps) {
   const t = useTranslations("wizard");
+  const locale = useLocale();
   const primaryClassId = state.classIds.length > 0 ? state.classIds[0] : null;
   const allowedAlignments = primaryClassId ? getAllowedAlignments(primaryClassId) : ALL_ALIGNMENTS;
   const isAlignmentWarning = primaryClassId && !allowedAlignments.includes(state.alignment);
@@ -56,7 +57,7 @@ export function StepBasics({ state, onChange }: StepBasicsProps) {
         >
           {ALL_ALIGNMENTS.map((id) => (
             <option key={id} value={id}>
-              {getAlignmentLabel(id)}
+              {getAlignmentLabel(id, locale)}
             </option>
           ))}
         </select>

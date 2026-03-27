@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "next-intl";
+import { localized } from "@/lib/utils/localize";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
 import {
@@ -17,6 +19,7 @@ interface StepSummaryProps {
 }
 
 export function StepSummary({ state }: StepSummaryProps) {
+  const locale = useLocale();
   const race = state.raceId ? RACES[state.raceId] : null;
   const classEntries = state.classIds.map((id) => ({ classId: id, level: state.level }));
   const thac0 = classEntries.length > 0 ? getMulticlassThac0(classEntries) : 20;
@@ -24,14 +27,16 @@ export function StepSummary({ state }: StepSummaryProps) {
   const dexMods = getDexterityModifiers(state.dex);
   const conMods = getConstitutionModifiers(state.con);
 
-  const classNames = state.classIds.map((id) => CLASSES[id].name).join(" / ");
+  const classNames = state.classIds
+    .map((id) => localized(CLASSES[id].name, CLASSES[id].name_en, locale))
+    .join(" / ");
 
   return (
     <div className="flex flex-col gap-4" data-testid="wizard-step-summary">
       <h2 className="font-heading text-2xl text-primary">{state.name || "Unbenannt"}</h2>
 
       <div className="flex flex-wrap gap-2">
-        {race && <Badge>{race.name}</Badge>}
+        {race && <Badge>{localized(race.name, race.name_en, locale)}</Badge>}
         {classNames && <Badge>{classNames}</Badge>}
         <Badge variant="outline">Stufe {state.level}</Badge>
       </div>

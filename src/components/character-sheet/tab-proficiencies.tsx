@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localized } from "@/lib/utils/localize";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,23 +52,23 @@ const emptyCustomNwpForm: CustomNwpForm = {
   slots_required: 1,
 };
 
-const LANGUAGE_SUGGESTIONS = [
-  "Common",
-  "Elfisch",
-  "Zwergisch",
-  "Gnomisch",
-  "Halblingisch",
-  "Orkisch",
-  "Goblinisch",
-  "Koboldisch",
-  "Ogerhaft",
-  "Riesisch",
-  "Drachisch",
-  "Sylvanisch",
-  "Abyssal",
-  "Infernal",
-  "Celestisch",
-];
+const LANGUAGE_SUGGESTIONS: Record<string, { de: string; en: string }> = {
+  common: { de: "Common", en: "Common" },
+  elvish: { de: "Elfisch", en: "Elvish" },
+  dwarvish: { de: "Zwergisch", en: "Dwarvish" },
+  gnomish: { de: "Gnomisch", en: "Gnomish" },
+  halfling: { de: "Halblingisch", en: "Halfling" },
+  orcish: { de: "Orkisch", en: "Orcish" },
+  goblin: { de: "Goblinisch", en: "Goblin" },
+  kobold: { de: "Koboldisch", en: "Kobold" },
+  ogre: { de: "Ogerhaft", en: "Ogre" },
+  giant: { de: "Riesisch", en: "Giant" },
+  draconic: { de: "Drachisch", en: "Draconic" },
+  sylvan: { de: "Sylvanisch", en: "Sylvan" },
+  abyssal: { de: "Abyssal", en: "Abyssal" },
+  infernal: { de: "Infernal", en: "Infernal" },
+  celestial: { de: "Celestisch", en: "Celestial" },
+};
 
 interface TabProficienciesProps {
   characterId: string;
@@ -104,6 +105,7 @@ export function TabProficiencies({
   const t = useTranslations("proficiencies");
   const tcom = useTranslations("common");
   const tg = useTranslations("nwpGroups");
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newWeaponName, setNewWeaponName] = useState("");
@@ -142,7 +144,9 @@ export function TabProficiencies({
   const filteredWeapons = useMemo(() => {
     const q = newWeaponName.trim().toLowerCase();
     if (!q) return allWeapons;
-    return allWeapons.filter((w) => w.name.toLowerCase().includes(q));
+    return allWeapons.filter(
+      (w) => w.name.toLowerCase().includes(q) || (w.name_en ?? "").toLowerCase().includes(q)
+    );
   }, [allWeapons, newWeaponName]);
 
   // Filtered NWPs by search query and group filter
@@ -153,7 +157,8 @@ export function TabProficiencies({
       // Text search
       if (nwpSearchQuery.trim()) {
         const q = nwpSearchQuery.toLowerCase();
-        if (!nwp.name.toLowerCase().includes(q)) return false;
+        if (!nwp.name.toLowerCase().includes(q) && !(nwp.name_en ?? "").toLowerCase().includes(q))
+          return false;
       }
       return true;
     });
@@ -262,8 +267,12 @@ export function TabProficiencies({
   const defaultLanguages = raceData?.defaultLanguages ?? [];
   const maxLanguages = getIntelligenceModifiers(intScore).numberOfLanguages;
   const allLanguageNames = [...defaultLanguages, ...languages.map((l) => l.language_name)];
-  const availableSuggestions = LANGUAGE_SUGGESTIONS.filter(
-    (lang) => !allLanguageNames.includes(lang)
+  const languageSuggestionEntries = Object.entries(LANGUAGE_SUGGESTIONS).map(([key, val]) => ({
+    key,
+    label: locale === "en" ? val.en : val.de,
+  }));
+  const availableSuggestions = languageSuggestionEntries.filter(
+    (entry) => !allLanguageNames.includes(entry.label)
   );
 
   async function addLanguage(languageName: string) {
@@ -400,12 +409,14 @@ export function TabProficiencies({
                       className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-muted"
                       onMouseDown={(e) => {
                         e.preventDefault();
-                        setNewWeaponName(weapon.name);
+                        setNewWeaponName(localized(weapon.name, weapon.name_en, locale));
                         setWeaponDropdownOpen(false);
                       }}
                       data-testid={`weapon-option-${weapon.id}`}
                     >
-                      <span className="font-medium">{weapon.name}</span>
+                      <span className="font-medium">
+                        {localized(weapon.name, weapon.name_en, locale)}
+                      </span>
                       <span className="text-xs text-muted-foreground">
                         {weapon.damage_sm}/{weapon.damage_l}
                       </span>
@@ -460,7 +471,9 @@ export function TabProficiencies({
                   data-testid={`nwp-${nwp.id}`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{nwp.proficiency.name}</span>
+                    <span className="text-sm font-medium">
+                      {localized(nwp.proficiency.name, nwp.proficiency.name_en, locale)}
+                    </span>
                     <Badge variant="outline" data-testid={`nwp-ability-${nwp.id}`}>
                       {nwp.proficiency.ability}{" "}
                       {nwp.proficiency.modifier >= 0
@@ -534,7 +547,9 @@ export function TabProficiencies({
                       data-testid={`nwp-option-${nwp.id}`}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{nwp.name}</span>
+                        <span className="text-sm font-medium">
+                          {localized(nwp.name, nwp.name_en, locale)}
+                        </span>
                         <Badge variant="outline" className="text-xs">
                           {nwp.ability} {nwp.modifier >= 0 ? `+${nwp.modifier}` : nwp.modifier}
                         </Badge>
@@ -724,7 +739,7 @@ export function TabProficiencies({
                     disabled={loading}
                     data-testid={`language-remove-${lang.language_name}`}
                   >
-                    Entfernen
+                    {tcom("remove")}
                   </Button>
                 )}
               </div>
@@ -760,16 +775,16 @@ export function TabProficiencies({
               <div data-testid="language-suggestions">
                 <p className="mb-2 text-xs text-muted-foreground">{t("suggestedLanguages")}:</p>
                 <div className="flex flex-wrap gap-2">
-                  {availableSuggestions.map((lang) => (
+                  {availableSuggestions.map((entry) => (
                     <Button
-                      key={lang}
+                      key={entry.key}
                       variant="outline"
                       size="sm"
-                      onClick={() => addLanguage(lang)}
+                      onClick={() => addLanguage(entry.label)}
                       disabled={loading}
-                      data-testid={`language-suggest-${lang}`}
+                      data-testid={`language-suggest-${entry.key}`}
                     >
-                      {lang}
+                      {entry.label}
                     </Button>
                   ))}
                 </div>

@@ -200,6 +200,7 @@ export function TabSpells({
         const q = learnSearchQuery.toLowerCase();
         if (
           !s.name.toLowerCase().includes(q) &&
+          !(s.name_en && s.name_en.toLowerCase().includes(q)) &&
           !(s.school && s.school.toLowerCase().includes(q)) &&
           !(s.sphere && s.sphere.toLowerCase().includes(q))
         )
@@ -319,7 +320,7 @@ export function TabSpells({
   if (!isWizard && !isPriest) {
     return (
       <div className="py-8 text-center text-muted-foreground" data-testid="spells-no-magic">
-        Diese Klasse kann keine Zauber wirken.
+        {t("notACaster")}
       </div>
     );
   }
@@ -397,7 +398,7 @@ export function TabSpells({
             disabled={loading}
             data-testid="learn-spell-button"
           >
-            Zauber erlernen
+            {t("learnSpellTitle")}
           </Button>
         </div>
       )}
@@ -412,9 +413,9 @@ export function TabSpells({
         return (
           <div key={spellLevel} data-testid={`spell-group-level-${spellLevel}`}>
             <h3 className="mb-2 font-heading text-lg">
-              Zauber Stufe {spellLevel}
+              {t("spellLevelGroup", { level: spellLevel })}
               <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({prepared}/{available} vorbereitet)
+                {t("preparedCount", { prepared, available })}
               </span>
             </h3>
             <div className="flex flex-col gap-2">
@@ -513,7 +514,7 @@ export function TabSpells({
 
       {spells.length === 0 && (
         <div className="py-8 text-center text-muted-foreground" data-testid="spells-empty">
-          Noch keine Zauber erlernt.
+          {t("noSpells")}
         </div>
       )}
 
@@ -525,7 +526,7 @@ export function TabSpells({
         >
           <div className="mx-4 flex max-h-[80vh] w-full max-w-2xl flex-col rounded-xl bg-card ring-1 ring-foreground/10">
             <div className="flex items-center justify-between border-b p-4">
-              <h2 className="font-heading text-lg">Zauber erlernen</h2>
+              <h2 className="font-heading text-lg">{t("learnSpellTitle")}</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -539,13 +540,13 @@ export function TabSpells({
                 }}
                 data-testid="learn-spell-dialog-close"
               >
-                Schlie&szlig;en
+                {t("close")}
               </Button>
             </div>
             <div className="border-b p-4">
               <input
                 type="text"
-                placeholder="Zauber suchen..."
+                placeholder={t("searchSpells")}
                 value={learnSearchQuery}
                 onChange={(e) => setLearnSearchQuery(e.target.value)}
                 className="w-full rounded-md border border-input bg-input p-2 text-sm"
@@ -561,7 +562,7 @@ export function TabSpells({
                   data-testid="spell-level-filter-all"
                   className="h-7 px-2 text-xs"
                 >
-                  Alle
+                  {t("all")}
                 </Button>
                 {Array.from({ length: maxSpellLevel }, (_, i) => i + 1).map((n) => (
                   <Button
@@ -585,7 +586,7 @@ export function TabSpells({
                   onClick={() => setSchoolSphereFilter(null)}
                   data-testid="spell-school-filter-all"
                 >
-                  Alle
+                  {t("all")}
                 </Badge>
                 {(isWizard ? WIZARD_SCHOOLS : PRIEST_SPHERES).map((s) => (
                   <Badge
@@ -611,7 +612,7 @@ export function TabSpells({
               )}
               {filteredLearnableSpells.length === 0 ? (
                 <div className="py-4 text-center text-sm text-muted-foreground">
-                  Keine erlernbaren Zauber gefunden.
+                  {t("noLearnableSpells")}
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
@@ -647,7 +648,7 @@ export function TabSpells({
                         className="ml-2 shrink-0"
                         data-testid={`learn-spell-${spell.id}`}
                       >
-                        Erlernen
+                        {t("learn")}
                       </Button>
                     </div>
                   ))}
@@ -664,14 +665,16 @@ export function TabSpells({
                   onClick={() => setShowCustomForm(true)}
                   data-testid="create-custom-spell-button"
                 >
-                  Eigenen Zauber erstellen
+                  {t("createCustomSpell")}
                 </Button>
               ) : (
                 <div className="flex flex-col gap-3" data-testid="custom-spell-form">
-                  <h3 className="font-heading text-sm">Eigenen Zauber erstellen</h3>
+                  <h3 className="font-heading text-sm">{t("createCustomSpell")}</h3>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="col-span-2">
-                      <label className="mb-1 block text-xs text-muted-foreground">Name</label>
+                      <label className="mb-1 block text-xs text-muted-foreground">
+                        {t("name")}
+                      </label>
                       <input
                         type="text"
                         value={customSpell.name}
@@ -681,7 +684,9 @@ export function TabSpells({
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs text-muted-foreground">Stufe</label>
+                      <label className="mb-1 block text-xs text-muted-foreground">
+                        {t("level")}
+                      </label>
                       <select
                         value={customSpell.level}
                         onChange={(e) =>
@@ -699,7 +704,7 @@ export function TabSpells({
                     </div>
                     <div>
                       <label className="mb-1 block text-xs text-muted-foreground">
-                        {isWizard ? "Schule" : "Sph\u00e4re"}
+                        {isWizard ? t("school") : t("sphere")}
                       </label>
                       <select
                         value={customSpell.schoolOrSphere}
@@ -709,7 +714,7 @@ export function TabSpells({
                         className="w-full rounded-md border border-input bg-input p-2 text-sm capitalize"
                         data-testid="custom-spell-school-sphere"
                       >
-                        <option value="">-- W&auml;hlen --</option>
+                        <option value="">{t("choose")}</option>
                         {(isWizard ? WIZARD_SCHOOLS : PRIEST_SPHERES).map((s) => (
                           <option key={s} value={s} className="capitalize">
                             {s}
@@ -718,7 +723,9 @@ export function TabSpells({
                       </select>
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs text-muted-foreground">Reichweite</label>
+                      <label className="mb-1 block text-xs text-muted-foreground">
+                        {t("range")}
+                      </label>
                       <input
                         type="text"
                         value={customSpell.range}
@@ -728,7 +735,9 @@ export function TabSpells({
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs text-muted-foreground">Dauer</label>
+                      <label className="mb-1 block text-xs text-muted-foreground">
+                        {t("duration")}
+                      </label>
                       <input
                         type="text"
                         value={customSpell.duration}
@@ -741,7 +750,7 @@ export function TabSpells({
                     </div>
                     <div className="col-span-2">
                       <label className="mb-1 block text-xs text-muted-foreground">
-                        Wirkungsbereich
+                        {t("areaOfEffect")}
                       </label>
                       <input
                         type="text"
@@ -755,7 +764,7 @@ export function TabSpells({
                     </div>
                     <div className="col-span-2">
                       <label className="mb-1 block text-xs text-muted-foreground">
-                        Komponenten
+                        {t("components")}
                       </label>
                       <div className="flex gap-4">
                         {(["V", "S", "M"] as const).map((comp) => (
@@ -781,7 +790,7 @@ export function TabSpells({
                     </div>
                     <div className="col-span-2">
                       <label className="mb-1 block text-xs text-muted-foreground">
-                        Beschreibung
+                        {t("description")}
                       </label>
                       <textarea
                         value={customSpell.description}
@@ -804,7 +813,7 @@ export function TabSpells({
                       }}
                       data-testid="custom-spell-cancel"
                     >
-                      Abbrechen
+                      {t("cancel")}
                     </Button>
                     <Button
                       size="sm"
@@ -812,7 +821,7 @@ export function TabSpells({
                       onClick={handleCreateCustomSpell}
                       data-testid="custom-spell-submit"
                     >
-                      Erstellen &amp; Erlernen
+                      {t("createAndLearn")}
                     </Button>
                   </div>
                 </div>

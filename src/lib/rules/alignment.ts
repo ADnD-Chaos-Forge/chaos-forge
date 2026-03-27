@@ -35,8 +35,21 @@ const ALIGNMENT_LABELS: Record<AlignmentId, string> = {
   chaotic_evil: "Chaotisch Böse",
 };
 
-export function getAlignmentLabel(alignmentId: string): string {
-  return ALIGNMENT_LABELS[alignmentId as AlignmentId] ?? alignmentId;
+const ALIGNMENT_LABELS_EN: Record<AlignmentId, string> = {
+  lawful_good: "Lawful Good",
+  neutral_good: "Neutral Good",
+  chaotic_good: "Chaotic Good",
+  lawful_neutral: "Lawful Neutral",
+  true_neutral: "Neutral",
+  chaotic_neutral: "Chaotic Neutral",
+  lawful_evil: "Lawful Evil",
+  neutral_evil: "Neutral Evil",
+  chaotic_evil: "Chaotic Evil",
+};
+
+export function getAlignmentLabel(alignmentId: string, locale: string = "de"): string {
+  const labels = locale === "en" ? ALIGNMENT_LABELS_EN : ALIGNMENT_LABELS;
+  return labels[alignmentId as AlignmentId] ?? alignmentId;
 }
 
 // PHB class alignment restrictions

@@ -5,6 +5,7 @@ import { LevelBadge } from "@/components/level-badge";
 import { getClassGroupColors } from "@/lib/utils/class-colors";
 import { CLASSES } from "@/lib/rules/classes";
 import { RACES } from "@/lib/rules/races";
+import { localized } from "@/lib/utils/localize";
 import { Lock, Eye } from "lucide-react";
 import type { ClassGroup, ClassId } from "@/lib/rules/types";
 import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
@@ -18,6 +19,7 @@ interface CharacterCardProps {
   badgePrivateLabel: string;
   badgeSharedLabel: string;
   badgePublicLabel: string;
+  locale: string;
 }
 
 /**
@@ -39,6 +41,7 @@ export function CharacterCard({
   badgePrivateLabel,
   badgeSharedLabel,
   badgePublicLabel,
+  locale,
 }: CharacterCardProps) {
   const activeClasses = classes.filter((cc) => cc.is_active);
   const classGroup = getPrimaryClassGroup(activeClasses);
@@ -48,10 +51,16 @@ export function CharacterCard({
   const classNames =
     activeClasses.length > 0
       ? activeClasses
-          .map((cc) => CLASSES[cc.class_id as keyof typeof CLASSES]?.name ?? cc.class_id)
+          .map((cc) => {
+            const cls = CLASSES[cc.class_id as keyof typeof CLASSES];
+            return cls ? localized(cls.name, cls.name_en, locale) : cc.class_id;
+          })
           .join("/")
       : character.class_id
-        ? (CLASSES[character.class_id as keyof typeof CLASSES]?.name ?? null)
+        ? (() => {
+            const cls = CLASSES[character.class_id as keyof typeof CLASSES];
+            return cls ? localized(cls.name, cls.name_en, locale) : null;
+          })()
         : null;
   const levelDisplay =
     activeClasses.length > 0
@@ -126,7 +135,7 @@ export function CharacterCard({
 
             {/* Race + Class */}
             <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-              {race && <span>{race.name}</span>}
+              {race && <span>{localized(race.name, race.name_en, locale)}</span>}
               {classNames && <span>{classNames}</span>}
             </div>
 

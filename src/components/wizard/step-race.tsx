@@ -1,6 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localized } from "@/lib/utils/localize";
+import { feetToMeters } from "@/lib/utils/units";
 import { getAllRaces, canPlayClass } from "@/lib/rules/races";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +16,7 @@ interface StepRaceProps {
 
 export function StepRace({ state, onChange }: StepRaceProps) {
   const t = useTranslations("wizard");
+  const locale = useLocale();
   const races = getAllRaces();
 
   function handleSelect(raceId: RaceId) {
@@ -37,7 +40,9 @@ export function StepRace({ state, onChange }: StepRaceProps) {
               data-testid={`wizard-race-${race.id}`}
             >
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">{race.name}</CardTitle>
+                <CardTitle className="text-lg">
+                  {localized(race.name, race.name_en, locale)}
+                </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-1">
                 {adjustments.length > 0 && (
@@ -51,7 +56,7 @@ export function StepRace({ state, onChange }: StepRaceProps) {
                 )}
                 {race.infravision > 0 && (
                   <span className="text-xs text-muted-foreground">
-                    {t("infravision")}: {race.infravision} Fuß
+                    {t("infravision")}: {feetToMeters(race.infravision)} m
                   </span>
                 )}
               </CardContent>

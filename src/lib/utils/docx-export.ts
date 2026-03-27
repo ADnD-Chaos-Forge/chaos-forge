@@ -26,6 +26,7 @@ import { getNonproficiencyPenalty } from "@/lib/rules/proficiencies";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import { calculateAC } from "@/lib/rules/equipment";
 import { feetToMeters, lbsToKg } from "@/lib/utils/units";
+import { localized } from "@/lib/utils/localize";
 import {
   getStrengthModifiers,
   getDexterityModifiers,
@@ -52,6 +53,7 @@ export interface PrintSheetProps {
   weaponProficiencies: CharacterWeaponProficiencyRow[];
   nonweaponProficiencies: CharacterNWPWithDetails[];
   languages: CharacterLanguageRow[];
+  locale: string;
 }
 
 // ─── Helper: bordered table cell ──────────────────────────────────────────────
@@ -147,7 +149,10 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
     level: cc.level,
   }));
   const classNames = activeClasses
-    .map((cc) => CLASSES[cc.class_id as ClassId]?.name ?? cc.class_id)
+    .map((cc) => {
+      const cls = CLASSES[cc.class_id as ClassId];
+      return cls ? localized(cls.name, cls.name_en, props.locale) : cc.class_id;
+    })
     .join(" / ");
   const levelDisplay = activeClasses.map((cc) => cc.level).join("/");
   const hitDice = activeClasses
@@ -221,7 +226,8 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
     activeClasses.length > 0
       ? activeClasses
           .map((cc) => {
-            const name = CLASSES[cc.class_id as ClassId]?.name ?? cc.class_id;
+            const cls = CLASSES[cc.class_id as ClassId];
+            const name = cls ? localized(cls.name, cls.name_en, props.locale) : cc.class_id;
             const next = getXpForNextLevel(cc.class_id as ClassId, cc.level);
             return `${name}: ${cc.xp_current.toLocaleString()}${next ? ` / ${next.toLocaleString()}` : " (Max)"}`;
           })
@@ -238,8 +244,8 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
     .join(", ");
 
   const headerLines: string[] = [
-    `Race: ${race?.name ?? "—"}  |  Class: ${classNames || "—"}  |  Level: ${levelDisplay || character.level}`,
-    `Hit Die: ${hitDice || "—"}  |  HP: ${character.hp_current}/${character.hp_max}  |  Alignment: ${getAlignmentLabel(character.alignment)}`,
+    `Race: ${race ? localized(race.name, race.name_en, props.locale) : "—"}  |  Class: ${classNames || "—"}  |  Level: ${levelDisplay || character.level}`,
+    `Hit Die: ${hitDice || "—"}  |  HP: ${character.hp_current}/${character.hp_max}  |  Alignment: ${getAlignmentLabel(character.alignment, props.locale)}`,
     `XP: ${xpDisplay}`,
     `Treasure: ${treasureDisplay}`,
   ];
@@ -447,7 +453,9 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
   children.push(sectionHeading("AC Breakdown"));
 
   const armorReduction = equippedArmorForAC ? `${-(10 - equippedArmorForAC.armor!.ac)}` : "—";
-  const armorName = equippedArmorForAC ? ` (${equippedArmorForAC.armor!.name})` : "";
+  const armorName = equippedArmorForAC
+    ? ` (${localized(equippedArmorForAC.armor!.name, equippedArmorForAC.armor!.name_en, props.locale)})`
+    : "";
   const shieldVal = hasShieldForAC ? "-1" : "—";
   const dexVal =
     dexMods.defensiveAdj !== 0
@@ -596,7 +604,9 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
 
             return new TableRow({
               children: [
-                cell(`${weapon.name}${!isProficient ? " *" : ""}`),
+                cell(
+                  `${localized(weapon.name, weapon.name_en, props.locale)}${!isProficient ? " *" : ""}`
+                ),
                 cell(String(weaponThac0.melee), {
                   alignment: AlignmentType.CENTER,
                   font: "Courier New",
@@ -648,7 +658,14 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
             (e) =>
               new TableRow({
                 children: [
-                  cell(e.weapon?.name ?? e.armor?.name ?? "—", { width: 40 }),
+                  cell(
+                    e.weapon
+                      ? localized(e.weapon.name, e.weapon.name_en, props.locale)
+                      : e.armor
+                        ? localized(e.armor.name, e.armor.name_en, props.locale)
+                        : "—",
+                    { width: 40 }
+                  ),
                   cell(e.weapon ? "Weapon" : "Armor", {
                     width: 20,
                     alignment: AlignmentType.CENTER,
@@ -678,7 +695,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
           spacing: { after: 40 },
           children: [
             new TextRun({
-              text: cs.spell.name,
+              text: localized(cs.spell.name, cs.spell.name_en, props.locale),
               bold: cs.prepared,
               font: "Calibri",
               size: 20,
@@ -762,7 +779,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
             bullet: { level: 0 },
             children: [
               new TextRun({
-                text: `${nwp.proficiency.name} (${nwp.proficiency.ability} ${modStr})`,
+                text: `${localized(nwp.proficiency.name, nwp.proficiency.name_en, props.locale)} (${nwp.proficiency.ability} ${modStr})`,
                 font: "Calibri",
                 size: 20,
               }),

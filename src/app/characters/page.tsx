@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/supabase/auth";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { CharacterCard } from "@/components/character-card";
 import type { CharacterRow, CharacterClassRow, CharacterShareRow } from "@/lib/supabase/types";
@@ -9,6 +9,7 @@ import type { CharacterRow, CharacterClassRow, CharacterShareRow } from "@/lib/s
 export default async function CharactersPage() {
   const t = await getTranslations("characters");
   const ts = await getTranslations("sharing");
+  const locale = await getLocale();
   const user = await requireAuth();
   const supabase = await createClient();
   const { data: characters } = await supabase
@@ -87,6 +88,7 @@ export default async function CharactersPage() {
                     badgePrivateLabel={ts("badgePrivate")}
                     badgeSharedLabel={ts("badgeShared")}
                     badgePublicLabel={ts("badgePublic")}
+                    locale={locale}
                   />
                 );
               })}
@@ -124,6 +126,7 @@ export default async function CharactersPage() {
                         badgePrivateLabel={ts("badgePrivate")}
                         badgeSharedLabel={ts("badgeShared")}
                         badgePublicLabel={ts("badgePublic")}
+                        locale={locale}
                       />
                     );
                   })}

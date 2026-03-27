@@ -1,6 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localized } from "@/lib/utils/localize";
 import { getAllClasses, meetsAbilityRequirements } from "@/lib/rules/classes";
 import { canPlayClass, getLevelLimit } from "@/lib/rules/races";
 import { isRuleCompliantMulticlass } from "@/lib/rules/multiclass";
@@ -17,6 +18,7 @@ interface StepClassProps {
 
 export function StepClass({ state, onChange }: StepClassProps) {
   const t = useTranslations("wizard");
+  const locale = useLocale();
   const classes = getAllClasses();
   const abilities: Record<AbilityName, number> = {
     str: state.str,
@@ -93,7 +95,7 @@ export function StepClass({ state, onChange }: StepClassProps) {
                   ) : (
                     <Square className="h-5 w-5 text-muted-foreground" />
                   )}
-                  {cls.name}
+                  {localized(cls.name, cls.name_en, locale)}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-1">
@@ -109,7 +111,7 @@ export function StepClass({ state, onChange }: StepClassProps) {
                 {warnings.length > 0 && (
                   <div className="mt-1 flex items-center gap-1">
                     <Badge className="bg-yellow-800/50 text-yellow-200" variant="secondary">
-                      Warnung
+                      {t("warning")}
                     </Badge>
                     <span className="text-xs text-yellow-400">{warnings.join(". ")}</span>
                   </div>

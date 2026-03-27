@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localized } from "@/lib/utils/localize";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,6 +91,7 @@ export function CharacterSheet({
   languages,
 }: CharacterSheetProps) {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("sheet");
   const tc = useTranslations("characters");
   const tcom = useTranslations("common");
@@ -112,7 +114,12 @@ export function CharacterSheet({
   }));
 
   const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
-  const classNames = classIds.map((id) => CLASSES[id]?.name ?? id).join(" / ");
+  const classNames = classIds
+    .map((id) => {
+      const cls = CLASSES[id];
+      return cls ? localized(cls.name, cls.name_en, locale) : id;
+    })
+    .join(" / ");
   const levelDisplay =
     activeClasses.length > 1
       ? activeClasses.map((cc) => cc.level).join("/")
@@ -266,12 +273,12 @@ export function CharacterSheet({
               {character.name}
             </h1>
             <div className="mt-1 flex flex-wrap gap-2">
-              {race && <Badge>{race.name}</Badge>}
+              {race && <Badge>{localized(race.name, race.name_en, locale)}</Badge>}
               {classNames && <Badge data-testid="sheet-class-badge">{classNames}</Badge>}
               <Badge variant="outline" data-testid="sheet-level-badge">
                 {t("levelPerClass")}: {levelDisplay}
               </Badge>
-              <Badge variant="outline">{getAlignmentLabel(character.alignment)}</Badge>
+              <Badge variant="outline">{getAlignmentLabel(character.alignment, locale)}</Badge>
               {activeClasses.length > 1 && (
                 <Badge variant="secondary" data-testid="sheet-multiclass-badge">
                   {t("multiclass")}
@@ -774,7 +781,9 @@ export function CharacterSheet({
                     data-testid={`sheet-xp-${cc.class_id}`}
                   >
                     <div className="mb-2 flex items-center gap-3">
-                      <span className="font-heading text-sm">{clsDef?.name ?? cc.class_id}</span>
+                      <span className="font-heading text-sm">
+                        {clsDef ? localized(clsDef.name, clsDef.name_en, locale) : cc.class_id}
+                      </span>
                       <div className="flex items-center gap-1">
                         <Label className="text-xs text-muted-foreground">{tc("level")}</Label>
                         <Input
@@ -870,8 +879,12 @@ export function CharacterSheet({
                 <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                   {race.racialAbilities.map((ability, i) => (
                     <details key={i}>
-                      <summary className="cursor-pointer">{ability.name}</summary>
-                      <p className="mt-1 text-xs">{ability.description}</p>
+                      <summary className="cursor-pointer">
+                        {localized(ability.name, ability.name_en, locale)}
+                      </summary>
+                      <p className="mt-1 text-xs">
+                        {localized(ability.description, ability.description_en, locale)}
+                      </p>
                     </details>
                   ))}
                 </div>
@@ -884,13 +897,17 @@ export function CharacterSheet({
               return (
                 <div key={clsId} className="mb-4">
                   <h3 className="mb-2 font-heading text-lg">
-                    {t("classAbilities")} — {clsDef.name}
+                    {t("classAbilities")} — {localized(clsDef.name, clsDef.name_en, locale)}
                   </h3>
                   <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                     {clsDef.classAbilities.map((ability, i) => (
                       <details key={i}>
-                        <summary className="cursor-pointer">{ability.name}</summary>
-                        <p className="mt-1 text-xs">{ability.description}</p>
+                        <summary className="cursor-pointer">
+                          {localized(ability.name, ability.name_en, locale)}
+                        </summary>
+                        <p className="mt-1 text-xs">
+                          {localized(ability.description, ability.description_en, locale)}
+                        </p>
                       </details>
                     ))}
                   </div>

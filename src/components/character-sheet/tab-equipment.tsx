@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { calculateEncumbrance, calculateAC, getMovementRate } from "@/lib/rules/equipment";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localized } from "@/lib/utils/localize";
 import { lbsToKg, feetToMeters } from "@/lib/utils/units";
 import { getStrengthModifiers, getDexterityModifiers } from "@/lib/rules/abilities";
 import {
@@ -69,6 +70,7 @@ export function TabEquipment({
 }: TabEquipmentProps) {
   const router = useRouter();
   const t = useTranslations("equipment");
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [addTab, setAddTab] = useState<"weapons" | "armor">("weapons");
@@ -192,14 +194,17 @@ export function TabEquipment({
   }
 
   const filteredWeapons = allWeapons.filter((w) => {
-    const matchesSearch = w.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      w.name.toLowerCase().includes(q) || (w.name_en ?? "").toLowerCase().includes(q);
     const matchesCategory =
       weaponCategoryFilter === "all" || w.weapon_type === weaponCategoryFilter;
     return matchesSearch && matchesCategory;
   });
 
   const filteredArmor = allArmor.filter((a) => {
-    return a.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase();
+    return a.name.toLowerCase().includes(q) || (a.name_en ?? "").toLowerCase().includes(q);
   });
 
   async function createCustomWeapon() {
@@ -311,7 +316,9 @@ export function TabEquipment({
   }
 
   function getItemName(item: CharacterEquipmentWithDetails): string {
-    return item.weapon?.name ?? item.armor?.name ?? "—";
+    if (item.weapon) return localized(item.weapon.name, item.weapon.name_en, locale);
+    if (item.armor) return localized(item.armor.name, item.armor.name_en, locale);
+    return "—";
   }
 
   function getItemWeight(item: CharacterEquipmentWithDetails): number {
@@ -382,7 +389,9 @@ export function TabEquipment({
             {currentAC}
           </div>
           <div className="text-xs text-muted-foreground">
-            {equippedArmor ? equippedArmor.armor!.name : t("noArmor")}
+            {equippedArmor
+              ? localized(equippedArmor.armor!.name, equippedArmor.armor!.name_en, locale)
+              : t("noArmor")}
             {shieldEquipped ? ` + ${t("shield")}` : ""}
           </div>
         </div>
@@ -648,7 +657,9 @@ export function TabEquipment({
                         data-testid={`add-weapon-${weapon.id}`}
                       >
                         <div>
-                          <div className="font-medium">{weapon.name}</div>
+                          <div className="font-medium">
+                            {localized(weapon.name, weapon.name_en, locale)}
+                          </div>
                           <div className="text-xs text-muted-foreground">
                             {t("damage")}: {weapon.damage_sm}/{weapon.damage_l} | {t("speed")}:{" "}
                             {weapon.speed} | {t("weight")}: {lbsToKg(weapon.weight)} kg |{" "}
@@ -796,7 +807,9 @@ export function TabEquipment({
                         data-testid={`add-armor-${armor.id}`}
                       >
                         <div>
-                          <div className="font-medium">{armor.name}</div>
+                          <div className="font-medium">
+                            {localized(armor.name, armor.name_en, locale)}
+                          </div>
                           <div className="text-xs text-muted-foreground">
                             {t("acValue")}: {armor.ac} | {t("weight")}: {lbsToKg(armor.weight)} kg |{" "}
                             {t("cost")}: {armor.cost_gp} GP
@@ -941,7 +954,7 @@ export function TabEquipment({
                         data-testid={`weapon-row-${item.id}`}
                       >
                         <td className="py-2 font-medium" data-testid={`weapon-name-${item.id}`}>
-                          {weapon.name}
+                          {localized(weapon.name, weapon.name_en, locale)}
                           {weapon.source_book && (
                             <span className="ml-1 rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
                               {getBookAbbreviation(weapon.source_book)}
@@ -1038,7 +1051,7 @@ export function TabEquipment({
                   >
                     <div className="mb-2 flex items-center justify-between">
                       <span className="font-medium" data-testid={`weapon-card-name-${item.id}`}>
-                        {weapon.name}
+                        {localized(weapon.name, weapon.name_en, locale)}
                         {weapon.source_book && (
                           <span className="ml-1 rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
                             {getBookAbbreviation(weapon.source_book)}
@@ -1133,7 +1146,7 @@ export function TabEquipment({
             </div>
             {equippedArmor && (
               <div className="mt-0.5 truncate text-[10px] text-muted-foreground">
-                {equippedArmor.armor!.name}
+                {localized(equippedArmor.armor!.name, equippedArmor.armor!.name_en, locale)}
               </div>
             )}
           </div>
@@ -1201,7 +1214,11 @@ export function TabEquipment({
                 data-testid={`inventory-item-${inv.id}`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-medium">{inv.item?.name ?? inv.custom_name ?? "—"}</span>
+                  <span className="font-medium">
+                    {inv.item
+                      ? localized(inv.item.name, inv.item.name_en, locale)
+                      : (inv.custom_name ?? "—")}
+                  </span>
                   <span className="text-xs text-muted-foreground">
                     {inv.item ? `${lbsToKg(inv.item.weight)} kg` : ""}
                   </span>
@@ -1228,7 +1245,9 @@ export function TabEquipment({
                           setDeleteConfirm({
                             type: "inventory",
                             id: inv.id,
-                            name: inv.item?.name ?? inv.custom_name ?? "—",
+                            name: inv.item
+                              ? localized(inv.item.name, inv.item.name_en, locale)
+                              : (inv.custom_name ?? "—"),
                           })
                         }
                       >
@@ -1269,7 +1288,7 @@ export function TabEquipment({
                     onClick={() => addInventoryItem(item.id, null)}
                     data-testid={`inventory-option-${item.id}`}
                   >
-                    <span>{item.name}</span>
+                    <span>{localized(item.name, item.name_en, locale)}</span>
                     <span className="text-xs text-muted-foreground">
                       {item.weight > 0 ? `${lbsToKg(item.weight)} kg` : ""}{" "}
                       {item.cost_gp > 0 ? `${item.cost_gp} GP` : ""}

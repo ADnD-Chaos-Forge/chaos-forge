@@ -1,6 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localized } from "@/lib/utils/localize";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
 import { getAlignmentLabel } from "@/lib/rules/alignment";
@@ -55,6 +56,7 @@ export function PrintSheet({
   languages,
 }: PrintSheetProps) {
   const t = useTranslations("print");
+  const locale = useLocale();
   const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
 
   const activeClasses = characterClasses.filter((cc) => cc.is_active);
@@ -63,7 +65,10 @@ export function PrintSheet({
     level: cc.level,
   }));
   const classNames = activeClasses
-    .map((cc) => CLASSES[cc.class_id as ClassId]?.name ?? cc.class_id)
+    .map((cc) => {
+      const cls = CLASSES[cc.class_id as ClassId];
+      return cls ? localized(cls.name, cls.name_en, locale) : cc.class_id;
+    })
     .join(" / ");
   const levelDisplay = activeClasses.map((cc) => cc.level).join("/");
   const hitDice = activeClasses
@@ -136,6 +141,7 @@ export function PrintSheet({
               weaponProficiencies,
               nonweaponProficiencies,
               languages,
+              locale,
             });
             saveAs(blob, `${character.name}.docx`);
           }}
@@ -174,7 +180,8 @@ export function PrintSheet({
               <h1 className="font-serif text-2xl font-bold">{character.name}</h1>
               <div className="mt-1 grid grid-cols-3 gap-x-4 gap-y-1 text-sm">
                 <div>
-                  <span className="font-semibold">{t("race")}:</span> {race?.name ?? "—"}
+                  <span className="font-semibold">{t("race")}:</span>{" "}
+                  {race ? localized(race.name, race.name_en, locale) : "—"}
                 </div>
                 <div>
                   <span className="font-semibold">{t("class")}:</span> {classNames || "—"}
@@ -192,14 +199,15 @@ export function PrintSheet({
                 </div>
                 <div>
                   <span className="font-semibold">{t("alignment")}:</span>{" "}
-                  {getAlignmentLabel(character.alignment)}
+                  {getAlignmentLabel(character.alignment, locale)}
                 </div>
                 <div>
                   <span className="font-semibold">{t("xp")}:</span>{" "}
                   {activeClasses.length > 0
                     ? activeClasses
                         .map((cc) => {
-                          const name = CLASSES[cc.class_id as ClassId]?.name ?? cc.class_id;
+                          const cls = CLASSES[cc.class_id as ClassId];
+                          const name = cls ? localized(cls.name, cls.name_en, locale) : cc.class_id;
                           const next = getXpForNextLevel(cc.class_id as ClassId, cc.level);
                           return `${name}: ${cc.xp_current.toLocaleString()}${next ? ` / ${next.toLocaleString()}` : " (Max)"}`;
                         })
@@ -454,14 +462,14 @@ export function PrintSheet({
               {race?.racialAbilities && race.racialAbilities.length > 0 && (
                 <div>
                   <h3 className="font-semibold">
-                    {t("racialAbilities")} ({race.name})
+                    {t("racialAbilities")} ({localized(race.name, race.name_en, locale)})
                   </h3>
                   <ul className="mt-1 list-inside list-disc text-xs">
                     {race.racialAbilities.map((a, i) => (
                       <li key={i}>
-                        <span className="font-medium">{a.name}</span>
+                        <span className="font-medium">{localized(a.name, a.name_en, locale)}</span>
                         {" — "}
-                        {a.description}
+                        {localized(a.description, a.description_en, locale)}
                       </li>
                     ))}
                   </ul>
@@ -473,14 +481,16 @@ export function PrintSheet({
                 return (
                   <div key={cc.class_id}>
                     <h3 className="font-semibold">
-                      {t("classAbilities")} ({clsDef.name})
+                      {t("classAbilities")} ({localized(clsDef.name, clsDef.name_en, locale)})
                     </h3>
                     <ul className="mt-1 list-inside list-disc text-xs">
                       {clsDef.classAbilities.map((a, i) => (
                         <li key={i}>
-                          <span className="font-medium">{a.name}</span>
+                          <span className="font-medium">
+                            {localized(a.name, a.name_en, locale)}
+                          </span>
                           {" — "}
-                          {a.description}
+                          {localized(a.description, a.description_en, locale)}
                         </li>
                       ))}
                     </ul>
@@ -564,7 +574,11 @@ export function PrintSheet({
                   </div>
                   {equippedArmorItem && (
                     <div className="text-[9px] text-gray-400 truncate">
-                      {equippedArmorItem.armor!.name}
+                      {localized(
+                        equippedArmorItem.armor!.name,
+                        equippedArmorItem.armor!.name_en,
+                        locale
+                      )}
                     </div>
                   )}
                 </div>
@@ -653,7 +667,7 @@ export function PrintSheet({
                         data-testid={`print-weapon-row-${e.id}`}
                       >
                         <td className="py-1" data-testid={`print-weapon-name-${e.id}`}>
-                          {weapon.name}
+                          {localized(weapon.name, weapon.name_en, locale)}
                           {!isProficient && <span className="text-xs text-gray-400"> *</span>}
                         </td>
                         <td
@@ -731,7 +745,13 @@ export function PrintSheet({
                   .filter((e) => e.armor || (e.weapon && !e.equipped))
                   .map((e) => (
                     <tr key={e.id} className="border-b border-gray-200">
-                      <td className="py-1">{e.weapon?.name ?? e.armor?.name ?? "—"}</td>
+                      <td className="py-1">
+                        {e.weapon
+                          ? localized(e.weapon.name, e.weapon.name_en, locale)
+                          : e.armor
+                            ? localized(e.armor.name, e.armor.name_en, locale)
+                            : "—"}
+                      </td>
                       <td className="py-1 text-center text-xs">
                         {e.weapon ? t("weaponType") : t("armorType")}
                       </td>
@@ -757,7 +777,9 @@ export function PrintSheet({
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
               {spells.map((cs) => (
                 <div key={cs.spell.id} className="flex items-center gap-1">
-                  <span className={cs.prepared ? "font-semibold" : ""}>{cs.spell.name}</span>
+                  <span className={cs.prepared ? "font-semibold" : ""}>
+                    {localized(cs.spell.name, cs.spell.name_en, locale)}
+                  </span>
                   <span className="text-xs text-gray-500">(L{cs.spell.level})</span>
                   {cs.prepared && <span className="text-xs text-gray-500">★</span>}
                 </div>
@@ -792,7 +814,8 @@ export function PrintSheet({
                   <ul className="mt-1 list-inside list-disc text-xs">
                     {nonweaponProficiencies.map((nwp) => (
                       <li key={nwp.id}>
-                        {nwp.proficiency.name} ({nwp.proficiency.ability}{" "}
+                        {localized(nwp.proficiency.name, nwp.proficiency.name_en, locale)} (
+                        {nwp.proficiency.ability}{" "}
                         {nwp.proficiency.modifier >= 0
                           ? `+${nwp.proficiency.modifier}`
                           : nwp.proficiency.modifier}
