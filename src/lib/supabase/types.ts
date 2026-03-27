@@ -54,7 +54,9 @@ export interface CharacterRow {
   thief_climb_walls: number;
   thief_detect_noise: number;
   thief_read_languages: number;
+  kit: string | null;
   is_public: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -104,6 +106,7 @@ export interface WeaponRow {
   range_short: number | null;
   range_medium: number | null;
   range_long: number | null;
+  source_book: string;
   is_custom: boolean;
   created_by: string | null;
 }
@@ -116,6 +119,7 @@ export interface ArmorRow {
   weight: number;
   cost_gp: number;
   max_movement: number;
+  source_book: string;
   is_custom: boolean;
   created_by: string | null;
 }
@@ -136,6 +140,7 @@ export interface SpellRow {
   description_en: string | null;
   casting_time: string;
   saving_throw: string;
+  source_book: string;
   is_custom: boolean;
   created_by: string | null;
 }
@@ -200,6 +205,7 @@ export interface SessionEntryRow {
   character_id: string;
   user_id: string;
   content: string;
+  audio_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -232,6 +238,7 @@ export interface GeneralItemRow {
   weight: number;
   cost_gp: number;
   category: string;
+  source_book: string;
   is_custom: boolean;
   created_by: string | null;
 }

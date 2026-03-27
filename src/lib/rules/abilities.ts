@@ -44,6 +44,20 @@ const STR_TABLE: StrengthModifiers[] = [
   { hitAdj: 1, dmgAdj: 1, weightAllow: 85, maxPress: 220, openDoors: 10, bendBars: 13 },
   // STR 18
   { hitAdj: 1, dmgAdj: 2, weightAllow: 110, maxPress: 255, openDoors: 11, bendBars: 16 },
+  // STR 19 (for sub-stats / magical enhancement)
+  { hitAdj: 3, dmgAdj: 7, weightAllow: 485, maxPress: 640, openDoors: 16, bendBars: 50 },
+  // STR 20
+  { hitAdj: 3, dmgAdj: 8, weightAllow: 535, maxPress: 700, openDoors: 17, bendBars: 60 },
+  // STR 21
+  { hitAdj: 4, dmgAdj: 9, weightAllow: 635, maxPress: 810, openDoors: 17, bendBars: 70 },
+  // STR 22
+  { hitAdj: 4, dmgAdj: 10, weightAllow: 785, maxPress: 970, openDoors: 18, bendBars: 80 },
+  // STR 23
+  { hitAdj: 5, dmgAdj: 11, weightAllow: 935, maxPress: 1130, openDoors: 18, bendBars: 90 },
+  // STR 24
+  { hitAdj: 6, dmgAdj: 12, weightAllow: 1235, maxPress: 1440, openDoors: 19, bendBars: 95 },
+  // STR 25
+  { hitAdj: 7, dmgAdj: 14, weightAllow: 1535, maxPress: 1750, openDoors: 19, bendBars: 99 },
 ];
 
 // PHB Table 1 continued: Exceptional Strength (18/01 - 18/00)
@@ -71,12 +85,43 @@ const EXCEPTIONAL_STR_TABLE: { max: number; mods: StrengthModifiers }[] = [
   },
 ];
 
-export function getStrengthModifiers(str: number, exceptional?: number): StrengthModifiers {
+/** Look up base STR modifiers from the table (no sub-stat overrides). */
+function lookupStrength(str: number, exceptional?: number): StrengthModifiers {
   if (str === 18 && exceptional !== undefined && exceptional >= 1) {
     const entry = EXCEPTIONAL_STR_TABLE.find((e) => exceptional <= e.max);
     if (entry) return { ...entry.mods };
   }
   return { ...STR_TABLE[str - 3] };
+}
+
+/**
+ * Get Strength modifiers, optionally overriding with Player's Option sub-stats.
+ * - `muscle`: overrides hitAdj, dmgAdj, openDoors, bendBars, maxPress
+ * - `stamina`: overrides weightAllow
+ */
+export function getStrengthModifiers(
+  str: number,
+  exceptional?: number,
+  muscle?: number | null,
+  stamina?: number | null
+): StrengthModifiers {
+  const base = lookupStrength(str, exceptional);
+
+  if (muscle != null && muscle !== str) {
+    const muscleRow = lookupStrength(muscle);
+    base.hitAdj = muscleRow.hitAdj;
+    base.dmgAdj = muscleRow.dmgAdj;
+    base.openDoors = muscleRow.openDoors;
+    base.bendBars = muscleRow.bendBars;
+    base.maxPress = muscleRow.maxPress;
+  }
+
+  if (stamina != null && stamina !== str) {
+    const staminaRow = lookupStrength(stamina);
+    base.weightAllow = staminaRow.weightAllow;
+  }
+
+  return base;
 }
 
 // ─── DEXTERITY ─────────────────────────────────────────────────────────────────
@@ -117,8 +162,30 @@ const DEX_TABLE: DexterityModifiers[] = [
   { reactionAdj: 2, missileAdj: 2, defensiveAdj: -4 },
 ];
 
-export function getDexterityModifiers(dex: number): DexterityModifiers {
-  return { ...DEX_TABLE[dex - 3] };
+/**
+ * Get Dexterity modifiers, optionally overriding with Player's Option sub-stats.
+ * - `aim`: overrides missileAdj
+ * - `balance`: overrides defensiveAdj, reactionAdj
+ */
+export function getDexterityModifiers(
+  dex: number,
+  aim?: number | null,
+  balance?: number | null
+): DexterityModifiers {
+  const base = { ...DEX_TABLE[dex - 3] };
+
+  if (aim != null && aim !== dex) {
+    const aimRow = DEX_TABLE[aim - 3];
+    base.missileAdj = aimRow.missileAdj;
+  }
+
+  if (balance != null && balance !== dex) {
+    const balanceRow = DEX_TABLE[balance - 3];
+    base.defensiveAdj = balanceRow.defensiveAdj;
+    base.reactionAdj = balanceRow.reactionAdj;
+  }
+
+  return base;
 }
 
 // ─── CONSTITUTION ──────────────────────────────────────────────────────────────
@@ -159,8 +226,31 @@ const CON_TABLE: ConstitutionModifiers[] = [
   { hpAdj: 4, systemShock: 99, resurrectionSurvival: 100, poisonSave: 0, regeneration: null },
 ];
 
-export function getConstitutionModifiers(con: number): ConstitutionModifiers {
-  return { ...CON_TABLE[con - 3] };
+/**
+ * Get Constitution modifiers, optionally overriding with Player's Option sub-stats.
+ * - `health`: overrides systemShock, poisonSave
+ * - `fitness`: overrides hpAdj, resurrectionSurvival
+ */
+export function getConstitutionModifiers(
+  con: number,
+  health?: number | null,
+  fitness?: number | null
+): ConstitutionModifiers {
+  const base = { ...CON_TABLE[con - 3] };
+
+  if (health != null && health !== con) {
+    const healthRow = CON_TABLE[health - 3];
+    base.systemShock = healthRow.systemShock;
+    base.poisonSave = healthRow.poisonSave;
+  }
+
+  if (fitness != null && fitness !== con) {
+    const fitnessRow = CON_TABLE[fitness - 3];
+    base.hpAdj = fitnessRow.hpAdj;
+    base.resurrectionSurvival = fitnessRow.resurrectionSurvival;
+  }
+
+  return base;
 }
 
 // ─── INTELLIGENCE ──────────────────────────────────────────────────────────────
@@ -297,8 +387,31 @@ const INT_TABLE: IntelligenceModifiers[] = [
   },
 ];
 
-export function getIntelligenceModifiers(int: number): IntelligenceModifiers {
-  return { ...INT_TABLE[int - 3] };
+/**
+ * Get Intelligence modifiers, optionally overriding with Player's Option sub-stats.
+ * - `knowledge`: overrides numberOfLanguages
+ * - `reason`: overrides spellLevel, chanceToLearn, maxSpellsPerLevel
+ */
+export function getIntelligenceModifiers(
+  int: number,
+  knowledge?: number | null,
+  reason?: number | null
+): IntelligenceModifiers {
+  const base = { ...INT_TABLE[int - 3] };
+
+  if (knowledge != null && knowledge !== int) {
+    const knowledgeRow = INT_TABLE[knowledge - 3];
+    base.numberOfLanguages = knowledgeRow.numberOfLanguages;
+  }
+
+  if (reason != null && reason !== int) {
+    const reasonRow = INT_TABLE[reason - 3];
+    base.spellLevel = reasonRow.spellLevel;
+    base.chanceToLearn = reasonRow.chanceToLearn;
+    base.maxSpellsPerLevel = reasonRow.maxSpellsPerLevel;
+  }
+
+  return base;
 }
 
 // ─── WISDOM ────────────────────────────────────────────────────────────────────
@@ -339,9 +452,31 @@ const WIS_TABLE: WisdomModifiers[] = [
   { magicalDefenseAdj: 4, bonusSpells: [2, 2, 1, 1], spellFailure: 0 },
 ];
 
-export function getWisdomModifiers(wis: number): WisdomModifiers {
+/**
+ * Get Wisdom modifiers, optionally overriding with Player's Option sub-stats.
+ * - `intuition`: overrides magicalDefenseAdj
+ * - `willpower`: overrides bonusSpells, spellFailure
+ */
+export function getWisdomModifiers(
+  wis: number,
+  intuition?: number | null,
+  willpower?: number | null
+): WisdomModifiers {
   const entry = WIS_TABLE[wis - 3];
-  return { ...entry, bonusSpells: [...entry.bonusSpells] };
+  const base = { ...entry, bonusSpells: [...entry.bonusSpells] };
+
+  if (intuition != null && intuition !== wis) {
+    const intuitionRow = WIS_TABLE[intuition - 3];
+    base.magicalDefenseAdj = intuitionRow.magicalDefenseAdj;
+  }
+
+  if (willpower != null && willpower !== wis) {
+    const willpowerRow = WIS_TABLE[willpower - 3];
+    base.bonusSpells = [...willpowerRow.bonusSpells];
+    base.spellFailure = willpowerRow.spellFailure;
+  }
+
+  return base;
 }
 
 // ─── CHARISMA ──────────────────────────────────────────────────────────────────
@@ -382,8 +517,30 @@ const CHA_TABLE: CharismaModifiers[] = [
   { maxHenchmen: 15, loyaltyBase: 8, reactionAdj: 7 },
 ];
 
-export function getCharismaModifiers(cha: number): CharismaModifiers {
-  return { ...CHA_TABLE[cha - 3] };
+/**
+ * Get Charisma modifiers, optionally overriding with Player's Option sub-stats.
+ * - `leadership`: overrides maxHenchmen, loyaltyBase
+ * - `appearance`: overrides reactionAdj
+ */
+export function getCharismaModifiers(
+  cha: number,
+  leadership?: number | null,
+  appearance?: number | null
+): CharismaModifiers {
+  const base = { ...CHA_TABLE[cha - 3] };
+
+  if (leadership != null && leadership !== cha) {
+    const leadershipRow = CHA_TABLE[leadership - 3];
+    base.maxHenchmen = leadershipRow.maxHenchmen;
+    base.loyaltyBase = leadershipRow.loyaltyBase;
+  }
+
+  if (appearance != null && appearance !== cha) {
+    const appearanceRow = CHA_TABLE[appearance - 3];
+    base.reactionAdj = appearanceRow.reactionAdj;
+  }
+
+  return base;
 }
 
 // ─── ABILITY SCORE GENERATION METHODS ────────────────────────────────────────

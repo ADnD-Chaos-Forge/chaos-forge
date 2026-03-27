@@ -46,7 +46,8 @@
     "characters": "Characters",
     "sessions": "Chronicle",
     "import": "Import",
-    "logout": "Log out"
+    "logout": "Log out",
+    "more": "More"
   },
   "notFound": {
     "title": "404",
@@ -62,7 +63,13 @@
     "deleteTitle": "Delete Character",
     "deleteMessage": "Do you really want to permanently delete \"{name}\"?",
     "printView": "Print View",
-    "spellbook": "Spellbook"
+    "spellbook": "Spellbook",
+    "inactiveCharacters": "Inactive Characters",
+    "newCharacterChoice": "How would you like to create your character?",
+    "createManually": "Create manually",
+    "createManuallyDesc": "Create a new character step by step using the wizard.",
+    "importCharacter": "Import from image",
+    "importCharacterDesc": "Scan an existing character sheet from a photo or PDF."
   },
   "wizard": {
     "basics": "Basics",
@@ -251,7 +258,9 @@
     "damageLWithStr": "Damage L",
     "proficient": "Proficient",
     "notProficient": "Not Proficient",
-    "rangeShortMediumLong": "{short}/{medium}/{long} m"
+    "rangeShortMediumLong": "{short}/{medium}/{long} m",
+    "confirmRemoveTitle": "Remove Item",
+    "confirmRemoveMessage": "Do you really want to remove \"{name}\"?"
   },
   "spells": {
     "title": "Spells",
@@ -340,7 +349,11 @@
     "tags": "Tags",
     "addTag": "Add tag...",
     "createTag": "Create \"{name}\" as a new tag",
-    "noTags": "No tags found."
+    "noTags": "No tags found.",
+    "record": "Record",
+    "stopRecording": "Stop recording",
+    "voiceNote": "Voice note",
+    "removeRecording": "Remove recording"
   },
   "tagTypes": {
     "npc": "NPC",
@@ -488,7 +501,8 @@
     "acFinal": "Final",
     "weaponsTitle": "Weapons",
     "armorTitle": "Armor & Inventory",
-    "name": "Name"
+    "name": "Name",
+    "exportWord": "Word Export"
   },
   "theme": {
     "toggleDark": "Switch to dark mode",

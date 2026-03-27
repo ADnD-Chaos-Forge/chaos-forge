@@ -192,6 +192,171 @@ describe("ABILITY-007: Charisma Modifiers", () => {
   });
 });
 
+describe("Sub-Stats (Player's Option: Skills & Powers)", () => {
+  describe("STR sub-stats: Muscle and Stamina", () => {
+    it("muscle 19 overrides hit/damage to +3/+7 while base STR 18/13 stays for weightAllow", () => {
+      const mods = getStrengthModifiers(18, 13, 19);
+      expect(mods.hitAdj).toBe(3);
+      expect(mods.dmgAdj).toBe(7);
+      // weightAllow should still come from base STR 18/13
+      expect(mods.weightAllow).toBe(135);
+    });
+
+    it("stamina 17 overrides weight allowance while base STR 18/13 stays for hit/damage", () => {
+      const mods = getStrengthModifiers(18, 13, null, 17);
+      expect(mods.weightAllow).toBe(85);
+      // hit/damage should still come from STR 18/13
+      expect(mods.hitAdj).toBe(1);
+      expect(mods.dmgAdj).toBe(3);
+    });
+
+    it("both muscle and stamina override their respective fields", () => {
+      const mods = getStrengthModifiers(10, undefined, 16, 15);
+      // muscle 16 → hitAdj 0, dmgAdj 1
+      expect(mods.hitAdj).toBe(0);
+      expect(mods.dmgAdj).toBe(1);
+      // stamina 15 → weightAllow 55
+      expect(mods.weightAllow).toBe(55);
+    });
+
+    it("sub-stats equal to base STR are treated as no-op", () => {
+      const withSub = getStrengthModifiers(14, undefined, 14, 14);
+      const withoutSub = getStrengthModifiers(14);
+      expect(withSub).toEqual(withoutSub);
+    });
+
+    it("null sub-stats are ignored (same as not providing them)", () => {
+      const withNull = getStrengthModifiers(16, undefined, null, null);
+      const without = getStrengthModifiers(16);
+      expect(withNull).toEqual(without);
+    });
+  });
+
+  describe("DEX sub-stats: Aim and Balance", () => {
+    it("aim 18 overrides missileAdj while base DEX 10 stays for defensive/reaction", () => {
+      const mods = getDexterityModifiers(10, 18, null);
+      expect(mods.missileAdj).toBe(2);
+      // defensiveAdj and reactionAdj from base DEX 10
+      expect(mods.defensiveAdj).toBe(0);
+      expect(mods.reactionAdj).toBe(0);
+    });
+
+    it("balance 3 overrides defensiveAdj and reactionAdj", () => {
+      const mods = getDexterityModifiers(18, null, 3);
+      // missileAdj from base DEX 18
+      expect(mods.missileAdj).toBe(2);
+      // defensiveAdj and reactionAdj from balance 3
+      expect(mods.defensiveAdj).toBe(4);
+      expect(mods.reactionAdj).toBe(-3);
+    });
+
+    it("aim 16 and balance 16 keep same as base dex 16", () => {
+      const mods = getDexterityModifiers(16, 16, 16);
+      expect(mods.missileAdj).toBe(1);
+      expect(mods.defensiveAdj).toBe(-2);
+    });
+  });
+
+  describe("CON sub-stats: Health and Fitness", () => {
+    it("health 3 overrides systemShock and poisonSave", () => {
+      const mods = getConstitutionModifiers(18, 3, null);
+      // systemShock and poisonSave from health 3
+      expect(mods.systemShock).toBe(35);
+      expect(mods.poisonSave).toBe(0);
+      // hpAdj and resurrectionSurvival from base CON 18
+      expect(mods.hpAdj).toBe(4);
+      expect(mods.resurrectionSurvival).toBe(100);
+    });
+
+    it("fitness 18 overrides hpAdj and resurrection to CON 18 values", () => {
+      const mods = getConstitutionModifiers(10, null, 18);
+      // hpAdj and resurrectionSurvival from fitness 18
+      expect(mods.hpAdj).toBe(4);
+      expect(mods.resurrectionSurvival).toBe(100);
+      // systemShock and poisonSave from base CON 10
+      expect(mods.systemShock).toBe(70);
+      expect(mods.poisonSave).toBe(0);
+    });
+
+    it("fitness 15 overrides resurrection to 94%", () => {
+      const mods = getConstitutionModifiers(3, null, 15);
+      expect(mods.resurrectionSurvival).toBe(94);
+      expect(mods.hpAdj).toBe(1);
+    });
+  });
+
+  describe("INT sub-stats: Knowledge and Reason", () => {
+    it("knowledge 18 overrides numberOfLanguages", () => {
+      const mods = getIntelligenceModifiers(10, 18, null);
+      expect(mods.numberOfLanguages).toBe(7);
+      // spellLevel, chanceToLearn, maxSpellsPerLevel from base INT 10
+      expect(mods.spellLevel).toBe(5);
+    });
+
+    it("reason 18 overrides maxSpellsPerLevel and chanceToLearn", () => {
+      const mods = getIntelligenceModifiers(10, null, 18);
+      expect(mods.maxSpellsPerLevel).toBe(18);
+      expect(mods.chanceToLearn).toBe(85);
+      // numberOfLanguages from base INT 10
+      expect(mods.numberOfLanguages).toBe(2);
+    });
+
+    it("null sub-stats are no-op", () => {
+      const withNull = getIntelligenceModifiers(12, null, null);
+      const without = getIntelligenceModifiers(12);
+      expect(withNull).toEqual(without);
+    });
+  });
+
+  describe("WIS sub-stats: Intuition and Willpower", () => {
+    it("intuition 18 overrides magicalDefenseAdj", () => {
+      const mods = getWisdomModifiers(10, 18, null);
+      expect(mods.magicalDefenseAdj).toBe(4);
+      // bonusSpells and spellFailure from base WIS 10
+      expect(mods.bonusSpells).toEqual([]);
+      expect(mods.spellFailure).toBe(0);
+    });
+
+    it("willpower 3 overrides bonusSpells and spellFailure", () => {
+      const mods = getWisdomModifiers(18, null, 3);
+      expect(mods.bonusSpells).toEqual([]);
+      expect(mods.spellFailure).toBe(30);
+      // magicalDefenseAdj from base WIS 18
+      expect(mods.magicalDefenseAdj).toBe(4);
+    });
+
+    it("null sub-stats are no-op", () => {
+      const withNull = getWisdomModifiers(15, null, null);
+      const without = getWisdomModifiers(15);
+      expect(withNull).toEqual(without);
+    });
+  });
+
+  describe("CHA sub-stats: Leadership and Appearance", () => {
+    it("leadership 18 overrides maxHenchmen and loyaltyBase", () => {
+      const mods = getCharismaModifiers(10, 18, null);
+      expect(mods.maxHenchmen).toBe(15);
+      expect(mods.loyaltyBase).toBe(8);
+      // reactionAdj from base CHA 10
+      expect(mods.reactionAdj).toBe(0);
+    });
+
+    it("appearance 18 overrides reactionAdj", () => {
+      const mods = getCharismaModifiers(10, null, 18);
+      expect(mods.reactionAdj).toBe(7);
+      // maxHenchmen and loyaltyBase from base CHA 10
+      expect(mods.maxHenchmen).toBe(4);
+      expect(mods.loyaltyBase).toBe(0);
+    });
+
+    it("null sub-stats are no-op", () => {
+      const withNull = getCharismaModifiers(12, null, null);
+      const without = getCharismaModifiers(12);
+      expect(withNull).toEqual(without);
+    });
+  });
+});
+
 describe("ABILITY-009: rollAbilityScoresMethodI — 3d6 in order", () => {
   it("returns 6 scores between 3 and 18", () => {
     const scores = rollAbilityScoresMethodI();

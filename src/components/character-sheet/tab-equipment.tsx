@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
 import { getMulticlassThac0 } from "@/lib/rules/multiclass";
 import { getNonproficiencyPenalty } from "@/lib/rules/proficiencies";
 import { CLASSES } from "@/lib/rules/classes";
+import { getBookAbbreviation } from "@/lib/utils/source-books";
 import type { ClassId } from "@/lib/rules/types";
 import type {
   CharacterEquipmentWithDetails,
@@ -89,6 +91,11 @@ export function TabEquipment({
   const [showAddInventory, setShowAddInventory] = useState(false);
   const [inventorySearch, setInventorySearch] = useState("");
   const [customItemName, setCustomItemName] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    type: "equipment" | "inventory";
+    id: string;
+    name: string;
+  } | null>(null);
 
   const equipmentWeight = equipment.reduce((sum, item) => {
     const weight = item.weapon?.weight ?? item.armor?.weight ?? 0;
@@ -345,7 +352,12 @@ export function TabEquipment({
       ? (CLASSES[activeClasses[0].class_id as ClassId]?.group ?? "warrior")
       : "warrior";
   const primaryLevel = activeClasses[0]?.level ?? 1;
-  const attacksPerRound = getAttacksPerRound(primaryClassGroup, primaryLevel);
+  function getWeaponAttacksPerRound(weaponName: string): string {
+    const isSpecialized = weaponProficiencies.some(
+      (wp) => wp.weapon_name.toLowerCase() === weaponName.toLowerCase() && wp.specialization
+    );
+    return getAttacksPerRound(primaryClassGroup, primaryLevel, isSpecialized);
+  }
 
   function getWeaponProficiencyPenalty(weaponName: string): number {
     const isProficient = weaponProficiencies.some(
@@ -474,7 +486,19 @@ export function TabEquipment({
                     className="border-b border-border/50"
                     data-testid={`inventory-row-${item.id}`}
                   >
-                    <td className="py-2 pr-4 font-medium">{getItemName(item)}</td>
+                    <td className="py-2 pr-4 font-medium">
+                      {getItemName(item)}
+                      {item.weapon?.source_book && (
+                        <span className="ml-1 text-[9px] text-muted-foreground">
+                          ({getBookAbbreviation(item.weapon.source_book)})
+                        </span>
+                      )}
+                      {item.armor?.source_book && (
+                        <span className="ml-1 text-[9px] text-muted-foreground">
+                          ({getBookAbbreviation(item.armor.source_book)})
+                        </span>
+                      )}
+                    </td>
                     <td className="py-2 pr-4">
                       <Badge variant="outline">{getItemType(item)}</Badge>
                     </td>
@@ -505,7 +529,13 @@ export function TabEquipment({
                           variant="destructive"
                           size="xs"
                           disabled={loading}
-                          onClick={() => removeItem(item.id)}
+                          onClick={() =>
+                            setDeleteConfirm({
+                              type: "equipment",
+                              id: item.id,
+                              name: getItemName(item),
+                            })
+                          }
                           data-testid={`remove-item-${item.id}`}
                         >
                           {t("remove")}
@@ -912,6 +942,11 @@ export function TabEquipment({
                       >
                         <td className="py-2 font-medium" data-testid={`weapon-name-${item.id}`}>
                           {weapon.name}
+                          {weapon.source_book && (
+                            <span className="ml-1 rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
+                              {getBookAbbreviation(weapon.source_book)}
+                            </span>
+                          )}
                           {!isProficient && (
                             <Badge
                               variant="outline"
@@ -970,7 +1005,7 @@ export function TabEquipment({
                           className="py-2 text-center font-mono"
                           data-testid={`weapon-apr-${item.id}`}
                         >
-                          {attacksPerRound}
+                          {getWeaponAttacksPerRound(weapon.name)}
                         </td>
                         <td
                           className="py-2 text-center font-mono"
@@ -1004,6 +1039,11 @@ export function TabEquipment({
                     <div className="mb-2 flex items-center justify-between">
                       <span className="font-medium" data-testid={`weapon-card-name-${item.id}`}>
                         {weapon.name}
+                        {weapon.source_book && (
+                          <span className="ml-1 rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
+                            {getBookAbbreviation(weapon.source_book)}
+                          </span>
+                        )}
                       </span>
                       <div className="flex gap-1">
                         <Badge variant="outline">{getItemType(item)}</Badge>
@@ -1053,7 +1093,7 @@ export function TabEquipment({
                         <span className="text-xs text-muted-foreground">
                           {t("attacksPerRound")}:
                         </span>{" "}
-                        <span className="font-mono">{attacksPerRound}</span>
+                        <span className="font-mono">{getWeaponAttacksPerRound(weapon.name)}</span>
                       </div>
                       <div data-testid={`weapon-card-weight-${item.id}`}>
                         <span className="text-xs text-muted-foreground">{t("weight")}:</span>{" "}
@@ -1088,7 +1128,14 @@ export function TabEquipment({
           </div>
           <div className="rounded-md border border-border p-2">
             <div className="text-xs text-muted-foreground">{t("armor")}</div>
-            <div className="font-mono text-lg">{equippedArmor ? equippedArmor.armor!.ac : "—"}</div>
+            <div className="font-mono text-lg">
+              {equippedArmor ? `${-(10 - equippedArmor.armor!.ac)}` : "—"}
+            </div>
+            {equippedArmor && (
+              <div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+                {equippedArmor.armor!.name}
+              </div>
+            )}
           </div>
           <div className="rounded-md border border-border p-2">
             <div className="text-xs text-muted-foreground">{t("shield")}</div>
@@ -1174,7 +1221,17 @@ export function TabEquipment({
                         }
                         className="w-14 rounded border border-input bg-input px-2 py-1 text-center text-sm"
                       />
-                      <Button variant="ghost" size="sm" onClick={() => removeInventoryItem(inv.id)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setDeleteConfirm({
+                            type: "inventory",
+                            id: inv.id,
+                            name: inv.item?.name ?? inv.custom_name ?? "—",
+                          })
+                        }
+                      >
                         ✕
                       </Button>
                     </>
@@ -1252,6 +1309,24 @@ export function TabEquipment({
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={deleteConfirm !== null}
+        title={t("confirmRemoveTitle")}
+        message={t("confirmRemoveMessage", { name: deleteConfirm?.name ?? "" })}
+        confirmLabel={t("remove")}
+        onConfirm={async () => {
+          if (deleteConfirm) {
+            if (deleteConfirm.type === "equipment") {
+              await removeItem(deleteConfirm.id);
+            } else {
+              await removeInventoryItem(deleteConfirm.id);
+            }
+            setDeleteConfirm(null);
+          }
+        }}
+        onCancel={() => setDeleteConfirm(null)}
+      />
     </div>
   );
 }

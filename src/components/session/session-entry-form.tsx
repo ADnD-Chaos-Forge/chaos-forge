@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { AudioRecorder } from "@/lib/utils/audio-recorder";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { AvatarDisplay } from "@/components/avatar-display";
@@ -22,6 +23,23 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
   const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const recorderRef = useRef<AudioRecorder | null>(null);
+
+  async function startRecording() {
+    const recorder = new AudioRecorder();
+    recorderRef.current = recorder;
+    await recorder.start();
+    setIsRecording(true);
+  }
+
+  async function stopRecording() {
+    if (!recorderRef.current) return;
+    const blob = await recorderRef.current.stop();
+    setAudioBlob(blob);
+    setIsRecording(false);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,11 +49,23 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
     setError(null);
 
     const supabase = createClient();
+
+    let audioUrl: string | undefined;
+    if (audioBlob) {
+      const filename = `voice-${Date.now()}.webm`;
+      const { data } = await supabase.storage.from("voice-notes").upload(filename, audioBlob);
+      if (data) {
+        const { data: urlData } = supabase.storage.from("voice-notes").getPublicUrl(filename);
+        audioUrl = urlData.publicUrl;
+      }
+    }
+
     const { error: insertError } = await supabase.from("session_entries").insert({
       session_id: sessionId,
       character_id: selectedCharacterId,
       user_id: userId,
       content: content.trim(),
+      ...(audioUrl && { audio_url: audioUrl }),
     });
 
     if (insertError) {
@@ -96,6 +126,41 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
               placeholder="Was hat dein Charakter erlebt? Was waren die wichtigsten Momente?"
               data-testid="entry-content-textarea"
             />
+          </div>
+
+          {/* Voice note recording */}
+          <div className="flex items-center gap-3">
+            {!isRecording && !audioBlob && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={startRecording}
+                data-testid="record-btn"
+              >
+                🎙 Aufnahme
+              </Button>
+            )}
+            {isRecording && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={stopRecording}
+                data-testid="stop-record-btn"
+              >
+                <span className="mr-1.5 inline-block h-2 w-2 animate-pulse rounded-full bg-white" />
+                Aufnahme stoppen
+              </Button>
+            )}
+            {audioBlob && !isRecording && (
+              <div className="flex items-center gap-2" data-testid="audio-preview">
+                <audio controls src={URL.createObjectURL(audioBlob)} className="h-8" />
+                <Button type="button" variant="ghost" size="sm" onClick={() => setAudioBlob(null)}>
+                  Aufnahme entfernen
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end">

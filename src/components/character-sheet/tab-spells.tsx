@@ -18,6 +18,7 @@ import {
   canLearnSpell,
 } from "@/lib/rules/spellslots";
 import type { ClassId, MagicSchool, PriestSphere } from "@/lib/rules/types";
+import { getBookAbbreviation } from "@/lib/utils/source-books";
 import type { CharacterSpellWithDetails, SpellRow } from "@/lib/supabase/types";
 
 const WIZARD_SCHOOLS = [
@@ -434,6 +435,11 @@ export function TabSpells({
                         <Badge variant="outline" className="text-xs">
                           {spell.school ?? spell.sphere}
                         </Badge>
+                        {spell.source_book && (
+                          <span className="rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
+                            {getBookAbbreviation(spell.source_book)}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         {!readOnly && (
@@ -624,6 +630,11 @@ export function TabSpells({
                           <Badge variant="outline" className="text-xs">
                             {spell.school ?? spell.sphere}
                           </Badge>
+                          {spell.source_book && (
+                            <span className="rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
+                              {getBookAbbreviation(spell.source_book)}
+                            </span>
+                          )}
                         </div>
                         <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                           <ReactMarkdown>{spellDesc(spell)}</ReactMarkdown>

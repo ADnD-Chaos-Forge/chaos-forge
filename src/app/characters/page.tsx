@@ -59,29 +59,78 @@ export default async function CharactersPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {characters.map((character) => {
-            const classes = charClassMap.get(character.id) ?? [];
-            const isOwner = character.user_id === user.id;
-            const isSharedWithMe = sharedCharacterIds.has(character.id);
+        <>
+          {/* Active Characters */}
+          <div
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            data-testid="active-characters-grid"
+          >
+            {characters
+              .filter((c) => c.is_active !== false)
+              .map((character) => {
+                const classes = charClassMap.get(character.id) ?? [];
+                const isOwner = character.user_id === user.id;
+                const isSharedWithMe = sharedCharacterIds.has(character.id);
 
-            return (
-              <CharacterCard
-                key={character.id}
-                character={character}
-                classes={classes}
-                isOwner={isOwner}
-                isSharedWithMe={isSharedWithMe}
-                sharedByLabel={
-                  !isOwner ? ts("sharedBy", { player: character.player_name || "?" }) : undefined
-                }
-                badgePrivateLabel={ts("badgePrivate")}
-                badgeSharedLabel={ts("badgeShared")}
-                badgePublicLabel={ts("badgePublic")}
-              />
-            );
-          })}
-        </div>
+                return (
+                  <CharacterCard
+                    key={character.id}
+                    character={character}
+                    classes={classes}
+                    isOwner={isOwner}
+                    isSharedWithMe={isSharedWithMe}
+                    sharedByLabel={
+                      !isOwner
+                        ? ts("sharedBy", { player: character.player_name || "?" })
+                        : undefined
+                    }
+                    badgePrivateLabel={ts("badgePrivate")}
+                    badgeSharedLabel={ts("badgeShared")}
+                    badgePublicLabel={ts("badgePublic")}
+                  />
+                );
+              })}
+          </div>
+
+          {/* Inactive Characters (collapsed) */}
+          {characters.some((c) => c.is_active === false) && (
+            <details className="mt-2" data-testid="inactive-characters-section">
+              <summary className="cursor-pointer font-heading text-lg text-muted-foreground hover:text-foreground">
+                {t("inactiveCharacters")} ({characters.filter((c) => c.is_active === false).length})
+              </summary>
+              <div
+                className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                data-testid="inactive-characters-grid"
+              >
+                {characters
+                  .filter((c) => c.is_active === false)
+                  .map((character) => {
+                    const classes = charClassMap.get(character.id) ?? [];
+                    const isOwner = character.user_id === user.id;
+                    const isSharedWithMe = sharedCharacterIds.has(character.id);
+
+                    return (
+                      <CharacterCard
+                        key={character.id}
+                        character={character}
+                        classes={classes}
+                        isOwner={isOwner}
+                        isSharedWithMe={isSharedWithMe}
+                        sharedByLabel={
+                          !isOwner
+                            ? ts("sharedBy", { player: character.player_name || "?" })
+                            : undefined
+                        }
+                        badgePrivateLabel={ts("badgePrivate")}
+                        badgeSharedLabel={ts("badgeShared")}
+                        badgePublicLabel={ts("badgePublic")}
+                      />
+                    );
+                  })}
+              </div>
+            </details>
+          )}
+        </>
       )}
     </div>
   );

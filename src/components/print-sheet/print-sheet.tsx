@@ -125,6 +125,26 @@ export function PrintSheet({
           {t("print")}
         </button>
         <button
+          onClick={async () => {
+            const { generateCharacterDocx } = await import("@/lib/utils/docx-export");
+            const { saveAs } = await import("file-saver");
+            const blob = await generateCharacterDocx({
+              character,
+              characterClasses,
+              equipment,
+              spells,
+              weaponProficiencies,
+              nonweaponProficiencies,
+              languages,
+            });
+            saveAs(blob, `${character.name}.docx`);
+          }}
+          className="rounded bg-gray-800 px-6 py-2 text-white hover:bg-gray-700"
+          data-testid="export-word-button"
+        >
+          {t("exportWord")}
+        </button>
+        <button
           onClick={() => window.history.back()}
           className="rounded border border-gray-400 px-6 py-2 hover:bg-gray-100"
         >
@@ -540,8 +560,13 @@ export function PrintSheet({
                 <div className="rounded border border-gray-300 p-2">
                   <div className="text-xs text-gray-500">{t("acArmor")}</div>
                   <div className="font-mono text-lg font-bold" data-testid="print-ac-armor">
-                    {equippedArmorItem ? equippedArmorItem.armor!.ac : "—"}
+                    {equippedArmorItem ? `${-(10 - equippedArmorItem.armor!.ac)}` : "—"}
                   </div>
+                  {equippedArmorItem && (
+                    <div className="text-[9px] text-gray-400 truncate">
+                      {equippedArmorItem.armor!.name}
+                    </div>
+                  )}
                 </div>
                 <div className="rounded border border-gray-300 p-2">
                   <div className="text-xs text-gray-500">{t("acShield")}</div>
@@ -592,8 +617,20 @@ export function PrintSheet({
                   .filter((e) => e.weapon && e.equipped)
                   .map((e) => {
                     const weapon = e.weapon!;
-                    const isProficient = weaponProficiencies.some(
+                    const matchingProf = weaponProficiencies.find(
                       (wp) => wp.weapon_name.toLowerCase() === weapon.name.toLowerCase()
+                    );
+                    const isProficient = !!matchingProf;
+                    const isSpecialized = matchingProf?.specialization ?? false;
+                    const weaponClassGroup =
+                      activeClasses.length > 0
+                        ? (CLASSES[activeClasses[0].class_id as ClassId]?.group ?? "warrior")
+                        : "warrior";
+                    const weaponLevel = activeClasses[0]?.level ?? 1;
+                    const weaponApr = getAttacksPerRound(
+                      weaponClassGroup,
+                      weaponLevel,
+                      isSpecialized
                     );
                     const penalty = isProficient
                       ? 0
@@ -664,7 +701,7 @@ export function PrintSheet({
                           className="py-1 text-center font-mono"
                           data-testid={`print-weapon-apr-${e.id}`}
                         >
-                          {attacksDisplay}
+                          {weaponApr}
                         </td>
                       </tr>
                     );
