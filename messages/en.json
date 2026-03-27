@@ -344,13 +344,20 @@
   },
   "import": {
     "title": "Import Character Sheet",
-    "description": "Upload a photo or PDF of an AD&D character sheet. The AI will extract the values automatically.",
-    "dropzone": "Click here to select a photo or PDF",
+    "description": "Upload photos or PDFs of an AD&D character sheet. The AI will extract the values automatically.",
+    "dropzone": "Click here to select photos or PDFs",
+    "dropzoneHint": "Up to 5 files (max. 10 MB each)",
     "scanning": "Scanning character sheet...",
     "pdfUploaded": "PDF uploaded",
     "resultTitle": "Detected values — please review",
-    "newPhoto": "New Photo",
-    "createCharacter": "Create Character"
+    "newPhoto": "New Files",
+    "createCharacter": "Create Character",
+    "filesSelected": "{count} file(s) selected",
+    "removeFile": "Remove file",
+    "tooManyFiles": "Maximum 5 files allowed.",
+    "fileTooLarge": "File \"{name}\" is too large (max. 10 MB per file).",
+    "totalTooLarge": "Total size must not exceed 50 MB.",
+    "noFiles": "No files selected."
   },
   "print": {
     "print": "Print (Cmd+P)",
