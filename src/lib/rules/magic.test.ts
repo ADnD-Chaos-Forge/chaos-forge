@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getSpecialist, getOppositionSchools, getPriestSpheres, hasSphereAccess } from "./magic";
 
-describe("Wizard Specialists", () => {
+describe("MAGIC-001 MAGIC-002: Wizard Specialists", () => {
   it("should return null for a generic mage", () => {
     expect(getSpecialist("mage")).toBeNull();
   });
@@ -37,7 +37,7 @@ describe("Wizard Specialists", () => {
   });
 });
 
-describe("Priest Sphere Access", () => {
+describe("MAGIC-003 MAGIC-004: Priest Sphere Access", () => {
   it("should give clerics major access to healing", () => {
     expect(hasSphereAccess("cleric", "healing", "major")).toBe(true);
   });

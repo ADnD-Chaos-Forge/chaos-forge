@@ -6,9 +6,14 @@ import {
   getIntelligenceModifiers,
   getWisdomModifiers,
   getCharismaModifiers,
+  rollAbilityScoresMethodI,
+  rollAbilityScoresMethodII,
+  rollAbilityScoresMethodIII,
+  rollAbilityScoresMethodIV,
+  rollAbilityScoresMethodV,
 } from "./abilities";
 
-describe("Strength Modifiers", () => {
+describe("ABILITY-001 ABILITY-002: Strength Modifiers", () => {
   it("should return correct modifiers for STR 3", () => {
     const mods = getStrengthModifiers(3);
     expect(mods.hitAdj).toBe(-3);
@@ -66,7 +71,7 @@ describe("Strength Modifiers", () => {
   });
 });
 
-describe("Dexterity Modifiers", () => {
+describe("ABILITY-003: Dexterity Modifiers", () => {
   it("should return correct modifiers for DEX 3", () => {
     const mods = getDexterityModifiers(3);
     expect(mods.reactionAdj).toBe(-3);
@@ -89,7 +94,7 @@ describe("Dexterity Modifiers", () => {
   });
 });
 
-describe("Constitution Modifiers", () => {
+describe("ABILITY-004: Constitution Modifiers", () => {
   it("should return correct modifiers for CON 3", () => {
     const mods = getConstitutionModifiers(3);
     expect(mods.hpAdj).toBe(-2);
@@ -114,7 +119,7 @@ describe("Constitution Modifiers", () => {
   });
 });
 
-describe("Intelligence Modifiers", () => {
+describe("ABILITY-005 MAGIC-012: Intelligence Modifiers", () => {
   it("should return correct modifiers for INT 3", () => {
     const mods = getIntelligenceModifiers(3);
     expect(mods.numberOfLanguages).toBe(1);
@@ -141,7 +146,7 @@ describe("Intelligence Modifiers", () => {
   });
 });
 
-describe("Wisdom Modifiers", () => {
+describe("ABILITY-006: Wisdom Modifiers", () => {
   it("should return correct modifiers for WIS 3", () => {
     const mods = getWisdomModifiers(3);
     expect(mods.magicalDefenseAdj).toBe(-3);
@@ -164,7 +169,7 @@ describe("Wisdom Modifiers", () => {
   });
 });
 
-describe("Charisma Modifiers", () => {
+describe("ABILITY-007: Charisma Modifiers", () => {
   it("should return correct modifiers for CHA 3", () => {
     const mods = getCharismaModifiers(3);
     expect(mods.maxHenchmen).toBe(1);
@@ -184,5 +189,83 @@ describe("Charisma Modifiers", () => {
     expect(mods.maxHenchmen).toBe(15);
     expect(mods.loyaltyBase).toBe(8);
     expect(mods.reactionAdj).toBe(7);
+  });
+});
+
+describe("ABILITY-009: rollAbilityScoresMethodI — 3d6 in order", () => {
+  it("returns 6 scores between 3 and 18", () => {
+    const scores = rollAbilityScoresMethodI();
+    expect(scores).toHaveLength(6);
+    for (const s of scores) {
+      expect(s).toBeGreaterThanOrEqual(3);
+      expect(s).toBeLessThanOrEqual(18);
+    }
+  });
+
+  it("returns different results on repeated calls (statistical)", () => {
+    const results = new Set<string>();
+    for (let i = 0; i < 20; i++) {
+      results.add(rollAbilityScoresMethodI().join(","));
+    }
+    expect(results.size).toBeGreaterThan(1);
+  });
+});
+
+describe("ABILITY-010: rollAbilityScoresMethodII — 3d6 twice, best of each", () => {
+  it("returns 6 scores between 3 and 18", () => {
+    const scores = rollAbilityScoresMethodII();
+    expect(scores).toHaveLength(6);
+    for (const s of scores) {
+      expect(s).toBeGreaterThanOrEqual(3);
+      expect(s).toBeLessThanOrEqual(18);
+    }
+  });
+});
+
+describe("ABILITY-011: rollAbilityScoresMethodIII — 3d6 ×6, arrange freely", () => {
+  it("returns 6 scores between 3 and 18", () => {
+    const scores = rollAbilityScoresMethodIII();
+    expect(scores).toHaveLength(6);
+    for (const s of scores) {
+      expect(s).toBeGreaterThanOrEqual(3);
+      expect(s).toBeLessThanOrEqual(18);
+    }
+  });
+});
+
+describe("ABILITY-012: rollAbilityScoresMethodIV — 3d6 ×12, pick best 6", () => {
+  it("returns 6 scores between 3 and 18, sorted descending", () => {
+    const scores = rollAbilityScoresMethodIV();
+    expect(scores).toHaveLength(6);
+    for (const s of scores) {
+      expect(s).toBeGreaterThanOrEqual(3);
+      expect(s).toBeLessThanOrEqual(18);
+    }
+    // Should be sorted descending (best first)
+    for (let i = 0; i < scores.length - 1; i++) {
+      expect(scores[i]).toBeGreaterThanOrEqual(scores[i + 1]);
+    }
+  });
+});
+
+describe("ABILITY-013: rollAbilityScoresMethodV — 4d6 drop lowest, arrange freely", () => {
+  it("returns 6 scores between 3 and 18", () => {
+    const scores = rollAbilityScoresMethodV();
+    expect(scores).toHaveLength(6);
+    for (const s of scores) {
+      expect(s).toBeGreaterThanOrEqual(3);
+      expect(s).toBeLessThanOrEqual(18);
+    }
+  });
+
+  it("statistically produces higher averages than method I", () => {
+    let sumI = 0;
+    let sumV = 0;
+    const iterations = 100;
+    for (let i = 0; i < iterations; i++) {
+      sumI += rollAbilityScoresMethodI().reduce((a, b) => a + b, 0);
+      sumV += rollAbilityScoresMethodV().reduce((a, b) => a + b, 0);
+    }
+    expect(sumV / iterations).toBeGreaterThan(sumI / iterations);
   });
 });

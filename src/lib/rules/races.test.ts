@@ -1,8 +1,17 @@
 import { describe, it, expect } from "vitest";
-import { getRace, getAllRaces, canPlayClass, getLevelLimit } from "./races";
+import {
+  getRace,
+  getAllRaces,
+  canPlayClass,
+  getLevelLimit,
+  getStartingAge,
+  getHeightRange,
+  getWeightRange,
+  getRacialSavingThrowBonus,
+} from "./races";
 
-describe("Races", () => {
-  it("should define all 7 PHB core races", () => {
+describe("RACE-003 RACE-004 RACE-009 RACE-010 RACE-011: Races", () => {
+  it("RACE-001: should define all 7 PHB core races", () => {
     expect(getAllRaces()).toHaveLength(7);
   });
 
@@ -12,17 +21,17 @@ describe("Races", () => {
     expect(human.levelLimits).toEqual({});
   });
 
-  it("should give elves +1 DEX, -1 CON", () => {
+  it("RACE-002: should give elves +1 DEX, -1 CON", () => {
     const elf = getRace("elf");
     expect(elf.abilityAdjustments).toEqual({ dex: 1, con: -1 });
   });
 
-  it("should not allow dwarves to be mages", () => {
+  it("RACE-005: should not allow dwarves to be mages", () => {
     expect(canPlayClass("dwarf", "mage")).toBe(false);
     expect(canPlayClass("dwarf", "fighter")).toBe(true);
   });
 
-  it("should return correct level limits for elves", () => {
+  it("RACE-006: should return correct level limits for elves", () => {
     expect(getLevelLimit("elf", "fighter")).toBe(12);
     expect(getLevelLimit("elf", "mage")).toBe(15);
   });
@@ -32,7 +41,7 @@ describe("Races", () => {
     expect(getLevelLimit("human", "mage")).toBeNull();
   });
 
-  it("should define multiclass options for elves", () => {
+  it("RACE-007: should define multiclass options for elves", () => {
     const elf = getRace("elf");
     expect(elf.multiclassOptions).toContainEqual(["fighter", "mage"]);
     expect(elf.multiclassOptions).toContainEqual(["fighter", "mage", "thief"]);
@@ -48,9 +57,85 @@ describe("Races", () => {
     expect(halfOrc.abilityAdjustments).toEqual({ str: 1, con: 1, cha: -2 });
   });
 
-  it("should give dwarves and elves 60ft infravision", () => {
+  it("RACE-008: should give dwarves and elves 60ft infravision", () => {
     expect(getRace("dwarf").infravision).toBe(60);
     expect(getRace("elf").infravision).toBe(60);
     expect(getRace("human").infravision).toBe(0);
+  });
+});
+
+describe("RACE-012: getStartingAge", () => {
+  it("returns base age + class modifier for human fighter", () => {
+    const age = getStartingAge("human", "fighter");
+    expect(age.base).toBe(15);
+    expect(age.diceCount).toBeGreaterThan(0);
+    expect(age.diceSides).toBeGreaterThan(0);
+  });
+
+  it("returns higher base age for elf mage", () => {
+    const age = getStartingAge("elf", "mage");
+    expect(age.base).toBeGreaterThanOrEqual(150);
+  });
+
+  it("returns different values for different class groups", () => {
+    const warrior = getStartingAge("human", "fighter");
+    const wizard = getStartingAge("human", "mage");
+    expect(wizard.base).toBeGreaterThanOrEqual(warrior.base);
+  });
+});
+
+describe("RACE-013: getHeightRange", () => {
+  it("returns base + dice for human male", () => {
+    const h = getHeightRange("human", "male");
+    expect(h.baseInches).toBe(60);
+    expect(h.diceCount).toBe(2);
+    expect(h.diceSides).toBe(10);
+  });
+
+  it("returns smaller base for halfling", () => {
+    const h = getHeightRange("halfling", "male");
+    expect(h.baseInches).toBeLessThan(40);
+  });
+
+  it("returns slightly smaller base for female", () => {
+    const male = getHeightRange("human", "male");
+    const female = getHeightRange("human", "female");
+    expect(female.baseInches).toBeLessThan(male.baseInches);
+  });
+});
+
+describe("RACE-014: getWeightRange", () => {
+  it("returns base + dice for human male", () => {
+    const w = getWeightRange("human", "male");
+    expect(w.baseLbs).toBe(140);
+    expect(w.diceCount).toBeGreaterThan(0);
+    expect(w.diceSides).toBeGreaterThan(0);
+  });
+
+  it("returns lighter base for halfling", () => {
+    const w = getWeightRange("halfling", "male");
+    expect(w.baseLbs).toBeLessThan(60);
+  });
+});
+
+describe("RACE-015: getRacialSavingThrowBonus", () => {
+  it("dwarf with CON 14 gets +4 vs poison/magic", () => {
+    expect(getRacialSavingThrowBonus("dwarf", 14)).toBe(4);
+  });
+
+  it("dwarf with CON 4 gets +1", () => {
+    expect(getRacialSavingThrowBonus("dwarf", 4)).toBe(1);
+  });
+
+  it("gnome with CON 10 gets +2 (floor(10/3.5))", () => {
+    expect(getRacialSavingThrowBonus("gnome", 10)).toBe(2);
+  });
+
+  it("elf gets 0 (no bonus)", () => {
+    expect(getRacialSavingThrowBonus("elf", 14)).toBe(0);
+  });
+
+  it("human gets 0", () => {
+    expect(getRacialSavingThrowBonus("human", 16)).toBe(0);
   });
 });

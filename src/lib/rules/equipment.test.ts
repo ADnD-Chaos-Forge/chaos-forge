@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { calculateAC, calculateEncumbrance, getMovementRate } from "./equipment";
+import { calculateAC, calculateEncumbrance, getMovementRate, getStartingGold } from "./equipment";
 
-describe("AC Calculation", () => {
+describe("EQUIP-001: AC Calculation", () => {
   it("should return base AC 10 with no armor and DEX 10 (adj 0)", () => {
     expect(calculateAC(null, false, 0)).toBe(10);
   });
@@ -31,7 +31,7 @@ describe("AC Calculation", () => {
   });
 });
 
-describe("Encumbrance", () => {
+describe("EQUIP-002: Encumbrance", () => {
   it("should return unencumbered when weight is under 1/3 of allowance", () => {
     expect(calculateEncumbrance(30, 110)).toBe("unencumbered"); // ~27%
   });
@@ -53,7 +53,7 @@ describe("Encumbrance", () => {
   });
 });
 
-describe("Movement Rate", () => {
+describe("EQUIP-003: Movement Rate", () => {
   it("should return full movement when unencumbered", () => {
     expect(getMovementRate(12, "unencumbered")).toBe(12);
   });
@@ -72,5 +72,36 @@ describe("Movement Rate", () => {
 
   it("should reduce to 1 when severe encumbered", () => {
     expect(getMovementRate(12, "severe")).toBe(1);
+  });
+});
+
+describe("EQUIP-004: getStartingGold", () => {
+  it("fighter: 5d4 × 10 = range 50-200", () => {
+    const g = getStartingGold("fighter");
+    expect(g.diceCount).toBe(5);
+    expect(g.diceSides).toBe(4);
+    expect(g.multiplier).toBe(10);
+  });
+
+  it("mage: (1d4+1) × 10 = range 20-50", () => {
+    const g = getStartingGold("mage");
+    expect(g.diceCount).toBe(1);
+    expect(g.diceSides).toBe(4);
+    expect(g.bonus).toBe(1);
+    expect(g.multiplier).toBe(10);
+  });
+
+  it("thief: 2d6 × 10 = range 20-120", () => {
+    const g = getStartingGold("thief");
+    expect(g.diceCount).toBe(2);
+    expect(g.diceSides).toBe(6);
+    expect(g.multiplier).toBe(10);
+  });
+
+  it("cleric: 3d6 × 10 = range 30-180", () => {
+    const g = getStartingGold("cleric");
+    expect(g.diceCount).toBe(3);
+    expect(g.diceSides).toBe(6);
+    expect(g.multiplier).toBe(10);
   });
 });

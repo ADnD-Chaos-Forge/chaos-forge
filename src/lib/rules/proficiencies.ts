@@ -54,3 +54,43 @@ export function getNonproficiencyPenalty(classGroup: ClassGroup): number {
 export function canSpecialize(classId: ClassId): boolean {
   return classId === "fighter";
 }
+
+// ─── WEAPON SPEED FACTORS (PHB Chapter 9) ───────────────────────────────────
+
+const WEAPON_SPEED_FACTORS: Record<string, number> = {
+  battle_axe: 7,
+  hand_axe: 4,
+  club: 4,
+  dagger: 2,
+  dart: 2,
+  flail: 7,
+  halberd: 9,
+  hammer: 4,
+  war_hammer: 4,
+  javelin: 4,
+  lance: 8,
+  mace: 7,
+  morning_star: 7,
+  pike: 13,
+  scimitar: 5,
+  spear: 6,
+  staff: 4,
+  quarterstaff: 4,
+  long_sword: 5,
+  short_sword: 3,
+  bastard_sword: 6,
+  "two-handed_sword": 10,
+  trident: 7,
+  whip: 8,
+  composite_long_bow: 7,
+  composite_short_bow: 6,
+  long_bow: 8,
+  short_bow: 7,
+  light_crossbow: 7,
+  heavy_crossbow: 10,
+  sling: 6,
+};
+
+export function getWeaponSpeedFactor(weaponId: string): number | null {
+  return WEAPON_SPEED_FACTORS[weaponId] ?? null;
+}

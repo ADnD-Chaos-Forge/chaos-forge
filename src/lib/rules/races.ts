@@ -1,4 +1,5 @@
-import type { RaceId, ClassId, AbilityName, ClassAbility } from "./types";
+import type { RaceId, ClassId, ClassGroup, AbilityName, ClassAbility } from "./types";
+import { getClassGroup } from "./classes";
 
 export interface RaceDefinition {
   id: RaceId;
@@ -412,4 +413,158 @@ export function canPlayClass(raceId: RaceId, classId: ClassId): boolean {
 export function getLevelLimit(raceId: RaceId, classId: ClassId): number | null {
   const limit = RACES[raceId].levelLimits[classId];
   return limit ?? null; // null = unlimited
+}
+
+// ─── STARTING AGE (PHB Table 10) ────────────────────────────────────────────
+
+export interface AgeRange {
+  base: number;
+  diceCount: number;
+  diceSides: number;
+}
+
+// Base ages by race, keyed by class group
+const STARTING_AGE: Record<RaceId, Record<ClassGroup, AgeRange>> = {
+  human: {
+    warrior: { base: 15, diceCount: 1, diceSides: 4 },
+    wizard: { base: 20, diceCount: 2, diceSides: 8 },
+    priest: { base: 18, diceCount: 1, diceSides: 4 },
+    rogue: { base: 18, diceCount: 1, diceSides: 6 },
+  },
+  elf: {
+    warrior: { base: 130, diceCount: 5, diceSides: 6 },
+    wizard: { base: 150, diceCount: 5, diceSides: 6 },
+    priest: { base: 140, diceCount: 5, diceSides: 6 },
+    rogue: { base: 100, diceCount: 5, diceSides: 6 },
+  },
+  half_elf: {
+    warrior: { base: 22, diceCount: 3, diceSides: 4 },
+    wizard: { base: 30, diceCount: 2, diceSides: 8 },
+    priest: { base: 40, diceCount: 2, diceSides: 4 },
+    rogue: { base: 22, diceCount: 3, diceSides: 8 },
+  },
+  dwarf: {
+    warrior: { base: 40, diceCount: 5, diceSides: 4 },
+    wizard: { base: 75, diceCount: 2, diceSides: 20 },
+    priest: { base: 250, diceCount: 2, diceSides: 20 },
+    rogue: { base: 75, diceCount: 2, diceSides: 6 },
+  },
+  gnome: {
+    warrior: { base: 60, diceCount: 5, diceSides: 4 },
+    wizard: { base: 100, diceCount: 2, diceSides: 12 },
+    priest: { base: 300, diceCount: 3, diceSides: 12 },
+    rogue: { base: 80, diceCount: 5, diceSides: 4 },
+  },
+  halfling: {
+    warrior: { base: 20, diceCount: 3, diceSides: 4 },
+    wizard: { base: 40, diceCount: 2, diceSides: 8 },
+    priest: { base: 40, diceCount: 2, diceSides: 4 },
+    rogue: { base: 32, diceCount: 2, diceSides: 4 },
+  },
+  half_orc: {
+    warrior: { base: 13, diceCount: 1, diceSides: 4 },
+    wizard: { base: 16, diceCount: 1, diceSides: 6 },
+    priest: { base: 14, diceCount: 1, diceSides: 4 },
+    rogue: { base: 15, diceCount: 1, diceSides: 6 },
+  },
+};
+
+export function getStartingAge(raceId: RaceId, classId: ClassId): AgeRange {
+  const group = getClassGroup(classId);
+  return STARTING_AGE[raceId][group];
+}
+
+// ─── HEIGHT AND WEIGHT TABLES (PHB Table 10) ────────────────────────────────
+
+export type Gender = "male" | "female";
+
+export interface PhysicalRange {
+  baseInches: number;
+  diceCount: number;
+  diceSides: number;
+}
+
+export interface WeightRange {
+  baseLbs: number;
+  diceCount: number;
+  diceSides: number;
+}
+
+const HEIGHT_TABLE: Record<RaceId, Record<Gender, PhysicalRange>> = {
+  human: {
+    male: { baseInches: 60, diceCount: 2, diceSides: 10 },
+    female: { baseInches: 59, diceCount: 2, diceSides: 10 },
+  },
+  elf: {
+    male: { baseInches: 55, diceCount: 1, diceSides: 10 },
+    female: { baseInches: 50, diceCount: 1, diceSides: 10 },
+  },
+  half_elf: {
+    male: { baseInches: 60, diceCount: 2, diceSides: 6 },
+    female: { baseInches: 58, diceCount: 2, diceSides: 6 },
+  },
+  dwarf: {
+    male: { baseInches: 43, diceCount: 1, diceSides: 10 },
+    female: { baseInches: 41, diceCount: 1, diceSides: 10 },
+  },
+  gnome: {
+    male: { baseInches: 38, diceCount: 1, diceSides: 6 },
+    female: { baseInches: 36, diceCount: 1, diceSides: 6 },
+  },
+  halfling: {
+    male: { baseInches: 32, diceCount: 2, diceSides: 8 },
+    female: { baseInches: 30, diceCount: 2, diceSides: 8 },
+  },
+  half_orc: {
+    male: { baseInches: 58, diceCount: 2, diceSides: 10 },
+    female: { baseInches: 56, diceCount: 2, diceSides: 10 },
+  },
+};
+
+const WEIGHT_TABLE: Record<RaceId, Record<Gender, WeightRange>> = {
+  human: {
+    male: { baseLbs: 140, diceCount: 6, diceSides: 10 },
+    female: { baseLbs: 100, diceCount: 6, diceSides: 10 },
+  },
+  elf: {
+    male: { baseLbs: 90, diceCount: 3, diceSides: 10 },
+    female: { baseLbs: 70, diceCount: 3, diceSides: 10 },
+  },
+  half_elf: {
+    male: { baseLbs: 110, diceCount: 3, diceSides: 12 },
+    female: { baseLbs: 85, diceCount: 3, diceSides: 12 },
+  },
+  dwarf: {
+    male: { baseLbs: 130, diceCount: 4, diceSides: 10 },
+    female: { baseLbs: 105, diceCount: 4, diceSides: 10 },
+  },
+  gnome: {
+    male: { baseLbs: 72, diceCount: 5, diceSides: 4 },
+    female: { baseLbs: 68, diceCount: 5, diceSides: 4 },
+  },
+  halfling: {
+    male: { baseLbs: 52, diceCount: 5, diceSides: 4 },
+    female: { baseLbs: 48, diceCount: 5, diceSides: 4 },
+  },
+  half_orc: {
+    male: { baseLbs: 130, diceCount: 5, diceSides: 10 },
+    female: { baseLbs: 100, diceCount: 5, diceSides: 10 },
+  },
+};
+
+export function getHeightRange(raceId: RaceId, gender: Gender): PhysicalRange {
+  return HEIGHT_TABLE[raceId][gender];
+}
+
+export function getWeightRange(raceId: RaceId, gender: Gender): WeightRange {
+  return WEIGHT_TABLE[raceId][gender];
+}
+
+// ─── RACIAL SAVING THROW BONUSES (PHB Ch2) ──────────────────────────────────
+
+/** Dwarves and gnomes get +1 save bonus per 3.5 CON points vs poison/magic */
+export function getRacialSavingThrowBonus(raceId: RaceId, con: number): number {
+  if (raceId !== "dwarf" && raceId !== "gnome" && raceId !== "half_orc") return 0;
+  if (raceId === "half_orc") return 0;
+  return Math.floor(con / 3.5);
 }

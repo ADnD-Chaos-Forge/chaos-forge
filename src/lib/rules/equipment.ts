@@ -61,3 +61,27 @@ const ENCUMBRANCE_LABELS: Record<EncumbranceLevel, string> = {
 export function getEncumbranceLabel(level: EncumbranceLevel): string {
   return ENCUMBRANCE_LABELS[level];
 }
+
+// ─── STARTING GOLD (PHB Table 44) ───────────────────────────────────────────
+
+import type { ClassId } from "./types";
+import { getClassGroup } from "./classes";
+
+export interface StartingGold {
+  diceCount: number;
+  diceSides: number;
+  bonus: number;
+  multiplier: number;
+}
+
+const STARTING_GOLD: Record<string, StartingGold> = {
+  warrior: { diceCount: 5, diceSides: 4, bonus: 0, multiplier: 10 },
+  wizard: { diceCount: 1, diceSides: 4, bonus: 1, multiplier: 10 },
+  priest: { diceCount: 3, diceSides: 6, bonus: 0, multiplier: 10 },
+  rogue: { diceCount: 2, diceSides: 6, bonus: 0, multiplier: 10 },
+};
+
+export function getStartingGold(classId: ClassId): StartingGold {
+  const group = getClassGroup(classId);
+  return STARTING_GOLD[group];
+}

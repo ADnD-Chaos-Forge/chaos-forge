@@ -7,9 +7,11 @@ import {
   getPriestBonusSpellPoints,
   getPriestSpellCost,
   canLearnSpell,
+  getRangerSpellSlots,
+  getPaladinSpellSlots,
 } from "./spellslots";
 
-describe("Wizard Spell Slots", () => {
+describe("MAGIC-007: Wizard Spell Slots", () => {
   it("should give a level 1 wizard 1 first-level slot", () => {
     const slots = getWizardSpellSlots(1);
     expect(slots[0]).toBe(1);
@@ -28,7 +30,7 @@ describe("Wizard Spell Slots", () => {
   });
 });
 
-describe("Priest Spell Slots", () => {
+describe("MAGIC-008: Priest Spell Slots", () => {
   it("should give a level 1 priest 1 first-level slot", () => {
     const slots = getPriestSpellSlots(1);
     expect(slots[0]).toBe(1);
@@ -42,7 +44,7 @@ describe("Priest Spell Slots", () => {
   });
 });
 
-describe("Priest Bonus Slots", () => {
+describe("MAGIC-009: Priest Bonus Slots", () => {
   it("should give no bonus slots for WIS 12 or below", () => {
     const bonus = getPriestBonusSlots(12);
     expect(bonus.every((s) => s === 0)).toBe(true);
@@ -62,7 +64,7 @@ describe("Priest Bonus Slots", () => {
   });
 });
 
-describe("Priest Spell Points (Player's Option)", () => {
+describe("MAGIC-010: Priest Spell Points (Player's Option)", () => {
   it("should give 10 spell points at level 1", () => {
     expect(getPriestSpellPoints(1)).toBe(10);
   });
@@ -89,7 +91,7 @@ describe("Priest Spell Points (Player's Option)", () => {
   });
 });
 
-describe("canLearnSpell", () => {
+describe("MAGIC-005 MAGIC-006: canLearnSpell", () => {
   it("should allow a mage to learn any school", () => {
     const result = canLearnSpell("mage", "invocation", undefined, 1, 15);
     expect(result.allowed).toBe(true);
@@ -118,5 +120,50 @@ describe("canLearnSpell", () => {
   it("should allow a fighter to NOT learn spells", () => {
     const result = canLearnSpell("fighter", "invocation", undefined, 1, 15);
     expect(result.allowed).toBe(false);
+  });
+});
+
+describe("CLASS-007: getRangerSpellSlots", () => {
+  it("ranger level 7 has no spells", () => {
+    const slots = getRangerSpellSlots(7);
+    expect(slots.druid.every((s) => s === 0)).toBe(true);
+    expect(slots.wizard.every((s) => s === 0)).toBe(true);
+  });
+
+  it("ranger level 8 has 1 druid spell level 1", () => {
+    const slots = getRangerSpellSlots(8);
+    expect(slots.druid[0]).toBe(1);
+  });
+
+  it("ranger level 9 has 1 wizard spell level 1", () => {
+    const slots = getRangerSpellSlots(9);
+    expect(slots.wizard[0]).toBe(1);
+  });
+
+  it("ranger level 16 has druid spells up to level 3", () => {
+    const slots = getRangerSpellSlots(16);
+    expect(slots.druid[0]).toBeGreaterThan(0);
+    expect(slots.druid[1]).toBeGreaterThan(0);
+    expect(slots.druid[2]).toBeGreaterThan(0);
+  });
+});
+
+describe("CLASS-008: getPaladinSpellSlots", () => {
+  it("paladin level 8 has no spells", () => {
+    const slots = getPaladinSpellSlots(8);
+    expect(slots.every((s) => s === 0)).toBe(true);
+  });
+
+  it("paladin level 9 has 1 priest spell level 1", () => {
+    const slots = getPaladinSpellSlots(9);
+    expect(slots[0]).toBe(1);
+  });
+
+  it("paladin level 20 has spells up to level 4", () => {
+    const slots = getPaladinSpellSlots(20);
+    expect(slots[0]).toBeGreaterThan(0);
+    expect(slots[1]).toBeGreaterThan(0);
+    expect(slots[2]).toBeGreaterThan(0);
+    expect(slots[3]).toBeGreaterThan(0);
   });
 });

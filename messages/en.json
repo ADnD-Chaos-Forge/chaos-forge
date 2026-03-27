@@ -61,7 +61,8 @@
     "level": "Level",
     "deleteTitle": "Delete Character",
     "deleteMessage": "Do you really want to permanently delete \"{name}\"?",
-    "printView": "Print View"
+    "printView": "Print View",
+    "spellbook": "Spellbook"
   },
   "wizard": {
     "basics": "Basics",

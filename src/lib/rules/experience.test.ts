@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getXpForNextLevel, getXpThreshold } from "./experience";
 
-describe("Experience Points", () => {
+describe("XP-001 XP-002 XP-003: Experience Points", () => {
   it("should return 2000 XP for fighter level 2", () => {
     expect(getXpForNextLevel("fighter", 1)).toBe(2000);
   });

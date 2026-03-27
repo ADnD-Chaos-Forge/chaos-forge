@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getThac0, getAttackRoll, getSavingThrows, getAttacksPerRound } from "./combat";
 
-describe("THAC0", () => {
+describe("COMBAT-001: THAC0", () => {
   it("should return 20 for a level 1 warrior", () => {
     expect(getThac0("warrior", 1)).toBe(20);
   });
@@ -39,7 +39,7 @@ describe("THAC0", () => {
   });
 });
 
-describe("Attack Roll Calculation", () => {
+describe("COMBAT-002: Attack Roll Calculation", () => {
   it("should need 20 to hit AC 0 with THAC0 20", () => {
     expect(getAttackRoll(20, 0)).toBe(20);
   });
@@ -57,7 +57,7 @@ describe("Attack Roll Calculation", () => {
   });
 });
 
-describe("Saving Throws", () => {
+describe("COMBAT-003: Saving Throws", () => {
   it("should return correct saves for a level 1 warrior", () => {
     const saves = getSavingThrows("warrior", 1);
     expect(saves.paralyzation).toBe(14);
@@ -104,7 +104,7 @@ describe("Saving Throws", () => {
   });
 });
 
-describe("Attacks Per Round", () => {
+describe("COMBAT-004: Attacks Per Round", () => {
   it("warrior L1-6 gets 1 attack", () => {
     expect(getAttacksPerRound("warrior", 1)).toBe("1");
     expect(getAttacksPerRound("warrior", 6)).toBe("1");
