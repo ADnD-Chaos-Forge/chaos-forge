@@ -260,7 +260,11 @@
     "castingTime": "Casting Time",
     "savingThrow": "Saving Throw",
     "removeSpell": "Remove",
-    "learnSpellError": "Failed to learn spell. You may not have permission to modify this character."
+    "learnSpellError": "Failed to learn spell. You may not have permission to modify this character.",
+    "spellPoints": "Spell Points",
+    "totalPoints": "Total Spell Points",
+    "spellCosts": "Cost per Level",
+    "spellSlots": "Spell Slots"
   },
   "proficiencies": {
     "title": "Proficiencies",
@@ -423,7 +427,6 @@
     "readLang": "Read Lang.",
     "backstab": "Backstab",
     "equipment": "Equipment",
-    "weight": "Weight",
     "spellbook": "Spellbook",
     "proficiencies": "Proficiencies",
     "weaponProf": "Weapon Proficiencies",

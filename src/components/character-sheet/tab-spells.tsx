@@ -325,44 +325,68 @@ export function TabSpells({
 
   return (
     <div className="flex flex-col gap-6" data-testid="tab-spells">
-      {/* Spell Slots Overview */}
-      <div>
-        <h3 className="mb-3 font-heading text-lg">Zauberpl&auml;tze</h3>
-        <div
-          className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7"
-          data-testid="spell-slots-grid"
-        >
-          {Array.from({ length: maxSpellLevel }, (_, i) => i + 1).map((spellLevel) => {
-            const available = totalSlots[spellLevel - 1] ?? 0;
-            const prepared = preparedCountByLevel[spellLevel] ?? 0;
-            if (available === 0 && (spellsByLevel[spellLevel] ?? []).length === 0) return null;
-            return (
-              <div
-                key={spellLevel}
-                className="rounded-md border border-border p-3 text-center"
-                data-testid={`spell-slot-level-${spellLevel}`}
-              >
-                <div className="text-xs text-muted-foreground">Stufe {spellLevel}</div>
-                <div className="font-mono text-xl">
-                  <span
-                    className={prepared >= available ? "text-destructive" : "text-primary"}
-                    data-testid={`spell-slot-prepared-${spellLevel}`}
-                  >
-                    {prepared}
-                  </span>
-                  <span className="text-muted-foreground"> / </span>
-                  <span data-testid={`spell-slot-available-${spellLevel}`}>{available}</span>
-                </div>
-                {isPriest && bonusSlots[spellLevel - 1] > 0 && (
-                  <div className="text-xs text-muted-foreground">
-                    (+{bonusSlots[spellLevel - 1]} WIS)
-                  </div>
-                )}
+      {/* Spell Points (Priest) or Spell Slots (Wizard) */}
+      {isPriest ? (
+        <div>
+          <h3 className="mb-3 font-heading text-lg">{t("spellPoints")}</h3>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3" data-testid="spell-points-grid">
+            <div className="rounded-md border border-primary p-4 text-center">
+              <div className="text-xs text-muted-foreground">{t("totalPoints")}</div>
+              <div className="font-heading text-3xl text-primary" data-testid="spell-points-total">
+                {getPriestSpellPoints(level) + getPriestBonusSpellPoints(wisScore)}
               </div>
-            );
-          })}
+              <div className="text-xs text-muted-foreground">
+                {getPriestSpellPoints(level)} + {getPriestBonusSpellPoints(wisScore)} WIS
+              </div>
+            </div>
+            <div className="rounded-md border border-border p-4 text-center">
+              <div className="text-xs text-muted-foreground">{t("spellCosts")}</div>
+              <div className="mt-1 flex flex-wrap justify-center gap-1 text-xs">
+                {[1, 2, 3, 4, 5, 6, 7].map((sl) => (
+                  <span key={sl} className="rounded bg-muted px-1.5 py-0.5 font-mono">
+                    L{sl}={getPriestSpellCost(sl)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div>
+          <h3 className="mb-3 font-heading text-lg">{t("spellSlots")}</h3>
+          <div
+            className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7"
+            data-testid="spell-slots-grid"
+          >
+            {Array.from({ length: maxSpellLevel }, (_, i) => i + 1).map((spellLevel) => {
+              const available = totalSlots[spellLevel - 1] ?? 0;
+              const prepared = preparedCountByLevel[spellLevel] ?? 0;
+              if (available === 0 && (spellsByLevel[spellLevel] ?? []).length === 0) return null;
+              return (
+                <div
+                  key={spellLevel}
+                  className="rounded-md border border-border p-3 text-center"
+                  data-testid={`spell-slot-level-${spellLevel}`}
+                >
+                  <div className="text-xs text-muted-foreground">
+                    {t("level")} {spellLevel}
+                  </div>
+                  <div className="font-mono text-xl">
+                    <span
+                      className={prepared >= available ? "text-destructive" : "text-primary"}
+                      data-testid={`spell-slot-prepared-${spellLevel}`}
+                    >
+                      {prepared}
+                    </span>
+                    <span className="text-muted-foreground"> / </span>
+                    <span data-testid={`spell-slot-available-${spellLevel}`}>{available}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Learn Spell Button */}
       {!readOnly && (

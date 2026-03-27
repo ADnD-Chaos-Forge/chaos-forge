@@ -260,7 +260,11 @@
     "castingTime": "Zauberzeit",
     "savingThrow": "Rettungswurf",
     "removeSpell": "Entfernen",
-    "learnSpellError": "Zauber konnte nicht erlernt werden. Du hast keine Berechtigung, diesen Charakter zu bearbeiten."
+    "learnSpellError": "Zauber konnte nicht erlernt werden. Du hast keine Berechtigung, diesen Charakter zu bearbeiten.",
+    "spellPoints": "Zauberpunkte",
+    "totalPoints": "Zauberpunkte gesamt",
+    "spellCosts": "Kosten pro Stufe",
+    "spellSlots": "Zauberplätze"
   },
   "proficiencies": {
     "title": "Fertigkeiten",
@@ -423,7 +427,6 @@
     "readLang": "Sprachen",
     "backstab": "Hinterhalt",
     "equipment": "Ausrüstung",
-    "weight": "Gewicht",
     "spellbook": "Zauberbuch",
     "proficiencies": "Fertigkeiten",
     "weaponProf": "Waffenfertigkeiten",
