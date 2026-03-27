@@ -12,13 +12,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Framework:** Next.js 16 (App Router) mit TypeScript
 - **Datenbank & Auth:** Supabase (PostgreSQL + Row Level Security)
-- **Styling:** Tailwind CSS v4 + shadcn/ui
-- **i18n:** next-intl (Cookie-basiert, DE/EN)
-- **Unit-/Integrationstests:** Vitest + React Testing Library
-- **E2E-Tests:** Playwright (Chromium, POM-Pattern, getByTestId)
+- **Styling:** Tailwind CSS v4 + shadcn/ui + Glassmorphism Design-System
+- **i18n:** next-intl (Cookie-basiert, DE/EN) + `localized()` Utility für DB-Daten
+- **Unit-/Integrationstests:** Vitest (609+ Tests)
+- **E2E-Tests:** Playwright (Chromium, POM-Pattern, getByTestId, axe-core A11y)
 - **Linting/Formatting:** ESLint (next config) + Prettier
 - **Hosting:** Vercel (Free-Tier)
-- **UI-Theme:** AD&D-Nostalgie-Look (Cinzel für Headings, Crimson Text für Body)
+- **AI:** Anthropic Claude API (Character Import, Session Summaries)
+- **Export:** `docx` + `file-saver` für Word-Export
+- **UI-Theme:** Glassmorphism Dark Fantasy (Cinzel Headings, Crimson Text Body, klassenbasierte Akzentfarben)
 
 ## Befehle
 
@@ -40,20 +42,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 src/
   app/                    # Next.js App Router (Pages, Layouts)
     characters/[id]/      # Charakterbogen, Druckansicht, Zauberbuch
+    characters/new/       # Charakter-Erstellung (Auswahl: Wizard oder Import)
+    characters/import/    # OCR/Vision-Import (Claude API)
+    dashboard/            # Dashboard mit Gruppen-Übersicht
+    sessions/             # Chronik des Chaos (Session-Log + Sprachnotizen)
   components/
-    character-sheet/      # Tabs: Stats, Combat, Equipment, Spells, Proficiencies, Thief Skills
+    character-sheet/      # Tabs: Stats, Combat, Notes, Equipment, Spells, Thief Skills, Proficiencies
+    character-card.tsx    # Glassmorphism Card (Avatar-Breakout, HP-Bar, Level-Badge, Glow)
+    glass-card.tsx        # Wiederverwendbare Glass-Surface-Komponente
+    hp-bar.tsx            # Leuchtende HP-Fortschrittsleiste mit Klassen-Gradient
+    level-badge.tsx       # Hexagonales Level-Badge (CSS clip-path)
     spellbook/            # Standalone Spellbook-Seite (Suche, Filter, Prepare, Learn)
-    print-sheet/          # Druckansicht
+    print-sheet/          # Druckansicht + Word-Export (.docx)
+    session/              # Session-Einträge, Sprachnotizen (MediaRecorder)
+    wizard/               # Character Wizard (7 Steps: Basics, Abilities, Race, Class, Kit, Combat, Summary)
     ui/                   # shadcn/ui Komponenten
   lib/
     rules/                # AD&D 2e Regelwerk-Engine (reine TypeScript-Logik)
       spec/               # Regelwerk-Spezifikation + Coverage-Meta-Test
-      abilities.ts        # Attribut-Modifikator-Tabellen (STR inkl. 18/xx, DEX, CON, INT, WIS, CHA)
-      alignment.ts        # 9 Gesinnungen, Klassen-Restriktionen
+      abilities.ts        # Attribut-Modifikator-Tabellen (STR 3-25 inkl. 18/xx, Sub-Stats)
+      alignment.ts        # 9 Gesinnungen (DE/EN), Klassen-Restriktionen
       classes.ts          # 16 Klassen-Definitionen, Attribut-Anforderungen, Fähigkeiten
-      combat.ts           # THAC0, Angriffswürfe, Rettungswürfe, Angriffe/Runde
+      combat.ts           # THAC0, Angriffswürfe, Rettungswürfe, Angriffe/Runde (inkl. Spezialisierung)
       equipment.ts        # RK-Berechnung, Belastung, Bewegungsrate
       experience.ts       # XP-Tabellen, Stufen-Berechnung
+      kits.ts             # 20 Kit-Definitionen (Fighter, Thief, Wizard, Priest, Ranger, Bard)
       magic.ts            # Magie-Schulen, Priester-Sphären, Spezialisten
       multiclass.ts       # THAC0/Saves-Optimierung, Regeltreue-Check, HP-Divisor
       proficiencies.ts    # Waffen-/NWP-Slots, Spezialisierung, Abzüge
@@ -63,15 +76,24 @@ src/
       types.ts            # Zentrale Typdefinitionen
       index.ts            # Barrel-Export
     supabase/             # Supabase Client-Helfer (client.ts, server.ts, middleware.ts)
-    utils/                # Hilfsfunktionen (cn, units: lbsToKg, feetToMeters)
+    utils/                # Hilfsfunktionen
+      class-colors.ts     # Klassengruppen-Akzentfarben (warrior/priest/rogue/wizard)
+      localize.ts         # localized(de, en, locale) — Locale-aware Text-Auswahl
+      source-books.ts     # Quellenbuch-Abkürzungen (PHB, AEG, ToM, etc.)
+      docx-export.ts      # Word-Export Generator (1:1 Print-Layout)
+      audio-recorder.ts   # MediaRecorder Wrapper (Safari-kompatibel)
+      units.ts            # lbsToKg(), feetToMeters()
   middleware.ts           # Next.js Middleware (Supabase Session-Refresh)
   test/                   # Vitest Setup, Smoke- & Regressionstests
 e2e/                      # Playwright E2E-Tests
+  responsive-a11y.spec.ts # Mobile Responsive (iPhone 13) + WCAG 2 AA (axe-core)
   pages/                  # Page Object Models (character-sheet, spellbook, login)
   helpers/                # Auth-Helper (Cookie-basierter Test-Login)
 messages/                 # i18n-Dateien (de.json, en.json)
 supabase/
-  migrations/             # SQL-Migrationen (Supabase Schema + Seed-Daten)
+  migrations/             # 30 SQL-Migrationen (Schema + Seed-Daten)
+ressources/
+  books/                  # OCR-Texte der AD&D 2e Regelbücher (PHB, Complete Handbooks)
 ```
 
 ## Regelwerk-Engine (`src/lib/rules/`)
@@ -80,19 +102,24 @@ Die AD&D-Regeln sind als **reine TypeScript-Funktionen** implementiert (kein DB-
 
 ### Kernfunktionen
 
-**Attribute:**
+**Attribute (mit Player's Option Sub-Stats):**
 
-- `getStrengthModifiers(str, exceptional?)` — inkl. 18/xx Ausnahmestärke
-- `getDexterityModifiers(dex)` / `getConstitutionModifiers(con)` / `getIntelligenceModifiers(int)` / `getWisdomModifiers(wis)` / `getCharismaModifiers(cha)`
+- `getStrengthModifiers(str, exceptional?, muscle?, stamina?)` — STR 3-25, inkl. 18/xx Ausnahmestärke
+- `getDexterityModifiers(dex, aim?, balance?)` / `getConstitutionModifiers(con, health?, fitness?)`
+- `getIntelligenceModifiers(int, knowledge?, reason?)` / `getWisdomModifiers(wis, intuition?, willpower?)`
+- `getCharismaModifiers(cha, leadership?, appearance?)`
 
-**Klassen & Rassen:**
+**Klassen, Rassen & Kits:**
 
 - `getClass(classId)` / `getAllClasses()` / `getClassGroup(classId)` / `meetsAbilityRequirements(classId, abilities)`
 - `getRace(raceId)` / `getAllRaces()` / `canPlayClass(raceId, classId)` / `getLevelLimit(raceId, classId)`
+- `getKit(kitId)` / `getKitsForClass(classId)` / `getEffectiveHitDie(baseHitDie, kit)`
 
 **Kampf:**
 
-- `getThac0(classGroup, level)` / `getAttackRoll(thac0, targetAC)` / `getSavingThrows(classGroup, level)` / `getAttacksPerRound(classGroup, level)`
+- `getThac0(classGroup, level)` / `getAttackRoll(thac0, targetAC)` / `getSavingThrows(classGroup, level)`
+- `getAttacksPerRound(classGroup, level, isSpecialized?)` — Specialist: 3/2 ab L1
+- `getAdjustedWeaponThac0(base, strHit, dexMissile, weaponType, profPenalty)` / `formatDamageWithBonus(base, strDmg)`
 
 **Magie:**
 
@@ -115,8 +142,21 @@ Die AD&D-Regeln sind als **reine TypeScript-Funktionen** implementiert (kein DB-
 
 **Sonstiges:**
 
-- `getAlignmentLabel(id)` / `getAllowedAlignments(classId)`
+- `getAlignmentLabel(id, locale?)` / `getAllowedAlignments(classId)`
 - `getXpForNextLevel(classId, level)` / `getXpThreshold(classId, level)`
+
+### Locale-System für DB-Daten
+
+DB-Daten (Waffen, Rüstungen, Zauber, NWPs, Rassen, Klassen) haben `name` (DE) + `name_en` (EN) Felder. In Komponenten immer `localized()` nutzen:
+
+```typescript
+import { localized } from "@/lib/utils/localize";
+import { useLocale } from "next-intl";
+
+const locale = useLocale();
+// Statt: race.name
+// Richtig: localized(race.name, race.name_en, locale)
+```
 
 ### Regelwerk-Spezifikation (`src/lib/rules/spec/`)
 
@@ -141,6 +181,28 @@ Die AD&D-Regeln sind als **reine TypeScript-Funktionen** implementiert (kein DB-
 - `MULTI-xxx` — Multiclass-Regeln
 - `THIEF-xxx` — Diebes-Fertigkeiten
 
+## Design-System
+
+### Glassmorphism
+
+CSS-Klassen in `globals.css`:
+
+- `.glass` — `backdrop-blur-xl`, transparenter Hintergrund
+- `.glass-hover` — `translateY(-2px)` beim Hover
+- `.glow-warrior/priest/rogue/wizard` — Klassenbasierte Akzentfarben (Border + Shadow)
+- `.glow-neutral` — Gold-Glow für generische Karten
+- `.hp-bar-warrior/priest/rogue/wizard` — Gradient-HP-Balken
+- `.hex-badge` — Hexagonaler Clip-Path für Level-Badge
+
+### Klassenfarben (`src/lib/utils/class-colors.ts`)
+
+| Klassengruppe | Glow | Badge          | HP-Bar        |
+| ------------- | ---- | -------------- | ------------- |
+| Warrior       | Rot  | `bg-red-700`   | Rot-Gradient  |
+| Priest        | Gold | `bg-amber-700` | Gold-Gradient |
+| Rogue         | Blau | `bg-blue-700`  | Blau-Gradient |
+| Wizard        | Teal | `bg-teal-700`  | Teal-Gradient |
+
 ## Hausregeln
 
 Diese Abweichungen vom Standard-PHB gelten für die "Chaos RPG"-Gruppe:
@@ -155,17 +217,21 @@ Diese Abweichungen vom Standard-PHB gelten für die "Chaos RPG"-Gruppe:
 - **Client-Helfer:** `src/lib/supabase/client.ts` (Browser), `server.ts` (Server Components), `middleware.ts` (Session-Refresh)
 - **Env-Variablen:** `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` (siehe `.env.local.example`)
 - **RLS:** Alle Tabellen nutzen Row Level Security — SELECT für alle Authentifizierten, INSERT/UPDATE/DELETE nur für Owner
+- **Storage:** `voice-notes` Bucket für Sprachnotizen, `avatars` für Character-Avatare
+- **Migrationen:** 30 Migrationen unter `supabase/migrations/`, ausführen via `supabase db push`
 
 ## AD&D 2e Regelwerk-Spezifika
 
 Das Datenmodell und die Regelwerk-Engine müssen folgende AD&D 2e Besonderheiten korrekt abbilden:
 
-- **Attribute:** STR (inkl. 18/xx Ausnahmestärke für Krieger), DEX, CON, INT, WIS, CHA
-- **Kampfsystem:** Absteigende Rüstungsklasse (RK/AC), ETW0 (THAC0), klassenspezifische Trefferwürfel, Rettungswürfe
+- **Attribute:** STR (inkl. 18/xx Ausnahmestärke für Krieger + Sub-Stats), DEX, CON, INT, WIS, CHA
+- **Kampfsystem:** Absteigende Rüstungsklasse (RK/AC), ETW0 (THAC0), klassenspezifische Trefferwürfel, Rettungswürfe, Spezialisierung
+- **Kits:** 20 Kits aus Complete Handbooks mit Hit-Die-Override und Abilities
 - **Rassen & Klassen:** Inklusive Level-Caps pro Rasse/Klasse-Kombination
 - **Magie:** Magier nutzen Schulen (inkl. Spezialisten), Priester nutzen Sphären (Haupt-/Nebenzugang)
-- **Fertigkeiten:** Waffenfertigkeiten (inkl. Spezialisierung) und Allgemeine Fertigkeiten
-- **Ausrüstung:** Gewicht/Belastung und Waffengeschwindigkeit sind relevant
+- **Fertigkeiten:** Waffenfertigkeiten (inkl. Spezialisierung → Angriffe/Runde) und Allgemeine Fertigkeiten
+- **Ausrüstung:** Gewicht/Belastung, Waffengeschwindigkeit, AC-Breakdown (Armor + Shield + DEX)
+- **Source Books:** Jedes Item/Waffe/Zauber hat ein `source_book` Feld (PHB, AEG, ToM, etc.)
 
 ## Entwicklungs-Workflow (zwingend)
 
@@ -191,8 +257,9 @@ Finaler explorativer Test mit etablierten Testing-Heuristiken und gezielten "Tes
 
 ## Roadmap-Überblick
 
-1. **Projekt-Setup & Infrastruktur** — Repo, CI/CD, DB-Anbindung, Basis-Layout
-2. **AD&D Core-Regelwerk (Engine)** — Attribute, RK/THAC0, Magie, Seeding
-3. **Charakter-Management** — Charakterbogen, Erstellungs-Wizard (level-agnostisch), Avatar-Upload, Print-Layout
-4. **Die Chronik des Chaos (Session Log)** — Timeline, Tagging, Smart Summaries
-5. **Advanced Features** — OCR/Vision-Import, Spielleiter-Dashboard
+1. **Projekt-Setup & Infrastruktur** — Repo, CI/CD, DB-Anbindung, Basis-Layout ✅
+2. **AD&D Core-Regelwerk (Engine)** — Attribute, RK/THAC0, Magie, Seeding ✅
+3. **Charakter-Management** — Charakterbogen, Erstellungs-Wizard, Avatar-Upload, Print-Layout, Kit-System ✅
+4. **Die Chronik des Chaos (Session Log)** — Timeline, Tagging, Smart Summaries, Sprachnotizen ✅
+5. **Advanced Features** — OCR/Vision-Import, Word-Export, Glassmorphism UI, Source Books ✅
+6. **Nächste Schritte** — DM-Dashboard, Kampagnen-Verwaltung, weitere Kits aus den Complete Handbooks
