@@ -39,6 +39,12 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover" as const,
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -56,7 +62,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
-            <header className="flex items-center justify-center border-b border-border px-6 py-4">
+            <header className="flex items-center justify-center border-b border-border px-4 py-2 sm:px-6 sm:py-4">
               <Link href="/">
                 <Image
                   src="/header-logo.webp"
@@ -64,14 +70,14 @@ export default async function RootLayout({
                   width={280}
                   height={120}
                   priority
-                  className="h-16 w-auto sm:h-20"
+                  className="h-10 w-auto sm:h-20"
                 />
               </Link>
             </header>
 
-            <main className="flex flex-1 flex-col">{children}</main>
+            <main className="flex flex-1 flex-col pb-16 sm:pb-0">{children}</main>
 
-            <footer className="flex flex-col items-center gap-2 border-t border-border px-6 py-6">
+            <footer className="hidden flex-col items-center gap-2 border-t border-border px-6 py-6 sm:flex">
               <Image
                 src="/footer-logo.webp"
                 alt="Chaos Forge — Est. 2nd Ed."
