@@ -353,7 +353,11 @@ export function PrintSheet({
                   </h3>
                   <ul className="mt-1 list-inside list-disc text-xs">
                     {race.racialAbilities.map((a, i) => (
-                      <li key={i}>{a}</li>
+                      <li key={i}>
+                        <span className="font-medium">{a.name}</span>
+                        {" — "}
+                        {a.description}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -368,7 +372,11 @@ export function PrintSheet({
                     </h3>
                     <ul className="mt-1 list-inside list-disc text-xs">
                       {clsDef.classAbilities.map((a, i) => (
-                        <li key={i}>{a}</li>
+                        <li key={i}>
+                          <span className="font-medium">{a.name}</span>
+                          {" — "}
+                          {a.description}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -418,22 +426,24 @@ export function PrintSheet({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-300 text-left text-xs">
-                  <th className="py-1">Item</th>
-                  <th className="py-1 text-center">Typ</th>
+                  <th className="py-1">{t("itemLabel")}</th>
+                  <th className="py-1 text-center">{t("typeLabel")}</th>
                   <th className="py-1 text-center">{t("weight")}</th>
-                  <th className="py-1 text-center">Status</th>
+                  <th className="py-1 text-center">{t("statusLabel")}</th>
                 </tr>
               </thead>
               <tbody>
                 {equipment.map((e) => (
                   <tr key={e.id} className="border-b border-gray-200">
                     <td className="py-1">{e.weapon?.name ?? e.armor?.name ?? "—"}</td>
-                    <td className="py-1 text-center text-xs">{e.weapon ? "Waffe" : "Rüstung"}</td>
+                    <td className="py-1 text-center text-xs">
+                      {e.weapon ? t("weaponType") : t("armorType")}
+                    </td>
                     <td className="py-1 text-center text-xs">
                       {e.weapon?.weight ?? e.armor?.weight ?? 0} lbs
                     </td>
                     <td className="py-1 text-center text-xs">
-                      {e.equipped ? "Angelegt" : "Inventar"}
+                      {e.equipped ? t("equippedStatus") : t("inventoryStatus")}
                     </td>
                   </tr>
                 ))}
@@ -474,7 +484,7 @@ export function PrintSheet({
                     {weaponProficiencies.map((wp) => (
                       <li key={wp.id}>
                         {wp.weapon_name}
-                        {wp.specialization && " (Spezialisierung)"}
+                        {wp.specialization && ` (${t("specialization")})`}
                       </li>
                     ))}
                   </ul>

@@ -158,7 +158,14 @@
     "backstabMultiplier": "Backstab Multiplier",
     "attacksPerRound": "Attacks/Round",
     "initiative": "Initiative Modifier",
-    "baseValue": "Base Value"
+    "baseValue": "Base Value",
+    "modHit": "Hit",
+    "modDamage": "Damage",
+    "modAC": "AC",
+    "modHpPerLevel": "HP/Level",
+    "modLanguages": "Languages",
+    "modMagDef": "Mag. Defense",
+    "modHenchmen": "Henchmen"
   },
   "equipment": {
     "title": "Equipment",
@@ -191,7 +198,26 @@
     "currentMovement": "Current Movement",
     "inventoryTitle": "General Inventory",
     "noInventory": "No items in inventory.",
-    "customItemPlaceholder": "Custom item (free text)..."
+    "customItemPlaceholder": "Custom item (free text)...",
+    "meleAndRanged": "Melee/Ranged",
+    "noArmor": "No armor",
+    "shield": "Shield",
+    "pounds": "lbs",
+    "maxWeight": "Max. {weight} lbs",
+    "noEquipped": "No items equipped.",
+    "damage": "Damage",
+    "itemLabel": "Item",
+    "typeLabel": "Type",
+    "quantity": "Qty",
+    "statusLabel": "Status",
+    "actions": "Actions",
+    "remove": "Remove",
+    "filterAll": "All",
+    "noWeapons": "No weapons available.",
+    "noArmorAvailable": "No armor available.",
+    "searchPlaceholder": "Search by name...",
+    "cancel": "Cancel",
+    "base": "Base"
   },
   "spells": {
     "title": "Spells",
@@ -236,7 +262,10 @@
     "racialLanguage": "Racial Language",
     "addLanguage": "Add Language",
     "maxLanguages": "Max. additional languages (INT)",
-    "suggestedLanguages": "Suggested Languages"
+    "suggestedLanguages": "Suggested Languages",
+    "noMatchingNwp": "No matching proficiencies found.",
+    "createAndAdd": "Create & Add",
+    "nwpNamePlaceholder": "Proficiency name"
   },
   "sessions": {
     "title": "The Chronicle of Chaos",
@@ -378,7 +407,15 @@
     "proficiencies": "Proficiencies",
     "weaponProf": "Weapon Proficiencies",
     "nwProf": "Non-Weapon Proficiencies",
-    "languagesLabel": "Languages"
+    "languagesLabel": "Languages",
+    "itemLabel": "Item",
+    "typeLabel": "Type",
+    "statusLabel": "Status",
+    "weaponType": "Weapon",
+    "armorType": "Armor",
+    "equippedStatus": "Equipped",
+    "inventoryStatus": "Inventory",
+    "specialization": "Specialization"
   },
   "theme": {
     "toggleDark": "Switch to dark mode",

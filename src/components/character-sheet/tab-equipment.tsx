@@ -273,7 +273,7 @@ export function TabEquipment({
   }
 
   function getItemName(item: CharacterEquipmentWithDetails): string {
-    return item.weapon?.name ?? item.armor?.name ?? "Unbekannt";
+    return item.weapon?.name ?? item.armor?.name ?? "—";
   }
 
   function getItemWeight(item: CharacterEquipmentWithDetails): number {
@@ -284,14 +284,14 @@ export function TabEquipment({
     if (item.weapon) {
       switch (item.weapon.weapon_type) {
         case "melee":
-          return "Nahkampf";
+          return t("melee");
         case "ranged":
-          return "Fernkampf";
+          return t("ranged");
         case "both":
-          return "Nah-/Fernkampf";
+          return t("meleAndRanged");
       }
     }
-    if (item.armor) return "Rüstung";
+    if (item.armor) return t("armor");
     return "";
   }
 
@@ -300,36 +300,38 @@ export function TabEquipment({
       {/* Summary Row: AC + Encumbrance */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <div className="rounded-md border border-border p-4 text-center">
-          <div className="text-xs text-muted-foreground">Rüstungsklasse</div>
+          <div className="text-xs text-muted-foreground">{t("acBreakdown")}</div>
           <div className="font-heading text-3xl text-primary" data-testid="equipment-ac">
             {currentAC}
           </div>
           <div className="text-xs text-muted-foreground">
-            {equippedArmor ? equippedArmor.armor!.name : "Keine Rüstung"}
-            {shieldEquipped ? " + Schild" : ""}
+            {equippedArmor ? equippedArmor.armor!.name : t("noArmor")}
+            {shieldEquipped ? ` + ${t("shield")}` : ""}
           </div>
         </div>
         <div className="rounded-md border border-border p-4 text-center">
-          <div className="text-xs text-muted-foreground">Gesamtgewicht</div>
+          <div className="text-xs text-muted-foreground">{t("totalWeight")}</div>
           <div className="font-heading text-3xl text-primary" data-testid="equipment-total-weight">
             {totalWeight}
           </div>
-          <div className="text-xs text-muted-foreground">Pfund</div>
+          <div className="text-xs text-muted-foreground">{t("pounds")}</div>
         </div>
         <div className="rounded-md border border-border p-4 text-center">
-          <div className="text-xs text-muted-foreground">Belastung</div>
+          <div className="text-xs text-muted-foreground">{t("encumbrance")}</div>
           <div className="mt-1" data-testid="equipment-encumbrance">
             <Badge variant={getEncumbranceBadgeVariant(encumbranceLevel)}>{encumbranceLabel}</Badge>
           </div>
-          <div className="mt-1 text-xs text-muted-foreground">Max. {strWeightAllow} Pfund</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {t("maxWeight", { weight: strWeightAllow })}
+          </div>
         </div>
       </div>
 
       {/* Equipped Items */}
       <div>
-        <h3 className="mb-3 font-heading text-lg">Ausgerüstet</h3>
+        <h3 className="mb-3 font-heading text-lg">{t("equipped")}</h3>
         {equippedItems.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Keine Gegenstände ausgerüstet.</p>
+          <p className="text-sm text-muted-foreground">{t("noEquipped")}</p>
         ) : (
           <div className="flex flex-col gap-2">
             {equippedItems.map((item) => (
@@ -343,12 +345,14 @@ export function TabEquipment({
                   <Badge variant="outline">{getItemType(item)}</Badge>
                   {item.weapon && (
                     <span className="text-xs text-muted-foreground">
-                      Schaden: {item.weapon.damage_sm}/{item.weapon.damage_l} | Tempo:{" "}
+                      {t("damage")}: {item.weapon.damage_sm}/{item.weapon.damage_l} | {t("speed")}:{" "}
                       {item.weapon.speed}
                     </span>
                   )}
                   {item.armor && (
-                    <span className="text-xs text-muted-foreground">RK: {item.armor.ac}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t("acValue")}: {item.armor.ac}
+                    </span>
                   )}
                 </div>
                 <Button
@@ -358,7 +362,7 @@ export function TabEquipment({
                   onClick={() => toggleEquip(item)}
                   data-testid={`unequip-btn-${item.id}`}
                 >
-                  Ablegen
+                  {t("unequip")}
                 </Button>
               </div>
             ))}
@@ -369,29 +373,29 @@ export function TabEquipment({
       {/* Inventory */}
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-heading text-lg">Inventar</h3>
+          <h3 className="font-heading text-lg">{t("inventory")}</h3>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowAddDialog(true)}
             data-testid="add-item-btn"
           >
-            Gegenstand hinzufügen
+            {t("addItem")}
           </Button>
         </div>
         {inventoryItems.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Kein Inventar vorhanden.</p>
+          <p className="text-sm text-muted-foreground">{t("noItems")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm" data-testid="inventory-table">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                  <th className="pb-2 pr-4">Gegenstand</th>
-                  <th className="pb-2 pr-4">Typ</th>
-                  <th className="pb-2 pr-4 text-right">Gewicht</th>
-                  <th className="pb-2 pr-4 text-right">Menge</th>
-                  <th className="pb-2 pr-4 text-center">Status</th>
-                  <th className="pb-2 text-right">Aktionen</th>
+                  <th className="pb-2 pr-4">{t("itemLabel")}</th>
+                  <th className="pb-2 pr-4">{t("typeLabel")}</th>
+                  <th className="pb-2 pr-4 text-right">{t("weight")}</th>
+                  <th className="pb-2 pr-4 text-right">{t("quantity")}</th>
+                  <th className="pb-2 pr-4 text-center">{t("statusLabel")}</th>
+                  <th className="pb-2 text-right">{t("actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -415,7 +419,7 @@ export function TabEquipment({
                         onClick={() => toggleEquip(item)}
                         data-testid={`equip-toggle-${item.id}`}
                       >
-                        {item.equipped ? "Angelegt" : "Anlegen"}
+                        {item.equipped ? t("equipped") : t("equip")}
                       </Button>
                     </td>
                     <td className="py-2 text-right">
@@ -426,7 +430,7 @@ export function TabEquipment({
                         onClick={() => removeItem(item.id)}
                         data-testid={`remove-item-${item.id}`}
                       >
-                        Entfernen
+                        {t("remove")}
                       </Button>
                     </td>
                   </tr>
@@ -445,7 +449,7 @@ export function TabEquipment({
         >
           <div className="mx-4 max-h-[80vh] w-full max-w-lg overflow-hidden rounded-lg border border-border bg-background shadow-lg">
             <div className="flex items-center justify-between border-b border-border p-4">
-              <h3 className="font-heading text-lg">Gegenstand hinzufügen</h3>
+              <h3 className="font-heading text-lg">{t("addItem")}</h3>
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -467,7 +471,7 @@ export function TabEquipment({
                 onClick={() => setAddTab("weapons")}
                 data-testid="add-dialog-tab-weapons"
               >
-                Waffen
+                {t("weapons")}
               </button>
               <button
                 className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
@@ -478,7 +482,7 @@ export function TabEquipment({
                 onClick={() => setAddTab("armor")}
                 data-testid="add-dialog-tab-armor"
               >
-                Rüstungen
+                {t("armor")}
               </button>
             </div>
 
@@ -486,7 +490,7 @@ export function TabEquipment({
             <div className="border-b border-border p-4 pb-3">
               <input
                 type="text"
-                placeholder="Suche nach Name..."
+                placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -498,10 +502,10 @@ export function TabEquipment({
                 <div className="mt-2 flex gap-1">
                   {(
                     [
-                      { key: "all", label: "Alle" },
-                      { key: "melee", label: "Nahkampf" },
-                      { key: "ranged", label: "Fernkampf" },
-                      { key: "both", label: "Beides" },
+                      { key: "all", label: t("filterAll") },
+                      { key: "melee", label: t("melee") },
+                      { key: "ranged", label: t("ranged") },
+                      { key: "both", label: t("both") },
                     ] as const
                   ).map((filter) => (
                     <button
@@ -526,7 +530,7 @@ export function TabEquipment({
               {addTab === "weapons" && (
                 <div className="flex flex-col gap-2">
                   {filteredWeapons.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Keine Waffen verfügbar.</p>
+                    <p className="text-sm text-muted-foreground">{t("noWeapons")}</p>
                   ) : (
                     filteredWeapons.map((weapon) => (
                       <div
@@ -537,8 +541,9 @@ export function TabEquipment({
                         <div>
                           <div className="font-medium">{weapon.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            Schaden: {weapon.damage_sm}/{weapon.damage_l} | Tempo: {weapon.speed} |
-                            Gewicht: {weapon.weight} | Kosten: {weapon.cost_gp} GM
+                            {t("damage")}: {weapon.damage_sm}/{weapon.damage_l} | {t("speed")}:{" "}
+                            {weapon.speed} | {t("weight")}: {weapon.weight} | {t("cost")}:{" "}
+                            {weapon.cost_gp} GP
                           </div>
                         </div>
                         <Button
@@ -548,7 +553,7 @@ export function TabEquipment({
                           onClick={() => addItem("weapon", weapon.id)}
                           data-testid={`add-weapon-btn-${weapon.id}`}
                         >
-                          Hinzufügen
+                          {t("addItem")}
                         </Button>
                       </div>
                     ))
@@ -564,17 +569,17 @@ export function TabEquipment({
                         onClick={() => setShowCustomWeaponForm(true)}
                         data-testid="create-custom-weapon-toggle"
                       >
-                        Eigene Waffe erstellen
+                        {t("createCustomWeapon")}
                       </Button>
                     ) : (
                       <div
                         className="flex flex-col gap-2 rounded-md border border-border p-3"
                         data-testid="custom-weapon-form"
                       >
-                        <div className="text-sm font-medium">Eigene Waffe erstellen</div>
+                        <div className="text-sm font-medium">{t("createCustomWeapon")}</div>
                         <input
                           type="text"
-                          placeholder="Name"
+                          placeholder={t("name")}
                           value={customWeapon.name}
                           onChange={(e) =>
                             setCustomWeapon({ ...customWeapon, name: e.target.value })
@@ -585,7 +590,7 @@ export function TabEquipment({
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="text"
-                            placeholder="Schaden (S/M)"
+                            placeholder={t("damageSM")}
                             value={customWeapon.damage_sm}
                             onChange={(e) =>
                               setCustomWeapon({ ...customWeapon, damage_sm: e.target.value })
@@ -595,7 +600,7 @@ export function TabEquipment({
                           />
                           <input
                             type="text"
-                            placeholder="Schaden (L)"
+                            placeholder={t("damageL")}
                             value={customWeapon.damage_l}
                             onChange={(e) =>
                               setCustomWeapon({ ...customWeapon, damage_l: e.target.value })
@@ -607,7 +612,7 @@ export function TabEquipment({
                         <div className="grid grid-cols-3 gap-2">
                           <input
                             type="number"
-                            placeholder="Geschwindigkeit"
+                            placeholder={t("speed")}
                             value={customWeapon.speed}
                             onChange={(e) =>
                               setCustomWeapon({ ...customWeapon, speed: e.target.value })
@@ -617,7 +622,7 @@ export function TabEquipment({
                           />
                           <input
                             type="number"
-                            placeholder="Gewicht"
+                            placeholder={t("weight")}
                             value={customWeapon.weight}
                             onChange={(e) =>
                               setCustomWeapon({ ...customWeapon, weight: e.target.value })
@@ -627,7 +632,7 @@ export function TabEquipment({
                           />
                           <input
                             type="number"
-                            placeholder="Kosten"
+                            placeholder={t("cost")}
                             value={customWeapon.cost_gp}
                             onChange={(e) =>
                               setCustomWeapon({ ...customWeapon, cost_gp: e.target.value })
@@ -644,7 +649,7 @@ export function TabEquipment({
                             onClick={createCustomWeapon}
                             data-testid="custom-weapon-submit"
                           >
-                            Erstellen & Hinzufügen
+                            {t("createAndAdd")}
                           </Button>
                           <Button
                             variant="ghost"
@@ -662,7 +667,7 @@ export function TabEquipment({
                             }}
                             data-testid="custom-weapon-cancel"
                           >
-                            Abbrechen
+                            {t("cancel")}
                           </Button>
                         </div>
                       </div>
@@ -673,7 +678,7 @@ export function TabEquipment({
               {addTab === "armor" && (
                 <div className="flex flex-col gap-2">
                   {filteredArmor.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Keine Rüstungen verfügbar.</p>
+                    <p className="text-sm text-muted-foreground">{t("noArmorAvailable")}</p>
                   ) : (
                     filteredArmor.map((armor) => (
                       <div
@@ -684,7 +689,8 @@ export function TabEquipment({
                         <div>
                           <div className="font-medium">{armor.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            RK: {armor.ac} | Gewicht: {armor.weight} | Kosten: {armor.cost_gp} GM
+                            {t("acValue")}: {armor.ac} | {t("weight")}: {armor.weight} | {t("cost")}
+                            : {armor.cost_gp} GP
                           </div>
                         </div>
                         <Button
@@ -694,7 +700,7 @@ export function TabEquipment({
                           onClick={() => addItem("armor", armor.id)}
                           data-testid={`add-armor-btn-${armor.id}`}
                         >
-                          Hinzufügen
+                          {t("addItem")}
                         </Button>
                       </div>
                     ))
@@ -710,17 +716,17 @@ export function TabEquipment({
                         onClick={() => setShowCustomArmorForm(true)}
                         data-testid="create-custom-armor-toggle"
                       >
-                        Eigene Rüstung erstellen
+                        {t("createCustomArmor")}
                       </Button>
                     ) : (
                       <div
                         className="flex flex-col gap-2 rounded-md border border-border p-3"
                         data-testid="custom-armor-form"
                       >
-                        <div className="text-sm font-medium">Eigene Rüstung erstellen</div>
+                        <div className="text-sm font-medium">{t("createCustomArmor")}</div>
                         <input
                           type="text"
-                          placeholder="Name"
+                          placeholder={t("name")}
                           value={customArmor.name}
                           onChange={(e) => setCustomArmor({ ...customArmor, name: e.target.value })}
                           className="rounded-md border border-border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -729,7 +735,7 @@ export function TabEquipment({
                         <div className="grid grid-cols-3 gap-2">
                           <input
                             type="number"
-                            placeholder="RK"
+                            placeholder={t("acValue")}
                             value={customArmor.ac}
                             onChange={(e) => setCustomArmor({ ...customArmor, ac: e.target.value })}
                             className="rounded-md border border-border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -737,7 +743,7 @@ export function TabEquipment({
                           />
                           <input
                             type="number"
-                            placeholder="Gewicht"
+                            placeholder={t("weight")}
                             value={customArmor.weight}
                             onChange={(e) =>
                               setCustomArmor({ ...customArmor, weight: e.target.value })
@@ -747,7 +753,7 @@ export function TabEquipment({
                           />
                           <input
                             type="number"
-                            placeholder="Kosten"
+                            placeholder={t("cost")}
                             value={customArmor.cost_gp}
                             onChange={(e) =>
                               setCustomArmor({ ...customArmor, cost_gp: e.target.value })
@@ -764,7 +770,7 @@ export function TabEquipment({
                             onClick={createCustomArmor}
                             data-testid="custom-armor-submit"
                           >
-                            Erstellen & Hinzufügen
+                            {t("createAndAdd")}
                           </Button>
                           <Button
                             variant="ghost"
@@ -775,7 +781,7 @@ export function TabEquipment({
                             }}
                             data-testid="custom-armor-cancel"
                           >
-                            Abbrechen
+                            {t("cancel")}
                           </Button>
                         </div>
                       </div>
@@ -826,7 +832,7 @@ export function TabEquipment({
         <h3 className="mb-3 font-heading text-lg">{t("acBreakdown")}</h3>
         <div className="grid grid-cols-5 gap-2 text-center text-sm">
           <div className="rounded-md border border-border p-2">
-            <div className="text-xs text-muted-foreground">Basis</div>
+            <div className="text-xs text-muted-foreground">{t("base")}</div>
             <div className="font-mono text-lg">10</div>
           </div>
           <div className="rounded-md border border-border p-2">
@@ -834,7 +840,7 @@ export function TabEquipment({
             <div className="font-mono text-lg">{equippedArmor ? equippedArmor.armor!.ac : "—"}</div>
           </div>
           <div className="rounded-md border border-border p-2">
-            <div className="text-xs text-muted-foreground">Schild</div>
+            <div className="text-xs text-muted-foreground">{t("shield")}</div>
             <div className="font-mono text-lg">{shieldEquipped ? "-1" : "—"}</div>
           </div>
           <div className="rounded-md border border-border p-2">
@@ -844,7 +850,7 @@ export function TabEquipment({
             </div>
           </div>
           <div className="rounded-md border border-primary p-2">
-            <div className="text-xs text-muted-foreground">RK</div>
+            <div className="text-xs text-muted-foreground">{t("acValue")}</div>
             <div className="font-heading text-lg text-primary">{currentAC}</div>
           </div>
         </div>
@@ -924,7 +930,7 @@ export function TabEquipment({
           <div className="mt-3 rounded-md border border-border p-4">
             <input
               type="text"
-              placeholder="Suche..."
+              placeholder={t("searchPlaceholder")}
               value={inventorySearch}
               onChange={(e) => setInventorySearch(e.target.value)}
               className="mb-3 w-full rounded-md border border-input bg-input px-3 py-2 text-sm"

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,14 +23,7 @@ import type {
   CharacterLanguageRow,
 } from "@/lib/supabase/types";
 
-const NWP_GROUP_FILTERS = [
-  { key: "all", label: "Alle" },
-  { key: "general", label: "Allgemein" },
-  { key: "warrior", label: "Krieger" },
-  { key: "priest", label: "Priester" },
-  { key: "rogue", label: "Schurke" },
-  { key: "wizard", label: "Magier" },
-] as const;
+const NWP_GROUP_FILTER_KEYS = ["all", "general", "warrior", "priest", "rogue", "wizard"] as const;
 
 const ABILITY_OPTIONS = [
   { value: "str", label: "STR" },
@@ -102,6 +96,9 @@ export function TabProficiencies({
   languages,
 }: TabProficienciesProps) {
   const router = useRouter();
+  const t = useTranslations("proficiencies");
+  const tcom = useTranslations("common");
+  const tg = useTranslations("nwpGroups");
   const [loading, setLoading] = useState(false);
   const [newWeaponName, setNewWeaponName] = useState("");
   const [newWeaponSpecialized, setNewWeaponSpecialized] = useState(false);
@@ -287,14 +284,14 @@ export function TabProficiencies({
       {/* Weapon Proficiencies */}
       <div data-testid="weapon-proficiencies-section">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-heading text-lg">Waffenfertigkeiten</h3>
+          <h3 className="font-heading text-lg">{t("weaponProf")}</h3>
           <Badge variant="outline" data-testid="weapon-slots-counter">
-            {usedWeaponSlots}/{weaponSlots} Slots verwendet
+            {t("slotsUsed", { used: usedWeaponSlots, total: weaponSlots })}
           </Badge>
         </div>
 
         <p className="mb-3 text-sm text-muted-foreground" data-testid="nonproficiency-penalty">
-          Malus bei ungeübter Waffe: {penalty}
+          {t("nonProfPenalty")}: {penalty}
         </p>
 
         {/* Weapon list */}
@@ -309,7 +306,7 @@ export function TabProficiencies({
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{wp.weapon_name}</span>
                   {wp.specialization && (
-                    <Badge data-testid={`weapon-specialized-${wp.id}`}>Spezialisiert</Badge>
+                    <Badge data-testid={`weapon-specialized-${wp.id}`}>{t("specialization")}</Badge>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -322,7 +319,7 @@ export function TabProficiencies({
                         disabled={loading}
                         data-testid={`weapon-specialization-toggle-${wp.id}`}
                       />
-                      Spezialisierung
+                      {t("specialization")}
                     </label>
                   )}
                   <Button
@@ -332,7 +329,7 @@ export function TabProficiencies({
                     disabled={loading}
                     data-testid={`weapon-remove-${wp.id}`}
                   >
-                    Entfernen
+                    {tcom("remove")}
                   </Button>
                 </div>
               </div>
@@ -344,7 +341,7 @@ export function TabProficiencies({
         {usedWeaponSlots < weaponSlots && (
           <div className="flex items-center gap-2" data-testid="add-weapon-proficiency">
             <Input
-              placeholder="Waffenname eingeben..."
+              placeholder={t("weaponName")}
               value={newWeaponName}
               onChange={(e) => setNewWeaponName(e.target.value)}
               onKeyDown={(e) => {
@@ -369,7 +366,7 @@ export function TabProficiencies({
               disabled={loading || !newWeaponName.trim()}
               data-testid="weapon-add-button"
             >
-              Hinzufügen
+              {tcom("add")}
             </Button>
           </div>
         )}
@@ -378,9 +375,9 @@ export function TabProficiencies({
       {/* Non-Weapon Proficiencies */}
       <div data-testid="nwp-section">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-heading text-lg">Allgemeine Fertigkeiten</h3>
+          <h3 className="font-heading text-lg">{t("nonweaponProf")}</h3>
           <Badge variant="outline" data-testid="nwp-slots-counter">
-            {usedNwpSlots}/{nwpSlots} Slots verwendet
+            {t("slotsUsed", { used: usedNwpSlots, total: nwpSlots })}
           </Badge>
         </div>
 
@@ -407,7 +404,7 @@ export function TabProficiencies({
                       className="text-xs text-muted-foreground"
                       data-testid={`nwp-check-${nwp.id}`}
                     >
-                      Probe: {abilityTarget}
+                      {t("abilityCheck")}: {abilityTarget}
                     </span>
                   </div>
                   <Button
@@ -417,7 +414,7 @@ export function TabProficiencies({
                     disabled={loading}
                     data-testid={`nwp-remove-${nwp.id}`}
                   >
-                    Entfernen
+                    {tcom("remove")}
                   </Button>
                 </div>
               );
@@ -431,7 +428,7 @@ export function TabProficiencies({
             {/* Search input */}
             <input
               type="text"
-              placeholder="Fertigkeit suchen..."
+              placeholder={tcom("search")}
               value={nwpSearchQuery}
               onChange={(e) => setNwpSearchQuery(e.target.value)}
               className="mb-3 w-full rounded-md border border-input bg-input p-2 text-sm"
@@ -440,15 +437,15 @@ export function TabProficiencies({
 
             {/* Group filter buttons */}
             <div className="mb-3 flex flex-wrap gap-2">
-              {NWP_GROUP_FILTERS.map((f) => (
+              {NWP_GROUP_FILTER_KEYS.map((key) => (
                 <Button
-                  key={f.key}
-                  variant={nwpGroupFilter === f.key ? "default" : "outline"}
+                  key={key}
+                  variant={nwpGroupFilter === key ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setNwpGroupFilter(f.key)}
-                  data-testid={`nwp-filter-${f.key}`}
+                  onClick={() => setNwpGroupFilter(key)}
+                  data-testid={`nwp-filter-${key}`}
                 >
-                  {f.label}
+                  {key === "all" ? tcom("all") : tg(key)}
                 </Button>
               ))}
             </div>
@@ -457,7 +454,7 @@ export function TabProficiencies({
             <div className="max-h-64 overflow-y-auto rounded-md border border-border">
               {filteredAvailableNwps.length === 0 ? (
                 <div className="py-4 text-center text-sm text-muted-foreground">
-                  Keine passenden Fertigkeiten gefunden.
+                  {t("noMatchingNwp")}
                 </div>
               ) : (
                 <div className="flex flex-col gap-0">
@@ -473,7 +470,7 @@ export function TabProficiencies({
                           {nwp.ability} {nwp.modifier >= 0 ? `+${nwp.modifier}` : nwp.modifier}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          {nwp.slots_required} {nwp.slots_required === 1 ? "Slot" : "Slots"}
+                          {t("slots")}: {nwp.slots_required}
                         </span>
                       </div>
                       <Button
@@ -482,7 +479,7 @@ export function TabProficiencies({
                         onClick={() => addNonweaponProficiency(nwp.id)}
                         data-testid={`nwp-add-${nwp.id}`}
                       >
-                        Hinzufügen
+                        {tcom("add")}
                       </Button>
                     </div>
                   ))}
@@ -498,21 +495,23 @@ export function TabProficiencies({
                   onClick={() => setShowCustomNwpForm(true)}
                   data-testid="nwp-custom-create-button"
                 >
-                  Eigene Fertigkeit erstellen
+                  {t("createCustomNWP")}
                 </Button>
               ) : (
                 <div className="rounded-md border border-border p-4" data-testid="nwp-custom-form">
-                  <h4 className="mb-3 font-heading text-sm">Eigene Fertigkeit erstellen</h4>
+                  <h4 className="mb-3 font-heading text-sm">{t("createCustomNWP")}</h4>
                   <div className="flex flex-col gap-3">
                     <Input
-                      placeholder="Name der Fertigkeit"
+                      placeholder={t("nwpNamePlaceholder")}
                       value={customNwp.name}
                       onChange={(e) => setCustomNwp((prev) => ({ ...prev, name: e.target.value }))}
                       data-testid="nwp-custom-name"
                     />
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                       <div>
-                        <label className="mb-1 block text-xs text-muted-foreground">Attribut</label>
+                        <label className="mb-1 block text-xs text-muted-foreground">
+                          {t("ability")}
+                        </label>
                         <select
                           value={customNwp.ability}
                           onChange={(e) =>
@@ -530,7 +529,7 @@ export function TabProficiencies({
                       </div>
                       <div>
                         <label className="mb-1 block text-xs text-muted-foreground">
-                          Modifikator
+                          {t("modifier")}
                         </label>
                         <Input
                           type="number"
@@ -545,7 +544,9 @@ export function TabProficiencies({
                         />
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs text-muted-foreground">Gruppe</label>
+                        <label className="mb-1 block text-xs text-muted-foreground">
+                          {t("group")}
+                        </label>
                         <select
                           value={customNwp.group_type}
                           onChange={(e) =>
@@ -554,15 +555,17 @@ export function TabProficiencies({
                           className="w-full rounded-md border border-input bg-input p-2 text-sm"
                           data-testid="nwp-custom-group"
                         >
-                          <option value="general">Allgemein</option>
-                          <option value="warrior">Krieger</option>
-                          <option value="priest">Priester</option>
-                          <option value="rogue">Schurke</option>
-                          <option value="wizard">Magier</option>
+                          <option value="general">{tg("general")}</option>
+                          <option value="warrior">{tg("warrior")}</option>
+                          <option value="priest">{tg("priest")}</option>
+                          <option value="rogue">{tg("rogue")}</option>
+                          <option value="wizard">{tg("wizard")}</option>
                         </select>
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs text-muted-foreground">Slots</label>
+                        <label className="mb-1 block text-xs text-muted-foreground">
+                          {t("slots")}
+                        </label>
                         <Input
                           type="number"
                           min={1}
@@ -583,7 +586,7 @@ export function TabProficiencies({
                         disabled={loading || !customNwp.name.trim()}
                         data-testid="nwp-custom-submit"
                       >
-                        Erstellen & Hinzufügen
+                        {t("createAndAdd")}
                       </Button>
                       <Button
                         variant="ghost"
@@ -593,7 +596,7 @@ export function TabProficiencies({
                         }}
                         data-testid="nwp-custom-cancel"
                       >
-                        Abbrechen
+                        {tcom("cancel")}
                       </Button>
                     </div>
                   </div>
@@ -607,14 +610,14 @@ export function TabProficiencies({
       {/* Languages */}
       <div data-testid="languages-section">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-heading text-lg">Sprachen</h3>
+          <h3 className="font-heading text-lg">{t("languages")}</h3>
           <Badge variant="outline" data-testid="languages-counter">
-            {allLanguageNames.length}/{defaultLanguages.length + maxLanguages} Sprachen
+            {allLanguageNames.length}/{defaultLanguages.length + maxLanguages} {t("languages")}
           </Badge>
         </div>
 
         <p className="mb-3 text-sm text-muted-foreground" data-testid="languages-max-info">
-          Zusätzliche Sprachen durch Intelligenz: {maxLanguages}
+          {t("maxLanguages")}: {maxLanguages}
         </p>
 
         {/* Language list */}
@@ -630,7 +633,7 @@ export function TabProficiencies({
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{lang}</span>
                   <Badge variant="secondary" data-testid={`language-race-badge-${lang}`}>
-                    (Rassensprache)
+                    ({t("racialLanguage")})
                   </Badge>
                 </div>
               </div>
@@ -663,7 +666,7 @@ export function TabProficiencies({
           <div data-testid="add-language">
             <div className="mb-3 flex items-center gap-2">
               <Input
-                placeholder="Sprache eingeben..."
+                placeholder={t("addLanguage")}
                 value={newLanguage}
                 onChange={(e) => setNewLanguage(e.target.value)}
                 onKeyDown={(e) => {
@@ -677,14 +680,14 @@ export function TabProficiencies({
                 disabled={loading || !newLanguage.trim()}
                 data-testid="language-add-button"
               >
-                Hinzufügen
+                {tcom("add")}
               </Button>
             </div>
 
             {/* Suggested languages */}
             {availableSuggestions.length > 0 && (
               <div data-testid="language-suggestions">
-                <p className="mb-2 text-xs text-muted-foreground">Vorschläge:</p>
+                <p className="mb-2 text-xs text-muted-foreground">{t("suggestedLanguages")}:</p>
                 <div className="flex flex-wrap gap-2">
                   {availableSuggestions.map((lang) => (
                     <Button

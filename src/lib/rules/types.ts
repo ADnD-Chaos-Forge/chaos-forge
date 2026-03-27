@@ -128,6 +128,12 @@ export type PriestSphere =
 /** Sphere access levels */
 export type SphereAccess = "major" | "minor";
 
+/** Ability description for class/race abilities */
+export interface ClassAbility {
+  name: string;
+  description: string;
+}
+
 /** Multiclass / Dualclass support */
 export type MulticlassCombination = ClassId[];
 

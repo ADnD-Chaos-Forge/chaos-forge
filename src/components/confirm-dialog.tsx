@@ -16,11 +16,13 @@ export function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = "Löschen",
+  confirmLabel,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
   const t = useTranslations("confirm");
+  const tcom = useTranslations("common");
+  const resolvedConfirmLabel = confirmLabel ?? tcom("delete");
 
   if (!open) return null;
 
@@ -41,7 +43,7 @@ export function ConfirmDialog({
             {t("cancel")}
           </Button>
           <Button variant="destructive" onClick={onConfirm} data-testid="confirm-delete">
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </Button>
         </div>
       </div>

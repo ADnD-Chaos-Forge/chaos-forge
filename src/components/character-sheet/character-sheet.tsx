@@ -292,8 +292,8 @@ export function CharacterSheet({
 
       <ConfirmDialog
         open={showDeleteConfirm}
-        title="Charakter löschen"
-        message={`Möchtest du "${character.name}" wirklich unwiderruflich löschen?`}
+        title={tc("deleteTitle")}
+        message={tc("deleteMessage", { name: character.name })}
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
@@ -432,37 +432,37 @@ export function CharacterSheet({
                   key: "str" as const,
                   label: "STR",
                   value: character.str,
-                  mods: `Treffer ${strMods.hitAdj >= 0 ? "+" : ""}${strMods.hitAdj}, Schaden ${strMods.dmgAdj >= 0 ? "+" : ""}${strMods.dmgAdj}`,
+                  mods: `${t("modHit")} ${strMods.hitAdj >= 0 ? "+" : ""}${strMods.hitAdj}, ${t("modDamage")} ${strMods.dmgAdj >= 0 ? "+" : ""}${strMods.dmgAdj}`,
                 },
                 {
                   key: "dex" as const,
                   label: "DEX",
                   value: character.dex,
-                  mods: `RK ${dexMods.defensiveAdj >= 0 ? "+" : ""}${dexMods.defensiveAdj}`,
+                  mods: `${t("modAC")} ${dexMods.defensiveAdj >= 0 ? "+" : ""}${dexMods.defensiveAdj}`,
                 },
                 {
                   key: "con" as const,
                   label: "CON",
                   value: character.con,
-                  mods: `HP ${conMods.hpAdj >= 0 ? "+" : ""}${conMods.hpAdj}/Stufe`,
+                  mods: `${t("modHpPerLevel")} ${conMods.hpAdj >= 0 ? "+" : ""}${conMods.hpAdj}`,
                 },
                 {
                   key: "int" as const,
                   label: "INT",
                   value: character.int,
-                  mods: `${intMods.numberOfLanguages} Sprachen`,
+                  mods: `${intMods.numberOfLanguages} ${t("modLanguages")}`,
                 },
                 {
                   key: "wis" as const,
                   label: "WIS",
                   value: character.wis,
-                  mods: `Mag.Abwehr ${wisMods.magicalDefenseAdj >= 0 ? "+" : ""}${wisMods.magicalDefenseAdj}`,
+                  mods: `${t("modMagDef")} ${wisMods.magicalDefenseAdj >= 0 ? "+" : ""}${wisMods.magicalDefenseAdj}`,
                 },
                 {
                   key: "cha" as const,
                   label: "CHA",
                   value: character.cha,
-                  mods: `${chaMods.maxHenchmen} Gefolgsleute`,
+                  mods: `${chaMods.maxHenchmen} ${t("modHenchmen")}`,
                 },
               ].map(({ key, label, value, mods }) => {
                 const subScoreMap: Record<
@@ -689,7 +689,7 @@ export function CharacterSheet({
                     <div className="mb-2 flex items-center gap-3">
                       <span className="font-heading text-sm">{clsDef?.name ?? cc.class_id}</span>
                       <div className="flex items-center gap-1">
-                        <Label className="text-xs text-muted-foreground">Stufe</Label>
+                        <Label className="text-xs text-muted-foreground">{tc("level")}</Label>
                         <Input
                           type="number"
                           min={1}
@@ -781,11 +781,14 @@ export function CharacterSheet({
             {race?.racialAbilities && race.racialAbilities.length > 0 && (
               <div className="mb-4">
                 <h3 className="mb-2 font-heading text-lg">{t("racialAbilities")}</h3>
-                <ul className="list-inside list-disc text-sm text-muted-foreground">
+                <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                   {race.racialAbilities.map((ability, i) => (
-                    <li key={i}>{ability}</li>
+                    <details key={i}>
+                      <summary className="cursor-pointer">{ability.name}</summary>
+                      <p className="mt-1 text-xs">{ability.description}</p>
+                    </details>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
             {/* Show class abilities for ALL classes */}
@@ -797,11 +800,14 @@ export function CharacterSheet({
                   <h3 className="mb-2 font-heading text-lg">
                     {t("classAbilities")} — {clsDef.name}
                   </h3>
-                  <ul className="list-inside list-disc text-sm text-muted-foreground">
+                  <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                     {clsDef.classAbilities.map((ability, i) => (
-                      <li key={i}>{ability}</li>
+                      <details key={i}>
+                        <summary className="cursor-pointer">{ability.name}</summary>
+                        <p className="mt-1 text-xs">{ability.description}</p>
+                      </details>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               );
             })}

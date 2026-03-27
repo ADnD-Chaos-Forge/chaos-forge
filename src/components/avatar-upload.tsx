@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { AvatarDisplay } from "@/components/avatar-display";
 import { uploadAvatar, validateFile } from "@/lib/avatar/upload";
@@ -20,6 +21,8 @@ export function AvatarUpload({
   currentAvatarUrl,
 }: AvatarUploadProps) {
   const router = useRouter();
+  const t = useTranslations("avatar");
+  const tcom = useTranslations("common");
   const [isOpen, setIsOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +74,7 @@ export function AvatarUpload({
       >
         <AvatarDisplay name={characterName} avatarUrl={currentAvatarUrl} size={80} />
         <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-          <span className="text-xs text-white">Ändern</span>
+          <span className="text-xs text-white">{t("change")}</span>
         </div>
       </button>
 
@@ -86,7 +89,7 @@ export function AvatarUpload({
             className="mx-4 flex w-full max-w-md flex-col gap-4 rounded-lg border border-border bg-card p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="font-heading text-xl text-primary">Avatar hochladen</h3>
+            <h3 className="font-heading text-xl text-primary">{t("uploadTitle")}</h3>
 
             <div className="flex justify-center">
               <AvatarDisplay name={characterName} avatarUrl={currentAvatarUrl} size={120} />
@@ -106,10 +109,8 @@ export function AvatarUpload({
               onClick={() => fileInputRef.current?.click()}
               data-testid="avatar-dropzone"
             >
-              <p className="text-sm text-muted-foreground">
-                Bild hierher ziehen oder klicken zum Auswählen
-              </p>
-              <p className="text-xs text-muted-foreground">JPG, PNG oder WebP (max. 2 MB)</p>
+              <p className="text-sm text-muted-foreground">{t("dropzone")}</p>
+              <p className="text-xs text-muted-foreground">{t("formats")}</p>
             </div>
 
             <input
@@ -121,7 +122,9 @@ export function AvatarUpload({
               data-testid="avatar-file-input"
             />
 
-            {uploading && <p className="text-center text-sm text-muted-foreground">Lade hoch...</p>}
+            {uploading && (
+              <p className="text-center text-sm text-muted-foreground">{t("uploading")}</p>
+            )}
 
             {error && (
               <p className="text-sm text-destructive" data-testid="avatar-upload-error">
@@ -131,7 +134,7 @@ export function AvatarUpload({
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsOpen(false)}>
-                Abbrechen
+                {tcom("cancel")}
               </Button>
             </div>
           </div>

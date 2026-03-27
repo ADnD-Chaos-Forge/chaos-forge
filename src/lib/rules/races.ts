@@ -1,4 +1,4 @@
-import type { RaceId, ClassId, AbilityName } from "./types";
+import type { RaceId, ClassId, AbilityName, ClassAbility } from "./types";
 
 export interface RaceDefinition {
   id: RaceId;
@@ -11,7 +11,7 @@ export interface RaceDefinition {
   baseMovement: number; // base movement rate (e.g. 12 for humans)
   abilityMinimums?: Partial<Record<AbilityName, number>>;
   abilityMaximums?: Partial<Record<AbilityName, number>>;
-  racialAbilities: string[];
+  racialAbilities: ClassAbility[];
   defaultLanguages: string[];
 }
 
@@ -56,8 +56,16 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     infravision: 0,
     baseMovement: 12,
     racialAbilities: [
-      "Keine Klassen- oder Level-Beschränkungen",
-      "Dualclass möglich (einzige Rasse)",
+      {
+        name: "Keine Klassen- oder Level-Beschränkungen",
+        description:
+          "Menschen können jede Klasse wählen und haben keine Stufenbegrenzung. Sie sind die vielseitigste Rasse in AD&D 2e.",
+      },
+      {
+        name: "Dualclass möglich (einzige Rasse)",
+        description:
+          "Nur Menschen können Dualclass werden: Sie geben ihre alte Klasse auf und beginnen in einer neuen bei Stufe 1. Die Fähigkeiten der alten Klasse werden erst wieder verfügbar, wenn die neue Klasse eine höhere Stufe erreicht.",
+      },
     ],
     defaultLanguages: ["Common"],
   },
@@ -93,10 +101,26 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     abilityMinimums: { int: 8, dex: 6 },
     abilityMaximums: { con: 17 },
     racialAbilities: [
-      "Infravision 60 Fuß",
-      "Resistenz gegen Schlaf- und Bezauberungszauber (90%)",
-      "Geheimtüren entdecken (1-auf-6 passiv, 2-auf-6 aktiv)",
-      "+1 Treffer mit Langschwertern und Bögen",
+      {
+        name: "Infravision 60 Fuß",
+        description:
+          "Elfen können im Dunkeln bis zu 60 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen. Infravision funktioniert nicht bei Tageslicht oder in der Nähe starker Lichtquellen.",
+      },
+      {
+        name: "Resistenz gegen Schlaf- und Bezauberungszauber (90%)",
+        description:
+          "Elfen sind zu 90% resistent gegen Schlaf- und Bezauberungszauber (charm). Dies gilt für alle magischen Schlafeffekte und geistbeeinflussende Verzauberungen.",
+      },
+      {
+        name: "Geheimtüren entdecken (1-auf-6 passiv, 2-auf-6 aktiv)",
+        description:
+          "Elfen entdecken versteckte und geheime Türen mit erhöhter Wahrscheinlichkeit. Beim bloßen Vorbeigehen spüren sie Verborgenes mit 1-auf-6, bei aktiver Suche mit 2-auf-6.",
+      },
+      {
+        name: "+1 Treffer mit Langschwertern und Bögen",
+        description:
+          "Elfen erhalten aufgrund ihrer langen Übungstradition +1 auf Trefferwürfe mit Langschwertern, Kurzschwertern und allen Bogentypen (außer Armbrüsten).",
+      },
     ],
     defaultLanguages: ["Common", "Elfisch"],
   },
@@ -146,9 +170,21 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     baseMovement: 12,
     abilityMinimums: { int: 4, con: 4 },
     racialAbilities: [
-      "Infravision 30 Fuß",
-      "Resistenz gegen Schlaf- und Bezauberungszauber (30%)",
-      "Geheimtüren entdecken (1-auf-6 passiv, 2-auf-6 aktiv)",
+      {
+        name: "Infravision 30 Fuß",
+        description:
+          "Halbelfen können im Dunkeln bis zu 30 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen. Die Reichweite ist geringer als bei reinen Elfen.",
+      },
+      {
+        name: "Resistenz gegen Schlaf- und Bezauberungszauber (30%)",
+        description:
+          "Halbelfen sind zu 30% resistent gegen Schlaf- und Bezauberungszauber. Diese geringere Resistenz spiegelt ihr gemischtes Erbe wider.",
+      },
+      {
+        name: "Geheimtüren entdecken (1-auf-6 passiv, 2-auf-6 aktiv)",
+        description:
+          "Halbelfen haben die elfische Fähigkeit, verborgene Türen zu entdecken. Beim Vorbeigehen mit 1-auf-6, bei aktiver Suche mit 2-auf-6.",
+      },
     ],
     defaultLanguages: ["Common", "Elfisch"],
   },
@@ -168,9 +204,21 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     abilityMinimums: { str: 8, con: 11 },
     abilityMaximums: { cha: 16 },
     racialAbilities: [
-      "Infravision 60 Fuß",
-      "Rettungswurf-Bonus gegen Gift und Magie (+1 pro 3,5 CON)",
-      "Steinbearbeitung erkennen (Neigung, neue Tunnel, Fallen)",
+      {
+        name: "Infravision 60 Fuß",
+        description:
+          "Zwerge können im Dunkeln bis zu 60 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen. Diese Fähigkeit stammt von ihrem Leben unter der Erde.",
+      },
+      {
+        name: "Rettungswurf-Bonus gegen Gift und Magie (+1 pro 3,5 CON)",
+        description:
+          "Zwerge erhalten einen Bonus auf Rettungswürfe gegen Gift, Stäbe, Ruten, Zepter, Zauberstäbe und Zauber. Der Bonus beträgt +1 pro 3,5 Punkte Konstitution.",
+      },
+      {
+        name: "Steinbearbeitung erkennen (Neigung, neue Tunnel, Fallen)",
+        description:
+          "Zwerge können unterirdisch Neigungen, neue Tunnel, gleitende Wände und Steinmechanismen auf einer 1-5 auf W6 erkennen. Diese Fähigkeit erfordert Konzentration.",
+      },
     ],
     defaultLanguages: ["Common", "Zwergisch"],
   },
@@ -193,10 +241,26 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     abilityMinimums: { int: 6, con: 8 },
     abilityMaximums: { str: 17, wis: 17 },
     racialAbilities: [
-      "Infravision 60 Fuß",
-      "Rettungswurf-Bonus gegen Magie (+1 pro 3,5 CON)",
-      "+1 Treffer gegen Kobolde und Goblins",
-      "Große Gegner (Oger, Trolle) haben -4 auf Angriffe",
+      {
+        name: "Infravision 60 Fuß",
+        description:
+          "Gnome können im Dunkeln bis zu 60 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen. Diese Fähigkeit stammt von ihrem unterirdischen Erbe.",
+      },
+      {
+        name: "Rettungswurf-Bonus gegen Magie (+1 pro 3,5 CON)",
+        description:
+          "Gnome erhalten einen Bonus auf Rettungswürfe gegen Stäbe, Ruten, Zepter, Zauberstäbe und Zauber. Der Bonus beträgt +1 pro 3,5 Punkte Konstitution.",
+      },
+      {
+        name: "+1 Treffer gegen Kobolde und Goblins",
+        description:
+          "Gnome erhalten +1 auf Trefferwürfe gegen Kobolde und Goblins aufgrund ihrer langen Feindschaft und speziellen Kampfausbildung gegen diese Kreaturen.",
+      },
+      {
+        name: "Große Gegner (Oger, Trolle) haben -4 auf Angriffe",
+        description:
+          "Gnome sind kleine Ziele. Große humanoide Gegner wie Oger, Trolle, Oger-Magier und Riesen erleiden -4 auf ihre Trefferwürfe gegen Gnome.",
+      },
     ],
     defaultLanguages: ["Common", "Gnomisch"],
   },
@@ -213,10 +277,26 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     abilityMinimums: { dex: 7, con: 10, str: 7 },
     abilityMaximums: { str: 17, wis: 17 },
     racialAbilities: [
-      "Infravision 30 Fuß",
-      "Rettungswurf-Bonus gegen Gift und Magie (+1 pro 3,5 CON)",
-      "+1 Treffer mit Schleudern und Wurfwaffen",
-      "Überraschungsbonus: -4 auf feindliche Überraschungswürfe",
+      {
+        name: "Infravision 30 Fuß",
+        description:
+          "Halblinge können im Dunkeln bis zu 30 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen.",
+      },
+      {
+        name: "Rettungswurf-Bonus gegen Gift und Magie (+1 pro 3,5 CON)",
+        description:
+          "Halblinge erhalten einen Bonus auf Rettungswürfe gegen Gift, Stäbe, Ruten, Zepter, Zauberstäbe und Zauber. Der Bonus beträgt +1 pro 3,5 Punkte Konstitution.",
+      },
+      {
+        name: "+1 Treffer mit Schleudern und Wurfwaffen",
+        description:
+          "Halblinge sind natürliche Schützen und erhalten +1 auf Trefferwürfe mit Schleudern und allen Wurfwaffen. Diese Fähigkeit ist angeboren und stapelt mit anderen Boni.",
+      },
+      {
+        name: "Überraschungsbonus: -4 auf feindliche Überraschungswürfe",
+        description:
+          "Halblinge sind so leise und unauffällig, dass Gegner -4 auf ihre Überraschungswürfe erleiden, wenn der Halbling allein oder nur mit anderen Halblingen/Elfen unterwegs ist.",
+      },
     ],
     defaultLanguages: ["Common", "Halblingisch"],
   },
@@ -236,7 +316,13 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     baseMovement: 12,
     abilityMinimums: { str: 6, con: 13 },
     abilityMaximums: { int: 17, wis: 14, cha: 12 },
-    racialAbilities: ["Infravision 60 Fuß"],
+    racialAbilities: [
+      {
+        name: "Infravision 60 Fuß",
+        description:
+          "Halb-Orks können im Dunkeln bis zu 60 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen. Dieses Erbe stammt von ihrem orkischen Elternteil.",
+      },
+    ],
     defaultLanguages: ["Common", "Orkisch"],
   },
 };

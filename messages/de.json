@@ -158,7 +158,14 @@
     "backstabMultiplier": "Hinterhalt-Multiplikator",
     "attacksPerRound": "Angriffe/Runde",
     "initiative": "Initiative-Modifikator",
-    "baseValue": "Basiswert"
+    "baseValue": "Basiswert",
+    "modHit": "Treffer",
+    "modDamage": "Schaden",
+    "modAC": "RK",
+    "modHpPerLevel": "HP/Stufe",
+    "modLanguages": "Sprachen",
+    "modMagDef": "Mag.Abwehr",
+    "modHenchmen": "Gefolgsleute"
   },
   "equipment": {
     "title": "Ausrüstung",
@@ -191,7 +198,26 @@
     "currentMovement": "Aktuelle Bewegung",
     "inventoryTitle": "Allgemeines Inventar",
     "noInventory": "Keine Gegenstände im Inventar.",
-    "customItemPlaceholder": "Eigenes Item (Freitext)..."
+    "customItemPlaceholder": "Eigenes Item (Freitext)...",
+    "meleAndRanged": "Nah-/Fernkampf",
+    "noArmor": "Keine Rüstung",
+    "shield": "Schild",
+    "pounds": "Pfund",
+    "maxWeight": "Max. {weight} Pfund",
+    "noEquipped": "Keine Gegenstände ausgerüstet.",
+    "damage": "Schaden",
+    "itemLabel": "Gegenstand",
+    "typeLabel": "Typ",
+    "quantity": "Menge",
+    "statusLabel": "Status",
+    "actions": "Aktionen",
+    "remove": "Entfernen",
+    "filterAll": "Alle",
+    "noWeapons": "Keine Waffen verfügbar.",
+    "noArmorAvailable": "Keine Rüstungen verfügbar.",
+    "searchPlaceholder": "Suche nach Name...",
+    "cancel": "Abbrechen",
+    "base": "Basis"
   },
   "spells": {
     "title": "Zauber",
@@ -236,7 +262,10 @@
     "racialLanguage": "Rassensprache",
     "addLanguage": "Sprache hinzufügen",
     "maxLanguages": "Max. zusätzliche Sprachen (INT)",
-    "suggestedLanguages": "Vorgeschlagene Sprachen"
+    "suggestedLanguages": "Vorgeschlagene Sprachen",
+    "noMatchingNwp": "Keine passenden Fertigkeiten gefunden.",
+    "createAndAdd": "Erstellen & Hinzufügen",
+    "nwpNamePlaceholder": "Name der Fertigkeit"
   },
   "sessions": {
     "title": "Die Chronik des Chaos",
@@ -378,7 +407,15 @@
     "proficiencies": "Fertigkeiten",
     "weaponProf": "Waffenfertigkeiten",
     "nwProf": "Allgemeine Fertigkeiten",
-    "languagesLabel": "Sprachen"
+    "languagesLabel": "Sprachen",
+    "itemLabel": "Gegenstand",
+    "typeLabel": "Typ",
+    "statusLabel": "Status",
+    "weaponType": "Waffe",
+    "armorType": "Rüstung",
+    "equippedStatus": "Angelegt",
+    "inventoryStatus": "Inventar",
+    "specialization": "Spezialisierung"
   },
   "theme": {
     "toggleDark": "Zum dunklen Modus wechseln",
