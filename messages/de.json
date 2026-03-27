@@ -105,7 +105,12 @@
     "savingThrows": "Rettungswürfe",
     "createCharacter": "Charakter erstellen",
     "creating": "Erstelle Charakter...",
-    "infravision": "Infravision"
+    "infravision": "Infravision",
+    "kit": "Kit",
+    "kitDescription": "Wähle optional ein Kit für deinen Charakter. Kits modifizieren Fähigkeiten und Trefferwürfel.",
+    "noKit": "Kein Kit",
+    "noKitDesc": "Standard-Klasse ohne Kit-Modifikationen.",
+    "noKitsAvailable": "Für die gewählten Klassen sind keine Kits verfügbar."
   },
   "sheet": {
     "stats": "Werte",
@@ -154,6 +159,7 @@
     "currencyCP": "Kupfer",
     "racialAbilities": "Rassenfähigkeiten",
     "classAbilities": "Klassenfähigkeiten",
+    "kitAbilities": "Kit-Fähigkeiten",
     "thac0": "ETW0 (THAC0)",
     "armorClass": "Rüstungsklasse",
     "acBase": "Basis (ohne Rüstung)",
@@ -425,6 +431,8 @@
     "abilities_section": "Fähigkeiten",
     "racialAbilities": "Rassenfähigkeiten",
     "classAbilities": "Klassenfähigkeiten",
+    "kitAbilities": "Kit-Fähigkeiten",
+    "kit": "Kit",
     "notes": "Notizen",
     "footer": "Chaos Forge — AD&D 2nd Edition Manager",
     "createdAt": "Erstellt am",

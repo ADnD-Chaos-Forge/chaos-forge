@@ -15,6 +15,7 @@ import {
 } from "@/lib/rules/combat";
 import { getNonproficiencyPenalty } from "@/lib/rules/proficiencies";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
+import { getKit, getEffectiveHitDie } from "@/lib/rules/kits";
 import { calculateAC } from "@/lib/rules/equipment";
 import { feetToMeters } from "@/lib/utils/units";
 import {
@@ -74,7 +75,7 @@ export function PrintSheet({
   const hitDice = activeClasses
     .map((cc) => {
       const def = CLASSES[cc.class_id as ClassId];
-      return def ? `d${def.hitDie}` : "—";
+      return def ? `d${getEffectiveHitDie(def.hitDie, character.kit)}` : "—";
     })
     .join("/");
 
@@ -201,6 +202,16 @@ export function PrintSheet({
                   <span className="font-semibold">{t("alignment")}:</span>{" "}
                   {getAlignmentLabel(character.alignment, locale)}
                 </div>
+                {character.kit &&
+                  (() => {
+                    const kitDef = getKit(character.kit);
+                    return kitDef ? (
+                      <div data-testid="print-kit">
+                        <span className="font-semibold">{t("kit")}:</span>{" "}
+                        {localized(kitDef.name, kitDef.name_en, locale)}
+                      </div>
+                    ) : null;
+                  })()}
                 <div>
                   <span className="font-semibold">{t("xp")}:</span>{" "}
                   {activeClasses.length > 0
@@ -497,6 +508,29 @@ export function PrintSheet({
                   </div>
                 );
               })}
+              {character.kit &&
+                (() => {
+                  const kitDef = getKit(character.kit);
+                  if (!kitDef?.abilities?.length) return null;
+                  return (
+                    <div data-testid="print-kit-abilities">
+                      <h3 className="font-semibold">
+                        {t("kitAbilities")} ({localized(kitDef.name, kitDef.name_en, locale)})
+                      </h3>
+                      <ul className="mt-1 list-inside list-disc text-xs">
+                        {kitDef.abilities.map((a, i) => (
+                          <li key={i}>
+                            <span className="font-medium">
+                              {localized(a.name, a.name_en, locale)}
+                            </span>
+                            {" — "}
+                            {localized(a.description, a.description_en, locale)}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })()}
             </div>
           </section>
         )}

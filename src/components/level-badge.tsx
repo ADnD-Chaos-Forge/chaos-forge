@@ -11,7 +11,7 @@ export function LevelBadge({ level, badgeClass }: LevelBadgeProps) {
       data-testid="level-badge"
     >
       <div className="flex flex-col items-center leading-none">
-        <span className="text-[8px] font-bold uppercase tracking-wider opacity-80">Lv</span>
+        <span className="text-[8px] font-bold uppercase tracking-wider">Lv</span>
         <span className="text-xs font-bold">{level}</span>
       </div>
     </div>

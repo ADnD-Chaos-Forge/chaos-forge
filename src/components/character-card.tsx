@@ -141,7 +141,7 @@ export function CharacterCard({
 
             {/* Visibility badge */}
             {visibilityBadge && (
-              <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground/70">
+              <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
                 <visibilityBadge.icon className="h-3 w-3" />
                 <span>{visibilityBadge.label}</span>
               </div>

@@ -48,18 +48,18 @@ export function AppNav({ userEmail }: AppNavProps) {
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
-              <Link key={item.href} href={item.href}>
-                <button
-                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                  }`}
-                  data-testid={item.testId}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {t(item.labelKey)}
-                </button>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                }`}
+                data-testid={item.testId}
+              >
+                <item.icon className="h-4 w-4" />
+                {t(item.labelKey)}
               </Link>
             );
           })}
