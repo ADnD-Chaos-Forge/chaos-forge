@@ -498,5 +498,24 @@
     "dropzone": "Drag image here or click to select",
     "formats": "JPG, PNG or WebP (max. 2 MB)",
     "uploading": "Uploading..."
+  },
+  "spellbook": {
+    "title": "Spellbook",
+    "back": "Back to Character",
+    "learnSpell": "Learn Spell",
+    "searchPlaceholder": "Search spells...",
+    "filterAll": "All",
+    "filterPrepared": "Prepared",
+    "prepare": "Prepare",
+    "unprepare": "Unprepare",
+    "remove": "Remove",
+    "noSpells": "No spells learned yet.",
+    "learnFirst": "Learn your first spell!",
+    "spellDetails": "Details",
+    "learnDialogTitle": "Learn Spell",
+    "learnSearch": "Search spells...",
+    "learnButton": "Learn",
+    "closeDialog": "Close",
+    "spellPoints": "Spell Points"
   }
 }

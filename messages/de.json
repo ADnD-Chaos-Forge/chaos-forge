@@ -498,5 +498,24 @@
     "dropzone": "Bild hierher ziehen oder klicken zum Auswählen",
     "formats": "JPG, PNG oder WebP (max. 2 MB)",
     "uploading": "Lade hoch..."
+  },
+  "spellbook": {
+    "title": "Zauberbuch",
+    "back": "Zurück zum Charakter",
+    "learnSpell": "Zauber lernen",
+    "searchPlaceholder": "Zauber suchen...",
+    "filterAll": "Alle",
+    "filterPrepared": "Vorbereitet",
+    "prepare": "Vorbereiten",
+    "unprepare": "Absetzen",
+    "remove": "Entfernen",
+    "noSpells": "Noch keine Zauber erlernt.",
+    "learnFirst": "Lerne deinen ersten Zauber!",
+    "spellDetails": "Details",
+    "learnDialogTitle": "Zauber erlernen",
+    "learnSearch": "Zauber suchen...",
+    "learnButton": "Lernen",
+    "closeDialog": "Schließen",
+    "spellPoints": "Zauberpunkte"
   }
 }

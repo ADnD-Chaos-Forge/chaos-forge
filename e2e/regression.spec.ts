@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { loginAsTestUser } from "./helpers/auth";
 import { CharacterSheetPage } from "./pages/character-sheet.page";
+import { SpellbookPage } from "./pages/spellbook.page";
 import { LoginPage } from "./pages/login.page";
 
 test.describe("Login Page", () => {
@@ -94,6 +95,47 @@ test.describe("Loading & Navigation", () => {
     expect(page.url()).toContain("/characters");
     const cards = page.locator('[data-testid^="character-card-"]');
     await expect(cards.first()).toBeVisible({ timeout: 10000 });
+  });
+});
+
+test.describe("Spellbook", () => {
+  test("caster character shows spellbook button and page loads", async ({ page }) => {
+    test.setTimeout(60000);
+    await loginAsTestUser(page);
+    const sheet = new CharacterSheetPage(page);
+
+    // Navigate to Elara (wizard with spells)
+    const elara = page.locator("a", { hasText: "Elara" });
+    await expect(elara).toBeVisible({ timeout: 10000 });
+    await elara.click();
+    await sheet.container.waitFor({ timeout: 30000 });
+
+    // Spellbook button should be visible for caster
+    await expect(sheet.spellbookButton).toBeVisible({ timeout: 5000 });
+    await sheet.spellbookButton.click();
+
+    // Spellbook page loads
+    const spellbook = new SpellbookPage(page);
+    await expect(spellbook.container).toBeVisible({ timeout: 15000 });
+    await expect(spellbook.backLink).toBeVisible();
+    await expect(spellbook.resources).toBeVisible();
+    await expect(spellbook.searchInput).toBeVisible();
+    await expect(spellbook.filterAll).toBeVisible();
+  });
+
+  test("non-caster character has no spellbook button", async ({ page }) => {
+    test.setTimeout(60000);
+    await loginAsTestUser(page);
+    const sheet = new CharacterSheetPage(page);
+
+    // Navigate to Gor (fighter, no spells)
+    const gor = page.locator("a", { hasText: "Gor" });
+    await expect(gor).toBeVisible({ timeout: 10000 });
+    await gor.click();
+    await sheet.container.waitFor({ timeout: 30000 });
+
+    // Spellbook button should NOT be visible for fighter
+    await expect(sheet.spellbookButton).not.toBeVisible({ timeout: 3000 });
   });
 });
 

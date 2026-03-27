@@ -263,6 +263,13 @@ export function CharacterSheet({
           </div>
         </div>
         <div className="flex gap-2">
+          {showSpells && (
+            <Link href={`/characters/${character.id}/spellbook`}>
+              <Button variant="outline" data-testid="sheet-spellbook-button">
+                {tc("spellbook")}
+              </Button>
+            </Link>
+          )}
           <Link href={`/characters/${character.id}/print`}>
             <Button variant="outline" data-testid="sheet-print-button">
               {tc("printView")}
