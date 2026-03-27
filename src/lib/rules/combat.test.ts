@@ -132,6 +132,31 @@ describe("COMBAT-004: Attacks Per Round", () => {
     expect(getAttacksPerRound("rogue", 15)).toBe("1");
     expect(getAttacksPerRound("wizard", 20)).toBe("1");
   });
+
+  it("specialist warrior L1-6 gets 3/2 attacks", () => {
+    expect(getAttacksPerRound("warrior", 1, true)).toBe("3/2");
+    expect(getAttacksPerRound("warrior", 6, true)).toBe("3/2");
+  });
+
+  it("specialist warrior L7-12 gets 2 attacks", () => {
+    expect(getAttacksPerRound("warrior", 7, true)).toBe("2");
+    expect(getAttacksPerRound("warrior", 12, true)).toBe("2");
+  });
+
+  it("specialist warrior L13+ gets 5/2 attacks", () => {
+    expect(getAttacksPerRound("warrior", 13, true)).toBe("5/2");
+    expect(getAttacksPerRound("warrior", 20, true)).toBe("5/2");
+  });
+
+  it("non-specialist with explicit false behaves like default", () => {
+    expect(getAttacksPerRound("warrior", 1, false)).toBe("1");
+    expect(getAttacksPerRound("warrior", 7, false)).toBe("3/2");
+  });
+
+  it("specialist non-warrior still gets 1 attack", () => {
+    expect(getAttacksPerRound("priest", 10, true)).toBe("1");
+    expect(getAttacksPerRound("rogue", 15, true)).toBe("1");
+  });
 });
 
 describe("getAdjustedWeaponThac0", () => {

@@ -46,7 +46,8 @@
     "characters": "Charaktere",
     "sessions": "Chronik",
     "import": "Import",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "more": "Mehr"
   },
   "notFound": {
     "title": "404",
@@ -62,7 +63,13 @@
     "deleteTitle": "Charakter löschen",
     "deleteMessage": "Möchtest du \"{name}\" wirklich unwiderruflich löschen?",
     "printView": "Druckansicht",
-    "spellbook": "Zauberbuch"
+    "spellbook": "Zauberbuch",
+    "inactiveCharacters": "Inaktive Charaktere",
+    "newCharacterChoice": "Wie möchtest du deinen Charakter erstellen?",
+    "createManually": "Manuell erstellen",
+    "createManuallyDesc": "Erstelle einen neuen Charakter Schritt für Schritt mit dem Assistenten.",
+    "importCharacter": "Aus Bild importieren",
+    "importCharacterDesc": "Scanne einen bestehenden Charakterbogen per Foto oder PDF."
   },
   "wizard": {
     "basics": "Grunddaten",
@@ -251,7 +258,9 @@
     "damageLWithStr": "Schaden L",
     "proficient": "Geübt",
     "notProficient": "Ungeübt",
-    "rangeShortMediumLong": "{short}/{medium}/{long} m"
+    "rangeShortMediumLong": "{short}/{medium}/{long} m",
+    "confirmRemoveTitle": "Gegenstand entfernen",
+    "confirmRemoveMessage": "Möchtest du \"{name}\" wirklich entfernen?"
   },
   "spells": {
     "title": "Zauber",
@@ -340,7 +349,11 @@
     "tags": "Tags",
     "addTag": "Tag hinzufügen...",
     "createTag": "\"{name}\" als neuen Tag erstellen",
-    "noTags": "Keine Tags gefunden."
+    "noTags": "Keine Tags gefunden.",
+    "record": "Aufnahme",
+    "stopRecording": "Aufnahme stoppen",
+    "voiceNote": "Sprachnotiz",
+    "removeRecording": "Aufnahme entfernen"
   },
   "tagTypes": {
     "npc": "NPC",
@@ -488,7 +501,8 @@
     "acFinal": "Gesamt",
     "weaponsTitle": "Waffen",
     "armorTitle": "Rüstungen & Inventar",
-    "name": "Name"
+    "name": "Name",
+    "exportWord": "Word-Export"
   },
   "theme": {
     "toggleDark": "Zum dunklen Modus wechseln",

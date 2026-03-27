@@ -107,9 +107,16 @@ export function SessionEntryCard({
               </div>
             </div>
           ) : (
-            <div className="prose prose-sm prose-invert max-w-none">
-              <ReactMarkdown>{entry.content}</ReactMarkdown>
-            </div>
+            <>
+              <div className="prose prose-sm prose-invert max-w-none">
+                <ReactMarkdown>{entry.content}</ReactMarkdown>
+              </div>
+              {entry.audio_url && (
+                <div className="mt-2" data-testid="voice-note-player">
+                  <audio controls src={entry.audio_url} className="h-8 w-full" />
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

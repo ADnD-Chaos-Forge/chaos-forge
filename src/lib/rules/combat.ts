@@ -107,8 +107,17 @@ export function getSavingThrows(classGroup: ClassGroup, level: number): SavingTh
 // Warriors: 1/1 at L1-6, 3/2 at L7-12, 2/1 at L13+
 // All others: 1/1
 
-export function getAttacksPerRound(classGroup: ClassGroup, level: number): string {
+export function getAttacksPerRound(
+  classGroup: ClassGroup,
+  level: number,
+  isSpecialized: boolean = false
+): string {
   if (classGroup !== "warrior") return "1";
+  if (isSpecialized) {
+    if (level >= 13) return "5/2";
+    if (level >= 7) return "2";
+    return "3/2";
+  }
   if (level >= 13) return "2";
   if (level >= 7) return "3/2";
   return "1";

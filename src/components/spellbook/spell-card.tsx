@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getBookAbbreviation } from "@/lib/utils/source-books";
 import type { CharacterSpellWithDetails, SpellRow } from "@/lib/supabase/types";
 
 interface SpellCardProps {
@@ -60,6 +61,11 @@ export function SpellCard({
         <Badge variant="outline" className="hidden shrink-0 text-xs capitalize sm:inline-flex">
           {spell.school ?? spell.sphere}
         </Badge>
+        {spell.source_book && (
+          <span className="hidden shrink-0 rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground sm:inline">
+            {getBookAbbreviation(spell.source_book)}
+          </span>
+        )}
         {spell.components.length > 0 && (
           <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
             {spell.components.join(", ")}
