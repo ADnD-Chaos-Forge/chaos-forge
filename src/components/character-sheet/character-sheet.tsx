@@ -134,12 +134,33 @@ export function CharacterSheet({
   const primaryClassGroup = classGroups[0] ?? "warrior";
   const primaryLevel = activeClasses[0]?.level ?? character.level;
 
-  const strMods = getStrengthModifiers(character.str, character.str_exceptional ?? undefined);
-  const dexMods = getDexterityModifiers(character.dex);
-  const conMods = getConstitutionModifiers(character.con);
-  const intMods = getIntelligenceModifiers(character.int);
-  const wisMods = getWisdomModifiers(character.wis);
-  const chaMods = getCharismaModifiers(character.cha);
+  const strMods = getStrengthModifiers(
+    character.str,
+    character.str_exceptional ?? undefined,
+    character.str_muscle,
+    character.str_stamina
+  );
+  const dexMods = getDexterityModifiers(character.dex, character.dex_aim, character.dex_balance);
+  const conMods = getConstitutionModifiers(
+    character.con,
+    character.con_health,
+    character.con_fitness
+  );
+  const intMods = getIntelligenceModifiers(
+    character.int,
+    character.int_knowledge,
+    character.int_reason
+  );
+  const wisMods = getWisdomModifiers(
+    character.wis,
+    character.wis_intuition,
+    character.wis_willpower
+  );
+  const chaMods = getCharismaModifiers(
+    character.cha,
+    character.cha_leadership,
+    character.cha_appearance
+  );
   // AC calculation using equipped armor + shield + DEX
   const equippedArmor = equipment.find((e) => e.equipped && e.armor && e.armor.name !== "Shield");
   const hasShield = equipment.some(
@@ -1010,7 +1031,11 @@ export function CharacterSheet({
             readOnly={!isOwner}
             characterStr={character.str}
             characterStrExceptional={character.str_exceptional}
+            characterStrMuscle={character.str_muscle}
+            characterStrStamina={character.str_stamina}
             characterDex={character.dex}
+            characterDexAim={character.dex_aim}
+            characterDexBalance={character.dex_balance}
             characterClasses={charClasses}
             weaponProficiencies={weaponProficiencies}
           />
@@ -1054,6 +1079,7 @@ export function CharacterSheet({
             raceId={character.race_id ?? "human"}
             level={primaryLevel}
             intScore={character.int}
+            intKnowledge={character.int_knowledge}
             weaponProficiencies={weaponProficiencies}
             nonweaponProficiencies={nonweaponProficiencies}
             allNonweaponProficiencies={allNonweaponProficiencies}

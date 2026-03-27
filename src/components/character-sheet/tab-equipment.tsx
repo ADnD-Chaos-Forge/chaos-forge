@@ -44,7 +44,11 @@ interface TabEquipmentProps {
   readOnly?: boolean;
   characterStr: number;
   characterStrExceptional: number | null;
+  characterStrMuscle: number | null;
+  characterStrStamina: number | null;
   characterDex: number;
+  characterDexAim: number | null;
+  characterDexBalance: number | null;
   characterClasses: CharacterClassRow[];
   weaponProficiencies: CharacterWeaponProficiencyRow[];
 }
@@ -63,7 +67,11 @@ export function TabEquipment({
   readOnly = false,
   characterStr,
   characterStrExceptional,
+  characterStrMuscle,
+  characterStrStamina,
   characterDex,
+  characterDexAim,
+  characterDexBalance,
   characterClasses,
   weaponProficiencies,
 }: TabEquipmentProps) {
@@ -340,8 +348,13 @@ export function TabEquipment({
     level: cc.level,
   }));
   const baseThac0 = classEntries.length > 0 ? getMulticlassThac0(classEntries) : 20;
-  const strMods = getStrengthModifiers(characterStr, characterStrExceptional ?? undefined);
-  const dexMods = getDexterityModifiers(characterDex);
+  const strMods = getStrengthModifiers(
+    characterStr,
+    characterStrExceptional ?? undefined,
+    characterStrMuscle,
+    characterStrStamina
+  );
+  const dexMods = getDexterityModifiers(characterDex, characterDexAim, characterDexBalance);
   const strHitAdj = strMods.hitAdj;
   const strDmgAdj = strMods.dmgAdj;
   const dexMissileAdj = dexMods.missileAdj;

@@ -47,7 +47,7 @@ export const KITS: Record<string, KitDefinition> = {
 export function getEffectiveHitDie(baseHitDie: number, kit: string | null): number {
   if (!kit) return baseHitDie;
   const kitDef = KITS[kit];
-  if (!kitDef || !kitDef.hitDieOverride) return baseHitDie;
+  if (!kitDef || kitDef.hitDieOverride == null) return baseHitDie;
   return kitDef.hitDieOverride;
 }
 

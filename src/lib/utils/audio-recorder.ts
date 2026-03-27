@@ -8,7 +8,12 @@ export class AudioRecorder {
 
   async start(): Promise<void> {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    this.mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+    const mimeType = MediaRecorder.isTypeSupported("audio/webm")
+      ? "audio/webm"
+      : MediaRecorder.isTypeSupported("audio/mp4")
+        ? "audio/mp4"
+        : undefined;
+    this.mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
     this.chunks = [];
 
     this.mediaRecorder.ondataavailable = (e) => {
@@ -28,7 +33,7 @@ export class AudioRecorder {
       }
 
       this.mediaRecorder.onstop = () => {
-        const blob = new Blob(this.chunks, { type: "audio/webm" });
+        const blob = new Blob(this.chunks, { type: this.mediaRecorder?.mimeType ?? "audio/webm" });
         // Stop all tracks to release the microphone
         this.mediaRecorder?.stream.getTracks().forEach((t) => t.stop());
         this.mediaRecorder = null;
@@ -42,5 +47,9 @@ export class AudioRecorder {
 
   get isRecording(): boolean {
     return this.mediaRecorder?.state === "recording";
+  }
+
+  get mimeType(): string {
+    return this.mediaRecorder?.mimeType ?? "audio/webm";
   }
 }

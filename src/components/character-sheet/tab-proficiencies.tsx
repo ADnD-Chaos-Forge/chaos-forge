@@ -76,6 +76,7 @@ interface TabProficienciesProps {
   classGroup: string;
   level: number;
   intScore: number;
+  intKnowledge: number | null;
   raceId: string;
   weaponProficiencies: CharacterWeaponProficiencyRow[];
   nonweaponProficiencies: CharacterNWPWithDetails[];
@@ -92,6 +93,7 @@ export function TabProficiencies({
   classGroup,
   level,
   intScore,
+  intKnowledge,
   raceId,
   weaponProficiencies,
   nonweaponProficiencies,
@@ -260,7 +262,7 @@ export function TabProficiencies({
 
   const raceData = RACES[raceId as keyof typeof RACES];
   const defaultLanguages = raceData?.defaultLanguages ?? [];
-  const maxLanguages = getIntelligenceModifiers(intScore).numberOfLanguages;
+  const maxLanguages = getIntelligenceModifiers(intScore, intKnowledge).numberOfLanguages;
   const allLanguageNames = [...defaultLanguages, ...languages.map((l) => l.language_name)];
   const availableSuggestions = LANGUAGE_SUGGESTIONS.filter(
     (lang) => !allLanguageNames.includes(lang)

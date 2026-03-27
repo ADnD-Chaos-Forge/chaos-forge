@@ -87,11 +87,12 @@ const EXCEPTIONAL_STR_TABLE: { max: number; mods: StrengthModifiers }[] = [
 
 /** Look up base STR modifiers from the table (no sub-stat overrides). */
 function lookupStrength(str: number, exceptional?: number): StrengthModifiers {
-  if (str === 18 && exceptional !== undefined && exceptional >= 1) {
+  const clamped = Math.max(3, Math.min(25, str));
+  if (clamped === 18 && exceptional !== undefined && exceptional >= 1) {
     const entry = EXCEPTIONAL_STR_TABLE.find((e) => exceptional <= e.max);
     if (entry) return { ...entry.mods };
   }
-  return { ...STR_TABLE[str - 3] };
+  return { ...STR_TABLE[clamped - 3] };
 }
 
 /**
@@ -172,15 +173,18 @@ export function getDexterityModifiers(
   aim?: number | null,
   balance?: number | null
 ): DexterityModifiers {
-  const base = { ...DEX_TABLE[dex - 3] };
+  const clampedDex = Math.max(3, Math.min(18, dex));
+  const base = { ...DEX_TABLE[clampedDex - 3] };
 
   if (aim != null && aim !== dex) {
-    const aimRow = DEX_TABLE[aim - 3];
+    const clampedAim = Math.max(3, Math.min(18, aim));
+    const aimRow = DEX_TABLE[clampedAim - 3];
     base.missileAdj = aimRow.missileAdj;
   }
 
   if (balance != null && balance !== dex) {
-    const balanceRow = DEX_TABLE[balance - 3];
+    const clampedBalance = Math.max(3, Math.min(18, balance));
+    const balanceRow = DEX_TABLE[clampedBalance - 3];
     base.defensiveAdj = balanceRow.defensiveAdj;
     base.reactionAdj = balanceRow.reactionAdj;
   }
@@ -236,16 +240,19 @@ export function getConstitutionModifiers(
   health?: number | null,
   fitness?: number | null
 ): ConstitutionModifiers {
-  const base = { ...CON_TABLE[con - 3] };
+  const clampedCon = Math.max(3, Math.min(18, con));
+  const base = { ...CON_TABLE[clampedCon - 3] };
 
   if (health != null && health !== con) {
-    const healthRow = CON_TABLE[health - 3];
+    const clampedHealth = Math.max(3, Math.min(18, health));
+    const healthRow = CON_TABLE[clampedHealth - 3];
     base.systemShock = healthRow.systemShock;
     base.poisonSave = healthRow.poisonSave;
   }
 
   if (fitness != null && fitness !== con) {
-    const fitnessRow = CON_TABLE[fitness - 3];
+    const clampedFitness = Math.max(3, Math.min(18, fitness));
+    const fitnessRow = CON_TABLE[clampedFitness - 3];
     base.hpAdj = fitnessRow.hpAdj;
     base.resurrectionSurvival = fitnessRow.resurrectionSurvival;
   }
@@ -397,15 +404,18 @@ export function getIntelligenceModifiers(
   knowledge?: number | null,
   reason?: number | null
 ): IntelligenceModifiers {
-  const base = { ...INT_TABLE[int - 3] };
+  const clampedInt = Math.max(3, Math.min(18, int));
+  const base = { ...INT_TABLE[clampedInt - 3] };
 
   if (knowledge != null && knowledge !== int) {
-    const knowledgeRow = INT_TABLE[knowledge - 3];
+    const clampedKnowledge = Math.max(3, Math.min(18, knowledge));
+    const knowledgeRow = INT_TABLE[clampedKnowledge - 3];
     base.numberOfLanguages = knowledgeRow.numberOfLanguages;
   }
 
   if (reason != null && reason !== int) {
-    const reasonRow = INT_TABLE[reason - 3];
+    const clampedReason = Math.max(3, Math.min(18, reason));
+    const reasonRow = INT_TABLE[clampedReason - 3];
     base.spellLevel = reasonRow.spellLevel;
     base.chanceToLearn = reasonRow.chanceToLearn;
     base.maxSpellsPerLevel = reasonRow.maxSpellsPerLevel;
@@ -462,16 +472,19 @@ export function getWisdomModifiers(
   intuition?: number | null,
   willpower?: number | null
 ): WisdomModifiers {
-  const entry = WIS_TABLE[wis - 3];
+  const clampedWis = Math.max(3, Math.min(18, wis));
+  const entry = WIS_TABLE[clampedWis - 3];
   const base = { ...entry, bonusSpells: [...entry.bonusSpells] };
 
   if (intuition != null && intuition !== wis) {
-    const intuitionRow = WIS_TABLE[intuition - 3];
+    const clampedIntuition = Math.max(3, Math.min(18, intuition));
+    const intuitionRow = WIS_TABLE[clampedIntuition - 3];
     base.magicalDefenseAdj = intuitionRow.magicalDefenseAdj;
   }
 
   if (willpower != null && willpower !== wis) {
-    const willpowerRow = WIS_TABLE[willpower - 3];
+    const clampedWillpower = Math.max(3, Math.min(18, willpower));
+    const willpowerRow = WIS_TABLE[clampedWillpower - 3];
     base.bonusSpells = [...willpowerRow.bonusSpells];
     base.spellFailure = willpowerRow.spellFailure;
   }
@@ -527,16 +540,19 @@ export function getCharismaModifiers(
   leadership?: number | null,
   appearance?: number | null
 ): CharismaModifiers {
-  const base = { ...CHA_TABLE[cha - 3] };
+  const clampedCha = Math.max(3, Math.min(18, cha));
+  const base = { ...CHA_TABLE[clampedCha - 3] };
 
   if (leadership != null && leadership !== cha) {
-    const leadershipRow = CHA_TABLE[leadership - 3];
+    const clampedLeadership = Math.max(3, Math.min(18, leadership));
+    const leadershipRow = CHA_TABLE[clampedLeadership - 3];
     base.maxHenchmen = leadershipRow.maxHenchmen;
     base.loyaltyBase = leadershipRow.loyaltyBase;
   }
 
   if (appearance != null && appearance !== cha) {
-    const appearanceRow = CHA_TABLE[appearance - 3];
+    const clampedAppearance = Math.max(3, Math.min(18, appearance));
+    const appearanceRow = CHA_TABLE[clampedAppearance - 3];
     base.reactionAdj = appearanceRow.reactionAdj;
   }
 

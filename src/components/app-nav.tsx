@@ -48,18 +48,18 @@ export function AppNav({ userEmail }: AppNavProps) {
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
-              <Link key={item.href} href={item.href}>
-                <button
-                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                  }`}
-                  data-testid={item.testId}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {t(item.labelKey)}
-                </button>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                }`}
+                data-testid={item.testId}
+              >
+                <item.icon className="h-4 w-4" />
+                {t(item.labelKey)}
               </Link>
             );
           })}
@@ -92,6 +92,8 @@ export function AppNav({ userEmail }: AppNavProps) {
           <div
             ref={morePanelRef}
             className="glass glow-neutral rounded-t-xl absolute bottom-full left-0 right-0 z-40 mb-1 flex flex-col gap-3 p-4"
+            role="dialog"
+            aria-label="More options"
             data-testid="mobile-more-panel"
           >
             {userEmail && (
@@ -115,16 +117,17 @@ export function AppNav({ userEmail }: AppNavProps) {
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
-              <Link key={item.href} href={item.href} className="flex-1" onClick={closeMore}>
-                <button
-                  className={`flex w-full flex-col items-center gap-0.5 rounded-md py-2 text-xs transition-colors ${
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  }`}
-                  data-testid={`${item.testId}-mobile`}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="truncate">{t(item.labelKey)}</span>
-                </button>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-1 flex-col items-center gap-0.5 rounded-md py-2 text-xs transition-colors ${
+                  isActive ? "text-primary" : "text-muted-foreground"
+                }`}
+                onClick={closeMore}
+                data-testid={`${item.testId}-mobile`}
+              >
+                <item.icon className="h-5 w-5" />
+                <span className="truncate">{t(item.labelKey)}</span>
               </Link>
             );
           })}
@@ -134,6 +137,7 @@ export function AppNav({ userEmail }: AppNavProps) {
               moreOpen ? "text-primary" : "text-muted-foreground"
             }`}
             onClick={() => setMoreOpen((prev) => !prev)}
+            aria-expanded={moreOpen}
             data-testid="mobile-more-trigger"
           >
             <Ellipsis className="h-5 w-5" />

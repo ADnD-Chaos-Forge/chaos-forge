@@ -75,12 +75,33 @@ export function PrintSheet({
 
   const thac0 = classEntries.length > 0 ? getMulticlassThac0(classEntries) : 20;
   const saves = classEntries.length > 0 ? getMulticlassSaves(classEntries) : null;
-  const strMods = getStrengthModifiers(character.str, character.str_exceptional ?? undefined);
-  const dexMods = getDexterityModifiers(character.dex);
-  const conMods = getConstitutionModifiers(character.con);
-  const intMods = getIntelligenceModifiers(character.int);
-  const wisMods = getWisdomModifiers(character.wis);
-  const chaMods = getCharismaModifiers(character.cha);
+  const strMods = getStrengthModifiers(
+    character.str,
+    character.str_exceptional ?? undefined,
+    character.str_muscle,
+    character.str_stamina
+  );
+  const dexMods = getDexterityModifiers(character.dex, character.dex_aim, character.dex_balance);
+  const conMods = getConstitutionModifiers(
+    character.con,
+    character.con_health,
+    character.con_fitness
+  );
+  const intMods = getIntelligenceModifiers(
+    character.int,
+    character.int_knowledge,
+    character.int_reason
+  );
+  const wisMods = getWisdomModifiers(
+    character.wis,
+    character.wis_intuition,
+    character.wis_willpower
+  );
+  const chaMods = getCharismaModifiers(
+    character.cha,
+    character.cha_leadership,
+    character.cha_appearance
+  );
   // Correct AC with equipped armor + shield + DEX
   const equippedArmorForAC = equipment.find(
     (e) =>
