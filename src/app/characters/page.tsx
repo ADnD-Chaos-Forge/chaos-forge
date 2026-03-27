@@ -86,7 +86,7 @@ export default async function CharactersPage() {
             return (
               <Link key={character.id} href={`/characters/${character.id}`}>
                 <Card
-                  className="transition-colors hover:border-primary/50"
+                  className="border-border/50 transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_16px_oklch(0.82_0.14_80/0.12)]"
                   data-testid={`character-card-${character.id}`}
                 >
                   <CardHeader>
