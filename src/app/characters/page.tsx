@@ -3,11 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/supabase/auth";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AvatarDisplay } from "@/components/avatar-display";
-import { RACES } from "@/lib/rules/races";
-import { CLASSES } from "@/lib/rules/classes";
+import { CharacterCard } from "@/components/character-card";
 import type { CharacterRow, CharacterClassRow, CharacterShareRow } from "@/lib/supabase/types";
 
 export default async function CharactersPage() {
@@ -65,81 +61,24 @@ export default async function CharactersPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {characters.map((character) => {
-            const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
-            const classes = (charClassMap.get(character.id) ?? []).filter((cc) => cc.is_active);
-            const classNames =
-              classes.length > 0
-                ? classes
-                    .map((cc) => CLASSES[cc.class_id as keyof typeof CLASSES]?.name ?? cc.class_id)
-                    .join(" / ")
-                : character.class_id
-                  ? (CLASSES[character.class_id as keyof typeof CLASSES]?.name ?? null)
-                  : null;
-            const levelDisplay =
-              classes.length > 0
-                ? classes.map((cc) => cc.level).join("/")
-                : String(character.level);
-
+            const classes = charClassMap.get(character.id) ?? [];
             const isOwner = character.user_id === user.id;
             const isSharedWithMe = sharedCharacterIds.has(character.id);
 
             return (
-              <Link key={character.id} href={`/characters/${character.id}`}>
-                <Card
-                  className="border-border/50 transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_16px_oklch(0.82_0.14_80/0.12)]"
-                  data-testid={`character-card-${character.id}`}
-                >
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <AvatarDisplay
-                        name={character.name}
-                        avatarUrl={character.avatar_url}
-                        size={40}
-                      />
-                      <div className="flex flex-1 items-center gap-2">
-                        <CardTitle className="font-heading text-xl">{character.name}</CardTitle>
-                        {isOwner && !character.is_public && (
-                          <Badge variant="outline" data-testid="badge-private">
-                            {ts("badgePrivate")}
-                          </Badge>
-                        )}
-                        {isOwner && character.is_public && (
-                          <Badge variant="secondary" data-testid="badge-public">
-                            {ts("badgePublic")}
-                          </Badge>
-                        )}
-                        {!isOwner && isSharedWithMe && (
-                          <Badge variant="secondary" data-testid="badge-shared">
-                            {ts("badgeShared")}
-                          </Badge>
-                        )}
-                        {!isOwner && !isSharedWithMe && character.is_public && (
-                          <Badge variant="outline" data-testid="badge-public">
-                            {ts("badgePublic")}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-2">
-                    <div className="flex flex-wrap gap-2">
-                      {race && <Badge variant="secondary">{race.name}</Badge>}
-                      {classNames && <Badge variant="secondary">{classNames}</Badge>}
-                      <Badge variant="outline">
-                        {t("level")} {levelDisplay}
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      HP: {character.hp_current}/{character.hp_max}
-                    </div>
-                    {!isOwner && (
-                      <div className="text-xs text-muted-foreground">
-                        {ts("sharedBy", { player: character.player_name || "?" })}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
+              <CharacterCard
+                key={character.id}
+                character={character}
+                classes={classes}
+                isOwner={isOwner}
+                isSharedWithMe={isSharedWithMe}
+                sharedByLabel={
+                  !isOwner ? ts("sharedBy", { player: character.player_name || "?" }) : undefined
+                }
+                badgePrivateLabel={ts("badgePrivate")}
+                badgeSharedLabel={ts("badgeShared")}
+                badgePublicLabel={ts("badgePublic")}
+              />
             );
           })}
         </div>

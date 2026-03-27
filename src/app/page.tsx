@@ -17,12 +17,12 @@ export default async function Home() {
       className="flex flex-1 flex-col items-center justify-center px-6"
       data-testid="landing-page"
     >
-      <div className="flex flex-col items-center gap-6 text-center">
+      <div className="glass glow-neutral rounded-xl p-8 sm:p-12 text-center max-w-lg">
         <h1 className="text-4xl font-heading tracking-wide text-primary sm:text-5xl">
           {t("tagline")}
         </h1>
-        <p className="max-w-md text-lg text-muted-foreground">{t("subtitle")}</p>
-        <Link href="/login">
+        <p className="mt-4 max-w-md text-lg text-muted-foreground">{t("subtitle")}</p>
+        <Link href="/login" className="mt-6 inline-block">
           <Button size="lg" data-testid="cta-login-button">
             {t("cta")}
           </Button>

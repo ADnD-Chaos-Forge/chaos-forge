@@ -1,23 +1,15 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslations } from "next-intl/server";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AvatarDisplay } from "@/components/avatar-display";
+import { GlassCard } from "@/components/glass-card";
+import { CharacterCard } from "@/components/character-card";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
 import type { CharacterRow, CharacterClassRow, SessionRow } from "@/lib/supabase/types";
 
-function hpColor(current: number, max: number): string {
-  if (max === 0) return "text-muted-foreground";
-  const pct = current / max;
-  if (pct > 0.5) return "text-green-400";
-  if (pct > 0.25) return "text-yellow-400";
-  return "text-red-400";
-}
-
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
+  const ts = await getTranslations("sharing");
   const supabase = await createClient();
 
   const { data: characters } = await supabase
@@ -86,37 +78,40 @@ export default async function DashboardPage() {
 
       {/* Stats row */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardContent className="p-4 text-center">
+        <GlassCard glow="neutral" data-testid="stat-card-adventurers">
+          <div className="text-center">
             <div className="text-xs text-muted-foreground">{t("adventurers")}</div>
             <div className="font-heading text-3xl text-primary">{characters?.length ?? 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
+          </div>
+        </GlassCard>
+        <GlassCard glow="neutral" data-testid="stat-card-avg-level">
+          <div className="text-center">
             <div className="text-xs text-muted-foreground">{t("averageLevel")}</div>
             <div className="font-heading text-3xl text-primary">{avgLevel}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
+          </div>
+        </GlassCard>
+        <GlassCard glow="neutral" data-testid="stat-card-class-distribution">
+          <div className="text-center">
             <div className="text-xs text-muted-foreground">{t("classDistribution")}</div>
             <div className="mt-1 flex flex-wrap justify-center gap-1">
               {Object.entries(classGroups).map(([group, count]) => (
-                <Badge key={group} variant="secondary">
+                <span
+                  key={group}
+                  className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-muted-foreground"
+                >
                   {group}: {count}
-                </Badge>
+                </span>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </GlassCard>
       </div>
 
       {/* Latest Session */}
       {latestSession && latestSession.length > 0 && (
         <Link href={`/sessions/${latestSession[0].id}`}>
-          <Card className="transition-colors hover:border-primary/50" data-testid="latest-session">
-            <CardContent className="flex items-center justify-between p-4">
+          <GlassCard glow="neutral" data-testid="latest-session">
+            <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs text-muted-foreground">{t("latestSession")}</div>
                 <div className="font-heading text-lg">{latestSession[0].title}</div>
@@ -124,8 +119,8 @@ export default async function DashboardPage() {
               <div className="text-sm text-muted-foreground">
                 {new Date(latestSession[0].session_date).toLocaleDateString("de-DE")}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </GlassCard>
         </Link>
       )}
 
@@ -135,65 +130,18 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">{t("noCharacters")}</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {characters.map((character) => {
-            const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
-            const classes = (charClassMap.get(character.id) ?? []).filter((cc) => cc.is_active);
-            const classNames =
-              classes.length > 0
-                ? classes
-                    .map((cc) => CLASSES[cc.class_id as keyof typeof CLASSES]?.name ?? cc.class_id)
-                    .join(" / ")
-                : character.class_id
-                  ? (CLASSES[character.class_id as keyof typeof CLASSES]?.name ?? null)
-                  : null;
-            const levelDisplay =
-              classes.length > 0
-                ? classes.map((cc) => cc.level).join("/")
-                : String(character.level);
-            const hpClass = hpColor(character.hp_current, character.hp_max);
-
-            return (
-              <Link key={character.id} href={`/characters/${character.id}`}>
-                <Card
-                  className="transition-colors hover:border-primary/50"
-                  data-testid={`dashboard-char-${character.id}`}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-3">
-                      <AvatarDisplay
-                        name={character.name}
-                        avatarUrl={character.avatar_url}
-                        size={48}
-                      />
-                      <div>
-                        <CardTitle className="text-lg">{character.name}</CardTitle>
-                        <div className="flex flex-wrap gap-1">
-                          {race && (
-                            <Badge variant="secondary" className="text-xs">
-                              {race.name}
-                            </Badge>
-                          )}
-                          {classNames && (
-                            <Badge variant="secondary" className="text-xs">
-                              {classNames}
-                            </Badge>
-                          )}
-                          <Badge variant="outline" className="text-xs">
-                            Stufe {levelDisplay}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className={`font-mono text-lg ${hpClass}`}>
-                      HP: {character.hp_current}/{character.hp_max}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
+          {characters.map((character) => (
+            <CharacterCard
+              key={character.id}
+              character={character}
+              classes={charClassMap.get(character.id) ?? []}
+              isOwner={true}
+              isSharedWithMe={false}
+              badgePrivateLabel={ts("badgePrivate")}
+              badgeSharedLabel={ts("badgeShared")}
+              badgePublicLabel={ts("badgePublic")}
+            />
+          ))}
         </div>
       )}
     </div>

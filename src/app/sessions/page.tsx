@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/glass-card";
 import { Badge } from "@/components/ui/badge";
 import type { SessionRow, TagRow } from "@/lib/supabase/types";
 
@@ -70,37 +70,30 @@ export default async function SessionsPage() {
 
             return (
               <Link key={session.id} href={`/sessions/${session.id}`}>
-                <Card
-                  className="transition-colors hover:border-primary/50"
-                  data-testid={`session-card-${session.id}`}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="font-heading text-xl">{session.title}</CardTitle>
-                      <span className="text-sm text-muted-foreground">{dateStr}</span>
+                <GlassCard glow="neutral" data-testid={`session-card-${session.id}`}>
+                  <div className="flex items-start justify-between">
+                    <h3 className="font-heading text-xl text-foreground">{session.title}</h3>
+                    <span className="text-sm text-muted-foreground">{dateStr}</span>
+                  </div>
+                  {tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {tags.map((tag) => (
+                        <Badge
+                          key={tag.id}
+                          className={TAG_COLORS[tag.type] ?? ""}
+                          variant="secondary"
+                        >
+                          {tag.name}
+                        </Badge>
+                      ))}
                     </div>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-2">
-                    {tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {tags.map((tag) => (
-                          <Badge
-                            key={tag.id}
-                            className={TAG_COLORS[tag.type] ?? ""}
-                            variant="secondary"
-                          >
-                            {tag.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                    {session.summary && (
-                      <p className="line-clamp-2 text-sm text-muted-foreground">
-                        {session.summary}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                  )}
+                  {session.summary && (
+                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                      {session.summary}
+                    </p>
+                  )}
+                </GlassCard>
               </Link>
             );
           })}

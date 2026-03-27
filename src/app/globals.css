@@ -166,6 +166,107 @@
   }
 }
 
+/* ─── Glassmorphism Design System ─────────────────────────────────────────── */
+
+/* Base glass surface */
+.glass {
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid oklch(0.5 0 0 / 0.12);
+  background: oklch(0.95 0.01 80 / 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dark .glass {
+  background: oklch(0.18 0.03 285 / 0.55);
+  border-color: oklch(0.5 0 0 / 0.15);
+}
+
+/* Glass hover lift */
+.glass-hover:hover {
+  transform: translateY(-2px);
+}
+
+/* Class group glow variants */
+.glow-warrior {
+  border-color: oklch(0.6 0.22 25 / 0.4);
+  box-shadow:
+    0 0 20px oklch(0.6 0.22 25 / 0.15),
+    inset 0 0 20px oklch(0.6 0.22 25 / 0.03);
+}
+.glow-warrior:hover {
+  box-shadow:
+    0 0 30px oklch(0.6 0.22 25 / 0.25),
+    inset 0 0 30px oklch(0.6 0.22 25 / 0.05);
+}
+
+.glow-priest {
+  border-color: oklch(0.75 0.15 80 / 0.4);
+  box-shadow:
+    0 0 20px oklch(0.75 0.15 80 / 0.15),
+    inset 0 0 20px oklch(0.75 0.15 80 / 0.03);
+}
+.glow-priest:hover {
+  box-shadow:
+    0 0 30px oklch(0.75 0.15 80 / 0.25),
+    inset 0 0 30px oklch(0.75 0.15 80 / 0.05);
+}
+
+.glow-rogue {
+  border-color: oklch(0.6 0.18 260 / 0.4);
+  box-shadow:
+    0 0 20px oklch(0.6 0.18 260 / 0.15),
+    inset 0 0 20px oklch(0.6 0.18 260 / 0.03);
+}
+.glow-rogue:hover {
+  box-shadow:
+    0 0 30px oklch(0.6 0.18 260 / 0.25),
+    inset 0 0 30px oklch(0.6 0.18 260 / 0.05);
+}
+
+.glow-wizard {
+  border-color: oklch(0.7 0.14 185 / 0.4);
+  box-shadow:
+    0 0 20px oklch(0.7 0.14 185 / 0.15),
+    inset 0 0 20px oklch(0.7 0.14 185 / 0.03);
+}
+.glow-wizard:hover {
+  box-shadow:
+    0 0 30px oklch(0.7 0.14 185 / 0.25),
+    inset 0 0 30px oklch(0.7 0.14 185 / 0.05);
+}
+
+/* Neutral glow (for non-character cards) */
+.glow-neutral {
+  border-color: oklch(0.82 0.14 80 / 0.3);
+  box-shadow: 0 0 16px oklch(0.82 0.14 80 / 0.1);
+}
+.glow-neutral:hover {
+  box-shadow: 0 0 24px oklch(0.82 0.14 80 / 0.2);
+}
+
+/* Hexagonal level badge */
+.hex-badge {
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+
+/* HP bar glow */
+.hp-bar-warrior {
+  background: linear-gradient(90deg, oklch(0.55 0.22 25), oklch(0.65 0.2 25));
+  box-shadow: 0 0 8px oklch(0.6 0.22 25 / 0.5);
+}
+.hp-bar-priest {
+  background: linear-gradient(90deg, oklch(0.65 0.15 80), oklch(0.78 0.14 80));
+  box-shadow: 0 0 8px oklch(0.75 0.15 80 / 0.5);
+}
+.hp-bar-rogue {
+  background: linear-gradient(90deg, oklch(0.5 0.18 260), oklch(0.65 0.16 260));
+  box-shadow: 0 0 8px oklch(0.6 0.18 260 / 0.5);
+}
+.hp-bar-wizard {
+  background: linear-gradient(90deg, oklch(0.6 0.14 185), oklch(0.72 0.12 185));
+  box-shadow: 0 0 8px oklch(0.7 0.14 185 / 0.5);
+}
+
 /* Hide scrollbar but keep scroll functionality */
 .no-scrollbar {
   -ms-overflow-style: none !important;
