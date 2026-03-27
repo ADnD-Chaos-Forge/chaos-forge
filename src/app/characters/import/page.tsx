@@ -14,7 +14,10 @@ interface ScannedCharacter {
   name: string;
   race: RaceId;
   class: ClassId;
+  kit: string | null;
   level: number;
+  alignment: string;
+  xp: number;
   str: number;
   strExceptional: number | null;
   dex: number;
@@ -22,7 +25,31 @@ interface ScannedCharacter {
   int: number;
   wis: number;
   cha: number;
+  // Player's Option Sub-Stats
+  strStamina: number | null;
+  strMuscle: number | null;
+  dexAim: number | null;
+  dexBalance: number | null;
+  conHealth: number | null;
+  conFitness: number | null;
+  intReason: number | null;
+  intKnowledge: number | null;
+  wisIntuition: number | null;
+  wisWillpower: number | null;
+  chaLeadership: number | null;
+  chaAppearance: number | null;
   hpMax: number;
+  hpCurrent: number;
+  goldPp: number;
+  goldGp: number;
+  goldSp: number;
+  goldCp: number;
+  playerName: string | null;
+  age: number | null;
+  gender: string | null;
+  weaponProficiencies: { name: string; specialized: boolean }[];
+  equipment: string[];
+  nwps: string[];
 }
 
 interface FilePreview {
@@ -144,6 +171,9 @@ export default function ImportCharacterPage() {
           level: scanned.level,
           race_id: scanned.race,
           class_id: scanned.class,
+          kit: scanned.kit,
+          alignment: scanned.alignment || "true_neutral",
+          xp_current: scanned.xp || 0,
           str: scanned.str,
           str_exceptional: scanned.strExceptional,
           dex: scanned.dex,
@@ -151,8 +181,27 @@ export default function ImportCharacterPage() {
           int: scanned.int,
           wis: scanned.wis,
           cha: scanned.cha,
-          hp_current: scanned.hpMax,
+          str_stamina: scanned.strStamina,
+          str_muscle: scanned.strMuscle,
+          dex_aim: scanned.dexAim,
+          dex_balance: scanned.dexBalance,
+          con_health: scanned.conHealth,
+          con_fitness: scanned.conFitness,
+          int_reason: scanned.intReason,
+          int_knowledge: scanned.intKnowledge,
+          wis_intuition: scanned.wisIntuition,
+          wis_willpower: scanned.wisWillpower,
+          cha_leadership: scanned.chaLeadership,
+          cha_appearance: scanned.chaAppearance,
+          hp_current: scanned.hpCurrent || scanned.hpMax,
           hp_max: scanned.hpMax,
+          gold_pp: scanned.goldPp || 0,
+          gold_gp: scanned.goldGp || 0,
+          gold_sp: scanned.goldSp || 0,
+          gold_cp: scanned.goldCp || 0,
+          player_name: scanned.playerName || "",
+          age: scanned.age,
+          gender: scanned.gender || "",
         })
         .select("id")
         .single();
@@ -169,8 +218,18 @@ export default function ImportCharacterPage() {
           character_id: data.id,
           class_id: scanned.class,
           level: scanned.level,
-          xp_current: 0,
+          xp_current: scanned.xp || 0,
         });
+      }
+
+      // Insert weapon proficiencies
+      if (scanned.weaponProficiencies?.length > 0) {
+        const wpRows = scanned.weaponProficiencies.map((wp) => ({
+          character_id: data.id,
+          weapon_name: wp.name,
+          specialization: wp.specialized,
+        }));
+        await supabase.from("character_weapon_proficiencies").insert(wpRows);
       }
 
       router.push(`/characters/${data.id}`);
@@ -277,6 +336,7 @@ export default function ImportCharacterPage() {
         <div className="glass glow-neutral rounded-xl p-6" data-testid="import-result">
           <h2 className="font-heading text-xl text-primary mb-4">{t("resultTitle")}</h2>
           <div className="flex flex-col gap-4">
+            {/* Basic Info */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="import-name">Name</Label>
@@ -301,6 +361,76 @@ export default function ImportCharacterPage() {
               </div>
             </div>
 
+            {/* Kit, Alignment, XP */}
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="import-kit">Kit</Label>
+                <Input
+                  id="import-kit"
+                  value={scanned.kit ?? ""}
+                  onChange={(e) => updateField("kit", e.target.value || null)}
+                  placeholder="Kein Kit"
+                  data-testid="import-kit"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="import-alignment">Gesinnung</Label>
+                <Input
+                  id="import-alignment"
+                  value={scanned.alignment ?? ""}
+                  onChange={(e) => updateField("alignment", e.target.value)}
+                  data-testid="import-alignment"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="import-xp">XP</Label>
+                <Input
+                  id="import-xp"
+                  type="number"
+                  min={0}
+                  value={scanned.xp ?? 0}
+                  onChange={(e) => updateField("xp", parseInt(e.target.value) || 0)}
+                  data-testid="import-xp"
+                />
+              </div>
+            </div>
+
+            {/* Personal Details */}
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="import-playerName">Spieler</Label>
+                <Input
+                  id="import-playerName"
+                  value={scanned.playerName ?? ""}
+                  onChange={(e) => updateField("playerName", e.target.value || null)}
+                  data-testid="import-playerName"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="import-age">Alter</Label>
+                <Input
+                  id="import-age"
+                  type="number"
+                  min={0}
+                  value={scanned.age ?? ""}
+                  onChange={(e) =>
+                    updateField("age", e.target.value ? parseInt(e.target.value) : null)
+                  }
+                  data-testid="import-age"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="import-gender">Geschlecht</Label>
+                <Input
+                  id="import-gender"
+                  value={scanned.gender ?? ""}
+                  onChange={(e) => updateField("gender", e.target.value || null)}
+                  data-testid="import-gender"
+                />
+              </div>
+            </div>
+
+            {/* Ability Scores */}
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
               {(["str", "dex", "con", "int", "wis", "cha"] as const).map((attr) => (
                 <div key={attr} className="flex flex-col gap-1">
@@ -323,18 +453,165 @@ export default function ImportCharacterPage() {
               ))}
             </div>
 
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="import-hp">Max. HP</Label>
-              <Input
-                id="import-hp"
-                type="number"
-                min={1}
-                value={scanned.hpMax}
-                onChange={(e) => updateField("hpMax", Math.max(1, parseInt(e.target.value) || 1))}
-                className="max-w-[100px]"
-                data-testid="import-hp"
-              />
+            {/* Sub-Stats (only shown if any are non-null) */}
+            {(scanned.strStamina !== null ||
+              scanned.strMuscle !== null ||
+              scanned.dexAim !== null ||
+              scanned.dexBalance !== null ||
+              scanned.conHealth !== null ||
+              scanned.conFitness !== null ||
+              scanned.intReason !== null ||
+              scanned.intKnowledge !== null ||
+              scanned.wisIntuition !== null ||
+              scanned.wisWillpower !== null ||
+              scanned.chaLeadership !== null ||
+              scanned.chaAppearance !== null) && (
+              <div data-testid="import-substats-section">
+                <p className="mb-2 text-sm font-medium text-muted-foreground">
+                  {"Player's Option Sub-Stats"}
+                </p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {(
+                    [
+                      ["strStamina", "STR/Stam"],
+                      ["strMuscle", "STR/Musc"],
+                      ["dexAim", "DEX/Aim"],
+                      ["dexBalance", "DEX/Bal"],
+                      ["conHealth", "CON/Hlth"],
+                      ["conFitness", "CON/Fit"],
+                      ["intReason", "INT/Reas"],
+                      ["intKnowledge", "INT/Know"],
+                      ["wisIntuition", "WIS/Intu"],
+                      ["wisWillpower", "WIS/Will"],
+                      ["chaLeadership", "CHA/Lead"],
+                      ["chaAppearance", "CHA/App"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <div key={key} className="flex flex-col gap-1">
+                      <Label htmlFor={`import-${key}`} className="text-xs">
+                        {label}
+                      </Label>
+                      <Input
+                        id={`import-${key}`}
+                        type="number"
+                        min={1}
+                        max={20}
+                        value={scanned[key] ?? ""}
+                        onChange={(e) =>
+                          updateField(key, e.target.value ? parseInt(e.target.value) : null)
+                        }
+                        className="text-center"
+                        data-testid={`import-${key}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* HP */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="import-hp">Max. HP</Label>
+                <Input
+                  id="import-hp"
+                  type="number"
+                  min={1}
+                  value={scanned.hpMax}
+                  onChange={(e) => updateField("hpMax", Math.max(1, parseInt(e.target.value) || 1))}
+                  className="max-w-[100px]"
+                  data-testid="import-hp"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="import-hpCurrent">Akt. HP</Label>
+                <Input
+                  id="import-hpCurrent"
+                  type="number"
+                  min={0}
+                  value={scanned.hpCurrent ?? scanned.hpMax}
+                  onChange={(e) =>
+                    updateField("hpCurrent", Math.max(0, parseInt(e.target.value) || 0))
+                  }
+                  className="max-w-[100px]"
+                  data-testid="import-hpCurrent"
+                />
+              </div>
             </div>
+
+            {/* Gold */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {(
+                [
+                  ["goldPp", "PP"],
+                  ["goldGp", "GP"],
+                  ["goldSp", "SP"],
+                  ["goldCp", "CP"],
+                ] as const
+              ).map(([key, label]) => (
+                <div key={key} className="flex flex-col gap-1">
+                  <Label htmlFor={`import-${key}`} className="text-xs">
+                    {label}
+                  </Label>
+                  <Input
+                    id={`import-${key}`}
+                    type="number"
+                    min={0}
+                    value={scanned[key] ?? 0}
+                    onChange={(e) => updateField(key, parseInt(e.target.value) || 0)}
+                    className="text-center"
+                    data-testid={`import-${key}`}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Weapon Proficiencies */}
+            {scanned.weaponProficiencies?.length > 0 && (
+              <div data-testid="import-weapon-proficiencies">
+                <p className="mb-2 text-sm font-medium text-muted-foreground">Waffenfertigkeiten</p>
+                <ul className="list-inside list-disc text-sm">
+                  {scanned.weaponProficiencies.map((wp, i) => (
+                    <li key={i} data-testid={`import-wp-${i}`}>
+                      {wp.name}
+                      {wp.specialized && (
+                        <span className="ml-1 text-xs text-primary">(Spezialisiert)</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* NWPs */}
+            {scanned.nwps?.length > 0 && (
+              <div data-testid="import-nwps">
+                <p className="mb-2 text-sm font-medium text-muted-foreground">
+                  Allgemeine Fertigkeiten
+                </p>
+                <ul className="list-inside list-disc text-sm">
+                  {scanned.nwps.map((nwp, i) => (
+                    <li key={i} data-testid={`import-nwp-${i}`}>
+                      {nwp}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Equipment */}
+            {scanned.equipment?.length > 0 && (
+              <div data-testid="import-equipment">
+                <p className="mb-2 text-sm font-medium text-muted-foreground">Ausruestung</p>
+                <ul className="list-inside list-disc text-sm">
+                  {scanned.equipment.map((item, i) => (
+                    <li key={i} data-testid={`import-equip-${i}`}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="flex justify-between">
               <Button

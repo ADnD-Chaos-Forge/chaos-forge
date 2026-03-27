@@ -10,20 +10,33 @@ Chaos Forge ersetzt umständliche Offline-Editoren aus den 90er Jahren durch ein
 
 - **Charakterbogen** — Vollständige Abbildung eines AD&D 2e Charakterbogens mit Attributen, Kampfwerten, Ausrüstung, Zaubern, Fertigkeiten und Diebesfähigkeiten
 - **Multiclass & Dualclass** — Mehrklassen-System mit Junction-Table, THAC0/Rettungswurf-Optimierung
+- **Kit-System** — 20 Kits aus den Complete Handbooks (Barbarian, Cavalier, Assassin, Witch etc.) mit Hit-Die-Override und Kit-Abilities
+- **Player's Option Sub-Stats** — Optionale Muscle/Stamina/Aim/Balance/Health/Fitness Sub-Scores für alle 6 Attribute
+- **Waffen-Spezialisierung** — Specialist-Kämpfer erhalten 3/2 Angriffe/Runde ab Level 1
 - **Zauberbuch** — Eigenständige Gameplay-Seite zum Verwalten, Vorbereiten und Lernen von Zaubern (Wizard Slots + Priest Spell Points)
-- **Druckansicht** — Optimiertes Print-Layout für den Spieltisch
+- **Druckansicht + Word-Export** — Optimiertes Print-Layout für den Spieltisch, exportierbar als .docx
+- **Glassmorphism UI** — Modernes "Epic Dark Mode" Design mit klassenbasierten Akzentfarben (Warrior=Rot, Priest=Gold, Rogue=Blau, Wizard=Teal)
+- **Character Cards** — Avatar-Breakout, leuchtende HP-Bar, hexagonales Level-Badge, dynamischer Glow
+- **Aktive/Inaktive Charaktere** — Archivierung mit einklappbarer Sektion
+- **Character Import** — OCR/Vision-Import via Claude API (Foto oder PDF)
+- **Character Sharing** — Öffentliche/private Sichtbarkeit + gezieltes Teilen mit Mitspielern
+- **Session-Chronik** — Timeline mit Tags (NPCs, Orte, Items, Quests), KI-Zusammenfassungen, Sprachnotizen
+- **Source Book Tracking** — Jedes Item/Waffe/Zauber zeigt seine Quelle (PHB, AEG, etc.)
 - **i18n** — Vollständige Lokalisierung Deutsch/Englisch (Cookie-basiert via next-intl)
-- **Regelwerk-Engine** — Reine TypeScript-Funktionen für alle PHB-Regeln (Attribute, Klassen, Rassen, Magie, Kampf, Fertigkeiten)
-- **Read-Only Modus** — Mitspieler können Charaktere anderer Spieler einsehen, aber nicht bearbeiten
+- **Responsive Design** — Mobile Bottom-Nav mit More-Menu, 2-Zeilen-Tabs, Glassmorphism Cards
+- **Accessibility** — WCAG 2 AA geprüft via axe-core Playwright Tests
+- **Regelwerk-Engine** — Reine TypeScript-Funktionen für alle PHB-Regeln + Player's Option
 
 ## Tech-Stack
 
 - **Frontend/Backend:** Next.js 16 (App Router, TypeScript)
 - **Datenbank & Auth:** Supabase (PostgreSQL + Row Level Security)
-- **Styling:** Tailwind CSS v4 + shadcn/ui
-- **i18n:** next-intl (Cookie-basiert, DE/EN)
-- **Testing:** Vitest (Unit), Playwright (E2E)
+- **Styling:** Tailwind CSS v4 + shadcn/ui + Glassmorphism Design-System
+- **i18n:** next-intl (Cookie-basiert, DE/EN) + `localized()` Utility für DB-Daten
+- **Testing:** Vitest (609+ Unit-Tests), Playwright (43+ E2E inkl. Responsive + A11y)
 - **Hosting:** Vercel (Free-Tier optimiert)
+- **AI:** Anthropic Claude API (Character Import, Session Summaries)
+- **Export:** `docx` Paket für Word-Export
 
 ## Lokale Entwicklung
 
@@ -90,21 +103,54 @@ Die Datei `src/lib/rules/spec/character-creation-rules.ts` katalogisiert alle AD
 src/
   app/                    # Next.js App Router (Pages, Layouts)
     characters/[id]/      # Charakterbogen, Druckansicht, Zauberbuch
+    characters/new/       # Charakter-Erstellung (Auswahl + Wizard)
+    characters/import/    # OCR/Vision-Import
+    dashboard/            # Dashboard mit Gruppen-Übersicht
+    sessions/             # Chronik des Chaos (Session-Log)
   components/
     character-sheet/      # Tabs: Stats, Combat, Equipment, Spells, Proficiencies, Thief Skills
-    spellbook/            # Standalone Spellbook-Seite
-    print-sheet/          # Druckansicht
+    character-card.tsx    # Glassmorphism Character Card (Avatar, HP-Bar, Level-Badge)
+    glass-card.tsx        # Wiederverwendbare Glass-Surface-Komponente
+    hp-bar.tsx            # Leuchtende HP-Fortschrittsleiste
+    level-badge.tsx       # Hexagonales Level-Badge
+    spellbook/            # Standalone Spellbook-Seite (Suche, Filter, Prepare, Learn)
+    print-sheet/          # Druckansicht + Word-Export
+    session/              # Session-Einträge + Sprachnotizen
+    wizard/               # Character Wizard (7 Steps inkl. Kit)
     ui/                   # shadcn/ui Komponenten
   lib/
     rules/                # AD&D 2e Regelwerk-Engine (reine TypeScript-Logik)
-      spec/               # Regelwerk-Spezifikation + Coverage-Test
-    supabase/             # Supabase Client-Helfer
-    utils/                # Hilfsfunktionen (cn, units)
-  test/                   # Vitest Setup & Regressionstests
+      spec/               # Regelwerk-Spezifikation + Coverage-Meta-Test
+      abilities.ts        # Attribut-Modifikator-Tabellen (STR 3-25, Sub-Stats)
+      alignment.ts        # 9 Gesinnungen (DE/EN), Klassen-Restriktionen
+      classes.ts          # 16 Klassen-Definitionen
+      combat.ts           # THAC0, Rettungswürfe, Angriffe/Runde (inkl. Spezialisierung)
+      equipment.ts        # RK-Berechnung, Belastung, Bewegungsrate
+      experience.ts       # XP-Tabellen, Stufen-Berechnung
+      kits.ts             # 20 Kit-Definitionen (Fighter, Thief, Wizard, Priest, Ranger, Bard)
+      magic.ts            # Magie-Schulen, Priester-Sphären, Spezialisten
+      multiclass.ts       # THAC0/Saves-Optimierung, Regeltreue-Check
+      proficiencies.ts    # Waffen-/NWP-Slots, Spezialisierung
+      races.ts            # 7 Rassen, Attribut-Adj., Level-Limits
+      spellslots.ts       # Wizard Slots, Priest Slots/Bonus, Spell Points
+      thief.ts            # Diebesfähigkeiten, Backstab-Multiplikator
+      types.ts            # Zentrale Typdefinitionen
+    supabase/             # Supabase Client-Helfer (client.ts, server.ts, middleware.ts)
+    utils/                # Hilfsfunktionen
+      class-colors.ts     # Klassengruppen-Akzentfarben
+      localize.ts         # Locale-aware Text-Auswahl (DE/EN)
+      source-books.ts     # Quellenbuch-Abkürzungen (PHB, AEG, etc.)
+      docx-export.ts      # Word-Export Generator
+      audio-recorder.ts   # MediaRecorder Wrapper für Sprachnotizen
+      units.ts            # lbsToKg, feetToMeters
+  test/                   # Vitest Setup, Smoke- & Regressionstests
 e2e/                      # Playwright E2E-Tests (POM-Pattern)
+  responsive-a11y.spec.ts # Mobile Responsive + WCAG 2 AA Tests
   pages/                  # Page Object Models
   helpers/                # Auth-Helper
 messages/                 # i18n-Dateien (de.json, en.json)
 supabase/
-  migrations/             # SQL-Migrationen
+  migrations/             # 30 SQL-Migrationen (Schema + Seed-Daten)
+ressources/
+  books/                  # OCR-Texte der AD&D 2e Regelbücher
 ```

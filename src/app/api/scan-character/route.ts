@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 1000,
+      max_tokens: 2000,
       messages: [
         {
           role: "user",
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
             ...contentBlocks,
             {
               type: "text",
-              text: `Analysiere diesen AD&D 2nd Edition Charakterbogen und extrahiere die folgenden Werte als JSON.
+              text: `Analysiere diesen AD&D 2nd Edition Charakterbogen und extrahiere ALLE verfügbaren Werte als JSON.
 Antworte NUR mit validem JSON, kein anderer Text.
 ${isMultiFile ? "\nDieser Charakterbogen erstreckt sich über mehrere Seiten/Dateien. Kombiniere die Informationen aus allen Seiten zu einem einzelnen Charakter.\n" : ""}
 Erwartetes Format:
@@ -107,7 +107,10 @@ Erwartetes Format:
   "name": "Charaktername",
   "race": "human|elf|half_elf|dwarf|gnome|halfling|half_orc",
   "class": "fighter|ranger|paladin|mage|cleric|druid|thief|bard",
+  "kit": null,
   "level": 1,
+  "alignment": "chaotic_neutral",
+  "xp": 0,
   "str": 10,
   "strExceptional": null,
   "dex": 10,
@@ -115,15 +118,45 @@ Erwartetes Format:
   "int": 10,
   "wis": 10,
   "cha": 10,
-  "hpMax": 10
+  "strStamina": null,
+  "strMuscle": null,
+  "dexAim": null,
+  "dexBalance": null,
+  "conHealth": null,
+  "conFitness": null,
+  "intReason": null,
+  "intKnowledge": null,
+  "wisIntuition": null,
+  "wisWillpower": null,
+  "chaLeadership": null,
+  "chaAppearance": null,
+  "hpMax": 10,
+  "hpCurrent": 10,
+  "goldPp": 0,
+  "goldGp": 0,
+  "goldSp": 0,
+  "goldCp": 0,
+  "playerName": null,
+  "age": null,
+  "gender": null,
+  "weaponProficiencies": [],
+  "equipment": [],
+  "nwps": []
 }
 
 Hinweise:
 - "race" muss einer der angegebenen IDs sein (Kleinschreibung, Underscore)
 - "class" muss einer der angegebenen IDs sein
+- "kit" kann "barbarian", "cavalier", "swashbuckler", "berserker", "assassin", "acrobat", "witch" etc. sein, oder null wenn kein Kit angegeben
+- "alignment" muss eine ID sein: lawful_good, neutral_good, chaotic_good, lawful_neutral, true_neutral, chaotic_neutral, lawful_evil, neutral_evil, chaotic_evil
 - "strExceptional" ist nur relevant bei STR 18 und Krieger-Klassen (1-100, wobei 100 = "18/00")
-- Wenn ein Wert nicht lesbar ist, verwende einen sinnvollen Standardwert
-- Übersetze deutsche Bezeichnungen (z.B. "Mensch" → "human", "Kämpfer" → "fighter")`,
+- Sub-Stats (strStamina, strMuscle, etc.) sind Player's Option Werte. Extrahiere sie wenn vorhanden, sonst null
+- "weaponProficiencies" ist ein Array von {"name": "Waffe", "specialized": true/false}
+- "equipment" ist ein Array von Strings mit den getragenen/mitgeführten Gegenständen
+- "nwps" ist ein Array von Strings mit den Non-Weapon Proficiency Namen
+- "xp" ist der aktuelle Erfahrungspunktestand
+- Wenn ein Wert nicht lesbar ist, verwende null statt einen Standardwert zu raten
+- Übersetze deutsche Bezeichnungen (z.B. "Mensch" → "human", "Kämpfer" → "fighter", "Chaotisch Neutral" → "chaotic_neutral")`,
             },
           ],
         },

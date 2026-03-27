@@ -33,7 +33,7 @@ import {
 import { getAttacksPerRound } from "@/lib/rules/combat";
 import { calculateAC } from "@/lib/rules/equipment";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
-import { getKit, getEffectiveHitDie } from "@/lib/rules/kits";
+import { getKit, getEffectiveHitDie, getKitsForClass } from "@/lib/rules/kits";
 import { Spinner } from "@/components/ui/spinner";
 import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -223,6 +223,7 @@ export function CharacterSheet({
         thief_climb_walls: character.thief_climb_walls,
         thief_detect_noise: character.thief_detect_noise,
         thief_read_languages: character.thief_read_languages,
+        kit: character.kit,
       })
       .eq("id", character.id);
 
@@ -513,6 +514,28 @@ export function CharacterSheet({
                   onChange={(e) => update("eye_color", e.target.value)}
                   data-testid="sheet-eye-color"
                 />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="kit-select" className="text-xs text-muted-foreground">
+                  {t("kit")}
+                </Label>
+                <select
+                  id="kit-select"
+                  value={character.kit ?? ""}
+                  onChange={(e) => update("kit", e.target.value || null)}
+                  className="rounded-md border border-input bg-input px-2 py-1 text-sm"
+                  data-testid="sheet-kit-select"
+                  disabled={!isOwner}
+                >
+                  <option value="">{t("noKit")}</option>
+                  {activeClasses
+                    .flatMap((cc) => getKitsForClass(cc.class_id as ClassId))
+                    .map((kit) => (
+                      <option key={kit.id} value={kit.id}>
+                        {localized(kit.name, kit.name_en, locale)}
+                      </option>
+                    ))}
+                </select>
               </div>
             </div>
           </details>
