@@ -975,6 +975,7 @@ export function CharacterSheet({
             weaponProficiencies={weaponProficiencies}
             nonweaponProficiencies={nonweaponProficiencies}
             allNonweaponProficiencies={allNonweaponProficiencies}
+            allWeapons={allWeapons}
             languages={languages}
             readOnly={!isOwner}
           />

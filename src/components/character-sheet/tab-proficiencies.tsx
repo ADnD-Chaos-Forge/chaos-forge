@@ -21,6 +21,7 @@ import type {
   CharacterNWPWithDetails,
   NonweaponProficiencyRow,
   CharacterLanguageRow,
+  WeaponRow,
 } from "@/lib/supabase/types";
 
 const NWP_GROUP_FILTER_KEYS = ["all", "general", "warrior", "priest", "rogue", "wizard"] as const;
@@ -79,6 +80,7 @@ interface TabProficienciesProps {
   weaponProficiencies: CharacterWeaponProficiencyRow[];
   nonweaponProficiencies: CharacterNWPWithDetails[];
   allNonweaponProficiencies: NonweaponProficiencyRow[];
+  allWeapons: WeaponRow[];
   languages: CharacterLanguageRow[];
   readOnly?: boolean;
 }
@@ -94,6 +96,7 @@ export function TabProficiencies({
   weaponProficiencies,
   nonweaponProficiencies,
   allNonweaponProficiencies,
+  allWeapons,
   languages,
   readOnly = false,
 }: TabProficienciesProps) {
@@ -105,6 +108,7 @@ export function TabProficiencies({
   const [error, setError] = useState<string | null>(null);
   const [newWeaponName, setNewWeaponName] = useState("");
   const [newWeaponSpecialized, setNewWeaponSpecialized] = useState(false);
+  const [weaponDropdownOpen, setWeaponDropdownOpen] = useState(false);
   const [nwpSearchQuery, setNwpSearchQuery] = useState("");
   const [nwpGroupFilter, setNwpGroupFilter] = useState<string>("all");
   const [showCustomNwpForm, setShowCustomNwpForm] = useState(false);
@@ -133,6 +137,13 @@ export function TabProficiencies({
       (nwp) => !nonweaponProficiencies.some((existing) => existing.proficiency_id === nwp.id)
     );
   }, [allNonweaponProficiencies, nonweaponProficiencies]);
+
+  // Filtered weapons for autocomplete dropdown
+  const filteredWeapons = useMemo(() => {
+    const q = newWeaponName.trim().toLowerCase();
+    if (!q) return allWeapons;
+    return allWeapons.filter((w) => w.name.toLowerCase().includes(q));
+  }, [allWeapons, newWeaponName]);
 
   // Filtered NWPs by search query and group filter
   const filteredAvailableNwps = useMemo(() => {
@@ -357,16 +368,52 @@ export function TabProficiencies({
         {/* Add weapon */}
         {!readOnly && usedWeaponSlots < weaponSlots && (
           <div className="flex items-center gap-2" data-testid="add-weapon-proficiency">
-            <Input
-              placeholder={t("weaponName")}
-              value={newWeaponName}
-              onChange={(e) => setNewWeaponName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") addWeaponProficiency();
-              }}
-              className="flex-1"
-              data-testid="weapon-name-input"
-            />
+            <div className="relative flex-1">
+              <Input
+                placeholder={t("weaponName")}
+                value={newWeaponName}
+                onChange={(e) => {
+                  setNewWeaponName(e.target.value);
+                  setWeaponDropdownOpen(true);
+                }}
+                onFocus={() => setWeaponDropdownOpen(true)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setWeaponDropdownOpen(false);
+                    addWeaponProficiency();
+                  }
+                  if (e.key === "Escape") setWeaponDropdownOpen(false);
+                }}
+                className="w-full"
+                data-testid="weapon-name-input"
+                autoComplete="off"
+              />
+              {weaponDropdownOpen && filteredWeapons.length > 0 && (
+                <div
+                  className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-border bg-background shadow-lg"
+                  data-testid="weapon-dropdown"
+                >
+                  {filteredWeapons.map((weapon) => (
+                    <button
+                      key={weapon.id}
+                      type="button"
+                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-muted"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setNewWeaponName(weapon.name);
+                        setWeaponDropdownOpen(false);
+                      }}
+                      data-testid={`weapon-option-${weapon.id}`}
+                    >
+                      <span className="font-medium">{weapon.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {weapon.damage_sm}/{weapon.damage_l}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             {showSpecialization && (
               <label className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
                 <input
@@ -375,11 +422,14 @@ export function TabProficiencies({
                   onChange={(e) => setNewWeaponSpecialized(e.target.checked)}
                   data-testid="weapon-specialization-checkbox"
                 />
-                Spezialisierung
+                {t("specialization")}
               </label>
             )}
             <Button
-              onClick={addWeaponProficiency}
+              onClick={() => {
+                setWeaponDropdownOpen(false);
+                addWeaponProficiency();
+              }}
               disabled={loading || !newWeaponName.trim()}
               data-testid="weapon-add-button"
             >

@@ -12,6 +12,9 @@ import {
   getWizardSpellSlots,
   getPriestSpellSlots,
   getPriestBonusSlots,
+  getPriestSpellPoints,
+  getPriestBonusSpellPoints,
+  getPriestSpellCost,
   canLearnSpell,
 } from "@/lib/rules/spellslots";
 import type { ClassId, MagicSchool, PriestSphere } from "@/lib/rules/types";

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { calculateEncumbrance, calculateAC, getMovementRate } from "@/lib/rules/equipment";
 import { useTranslations } from "next-intl";
+import { lbsToKg } from "@/lib/utils/units";
 import type {
   CharacterEquipmentWithDetails,
   WeaponRow,
@@ -316,9 +317,9 @@ export function TabEquipment({
         <div className="rounded-md border border-border p-4 text-center">
           <div className="text-xs text-muted-foreground">{t("totalWeight")}</div>
           <div className="font-heading text-3xl text-primary" data-testid="equipment-total-weight">
-            {totalWeight}
+            {lbsToKg(totalWeight)}
           </div>
-          <div className="text-xs text-muted-foreground">{t("pounds")}</div>
+          <div className="text-xs text-muted-foreground">kg</div>
         </div>
         <div className="rounded-md border border-border p-4 text-center">
           <div className="text-xs text-muted-foreground">{t("encumbrance")}</div>
@@ -326,7 +327,7 @@ export function TabEquipment({
             <Badge variant={getEncumbranceBadgeVariant(encumbranceLevel)}>{encumbranceLabel}</Badge>
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
-            {t("maxWeight", { weight: strWeightAllow })}
+            {t("maxWeight", { weight: lbsToKg(strWeightAllow) })}
           </div>
         </div>
       </div>
@@ -417,7 +418,9 @@ export function TabEquipment({
                     <td className="py-2 pr-4">
                       <Badge variant="outline">{getItemType(item)}</Badge>
                     </td>
-                    <td className="py-2 pr-4 text-right font-mono">{getItemWeight(item)}</td>
+                    <td className="py-2 pr-4 text-right font-mono">
+                      {lbsToKg(getItemWeight(item))} kg
+                    </td>
                     <td className="py-2 pr-4 text-right font-mono">{item.quantity}</td>
                     <td className="py-2 pr-4 text-center">
                       {!readOnly ? (
@@ -558,8 +561,8 @@ export function TabEquipment({
                           <div className="font-medium">{weapon.name}</div>
                           <div className="text-xs text-muted-foreground">
                             {t("damage")}: {weapon.damage_sm}/{weapon.damage_l} | {t("speed")}:{" "}
-                            {weapon.speed} | {t("weight")}: {weapon.weight} | {t("cost")}:{" "}
-                            {weapon.cost_gp} GP
+                            {weapon.speed} | {t("weight")}: {lbsToKg(weapon.weight)} kg |{" "}
+                            {t("cost")}: {weapon.cost_gp} GP
                           </div>
                         </div>
                         <Button
@@ -705,8 +708,8 @@ export function TabEquipment({
                         <div>
                           <div className="font-medium">{armor.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {t("acValue")}: {armor.ac} | {t("weight")}: {armor.weight} | {t("cost")}
-                            : {armor.cost_gp} GP
+                            {t("acValue")}: {armor.ac} | {t("weight")}: {lbsToKg(armor.weight)} kg |{" "}
+                            {t("cost")}: {armor.cost_gp} GP
                           </div>
                         </div>
                         <Button
@@ -834,7 +837,9 @@ export function TabEquipment({
                       <td className="py-2 text-center font-mono">{item.weapon!.damage_sm}</td>
                       <td className="py-2 text-center font-mono">{item.weapon!.damage_l}</td>
                       <td className="py-2 text-center font-mono">{item.weapon!.speed}</td>
-                      <td className="py-2 text-center font-mono">{item.weapon!.weight}</td>
+                      <td className="py-2 text-center font-mono">
+                        {lbsToKg(item.weapon!.weight)} kg
+                      </td>
                     </tr>
                   ))}
               </tbody>
@@ -921,7 +926,7 @@ export function TabEquipment({
                 <div className="flex items-center gap-3">
                   <span className="font-medium">{inv.item?.name ?? inv.custom_name ?? "—"}</span>
                   <span className="text-xs text-muted-foreground">
-                    {inv.item ? `${inv.item.weight} lbs` : ""}
+                    {inv.item ? `${lbsToKg(inv.item.weight)} kg` : ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -979,7 +984,7 @@ export function TabEquipment({
                   >
                     <span>{item.name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {item.weight > 0 ? `${item.weight} lbs` : ""}{" "}
+                      {item.weight > 0 ? `${lbsToKg(item.weight)} kg` : ""}{" "}
                       {item.cost_gp > 0 ? `${item.cost_gp} GP` : ""}
                     </span>
                   </button>

@@ -3,6 +3,9 @@ import {
   getWizardSpellSlots,
   getPriestSpellSlots,
   getPriestBonusSlots,
+  getPriestSpellPoints,
+  getPriestBonusSpellPoints,
+  getPriestSpellCost,
   canLearnSpell,
 } from "./spellslots";
 
@@ -56,6 +59,33 @@ describe("Priest Bonus Slots", () => {
     expect(bonus[1]).toBe(2); // 2 second-level
     expect(bonus[2]).toBe(1); // 1 third-level
     expect(bonus[3]).toBe(1); // 1 fourth-level
+  });
+});
+
+describe("Priest Spell Points (Player's Option)", () => {
+  it("should give 10 spell points at level 1", () => {
+    expect(getPriestSpellPoints(1)).toBe(10);
+  });
+
+  it("should give 92 spell points at level 10", () => {
+    expect(getPriestSpellPoints(10)).toBe(92);
+  });
+
+  it("should give 287 spell points at level 20", () => {
+    expect(getPriestSpellPoints(20)).toBe(287);
+  });
+
+  it("should give bonus points for high WIS", () => {
+    expect(getPriestBonusSpellPoints(12)).toBe(0);
+    expect(getPriestBonusSpellPoints(13)).toBe(1);
+    expect(getPriestBonusSpellPoints(16)).toBe(8);
+    expect(getPriestBonusSpellPoints(18)).toBe(16);
+  });
+
+  it("should return correct spell costs", () => {
+    expect(getPriestSpellCost(1)).toBe(1);
+    expect(getPriestSpellCost(3)).toBe(4);
+    expect(getPriestSpellCost(7)).toBe(12);
   });
 });
 

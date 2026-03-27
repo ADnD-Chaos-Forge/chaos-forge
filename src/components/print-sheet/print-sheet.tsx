@@ -17,6 +17,7 @@ import {
   getWisdomModifiers,
   getCharismaModifiers,
 } from "@/lib/rules/abilities";
+import { lbsToKg } from "@/lib/utils/units";
 import type {
   CharacterRow,
   CharacterClassRow,
@@ -217,10 +218,19 @@ export function PrintSheet({
                 <td className="py-1 text-xs">
                   {t("hit")}: {strMods.hitAdj >= 0 ? "+" : ""}
                   {strMods.hitAdj}, {t("damage")}: {strMods.dmgAdj >= 0 ? "+" : ""}
-                  {strMods.dmgAdj}, {t("weightAllow")}: {strMods.weightAllow} lbs, {t("doors")}:{" "}
-                  {strMods.openDoors}, {t("bars")}: {strMods.bendBars}%
+                  {strMods.dmgAdj}, {t("weightAllow")}: {lbsToKg(strMods.weightAllow)} kg,{" "}
+                  {t("doors")}: {strMods.openDoors}, {t("bars")}: {strMods.bendBars}%
                 </td>
               </tr>
+              {(character.str_stamina != null || character.str_muscle != null) && (
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <td className="py-0.5 pl-4 text-xs text-gray-500" colSpan={3}>
+                    {character.str_stamina != null && `${t("stamina")}: ${character.str_stamina}`}
+                    {character.str_stamina != null && character.str_muscle != null && ", "}
+                    {character.str_muscle != null && `${t("muscle")}: ${character.str_muscle}`}
+                  </td>
+                </tr>
+              )}
               <tr className="border-b border-gray-200">
                 <td className="py-1">{t("dexName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{character.dex}</td>
@@ -231,6 +241,15 @@ export function PrintSheet({
                   {dexMods.defensiveAdj}
                 </td>
               </tr>
+              {(character.dex_aim != null || character.dex_balance != null) && (
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <td className="py-0.5 pl-4 text-xs text-gray-500" colSpan={3}>
+                    {character.dex_aim != null && `${t("aim")}: ${character.dex_aim}`}
+                    {character.dex_aim != null && character.dex_balance != null && ", "}
+                    {character.dex_balance != null && `${t("balance")}: ${character.dex_balance}`}
+                  </td>
+                </tr>
+              )}
               <tr className="border-b border-gray-200">
                 <td className="py-1">{t("conName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{character.con}</td>
@@ -240,6 +259,15 @@ export function PrintSheet({
                   {conMods.resurrectionSurvival}%
                 </td>
               </tr>
+              {(character.con_health != null || character.con_fitness != null) && (
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <td className="py-0.5 pl-4 text-xs text-gray-500" colSpan={3}>
+                    {character.con_health != null && `${t("health")}: ${character.con_health}`}
+                    {character.con_health != null && character.con_fitness != null && ", "}
+                    {character.con_fitness != null && `${t("fitness")}: ${character.con_fitness}`}
+                  </td>
+                </tr>
+              )}
               <tr className="border-b border-gray-200">
                 <td className="py-1">{t("intName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{character.int}</td>
@@ -249,6 +277,16 @@ export function PrintSheet({
                   {intMods.chanceToLearn ? `, ${t("learnSpell")}: ${intMods.chanceToLearn}%` : ""}
                 </td>
               </tr>
+              {(character.int_reason != null || character.int_knowledge != null) && (
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <td className="py-0.5 pl-4 text-xs text-gray-500" colSpan={3}>
+                    {character.int_reason != null && `${t("reason")}: ${character.int_reason}`}
+                    {character.int_reason != null && character.int_knowledge != null && ", "}
+                    {character.int_knowledge != null &&
+                      `${t("knowledge")}: ${character.int_knowledge}`}
+                  </td>
+                </tr>
+              )}
               <tr className="border-b border-gray-200">
                 <td className="py-1">{t("wisName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{character.wis}</td>
@@ -259,6 +297,17 @@ export function PrintSheet({
                     `, ${t("bonusSpells")}: ${wisMods.bonusSpells.join("/")}`}
                 </td>
               </tr>
+              {(character.wis_intuition != null || character.wis_willpower != null) && (
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <td className="py-0.5 pl-4 text-xs text-gray-500" colSpan={3}>
+                    {character.wis_intuition != null &&
+                      `${t("intuition")}: ${character.wis_intuition}`}
+                    {character.wis_intuition != null && character.wis_willpower != null && ", "}
+                    {character.wis_willpower != null &&
+                      `${t("willpower")}: ${character.wis_willpower}`}
+                  </td>
+                </tr>
+              )}
               <tr className="border-b border-gray-200">
                 <td className="py-1">{t("chaName")}</td>
                 <td className="py-1 text-center font-mono font-bold">{character.cha}</td>
@@ -269,6 +318,17 @@ export function PrintSheet({
                   {chaMods.reactionAdj}
                 </td>
               </tr>
+              {(character.cha_leadership != null || character.cha_appearance != null) && (
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <td className="py-0.5 pl-4 text-xs text-gray-500" colSpan={3}>
+                    {character.cha_leadership != null &&
+                      `${t("leadership")}: ${character.cha_leadership}`}
+                    {character.cha_leadership != null && character.cha_appearance != null && ", "}
+                    {character.cha_appearance != null &&
+                      `${t("appearance")}: ${character.cha_appearance}`}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </section>
@@ -440,7 +500,7 @@ export function PrintSheet({
                       {e.weapon ? t("weaponType") : t("armorType")}
                     </td>
                     <td className="py-1 text-center text-xs">
-                      {e.weapon?.weight ?? e.armor?.weight ?? 0} lbs
+                      {lbsToKg(e.weapon?.weight ?? e.armor?.weight ?? 0)} kg
                     </td>
                     <td className="py-1 text-center text-xs">
                       {e.equipped ? t("equippedStatus") : t("inventoryStatus")}
