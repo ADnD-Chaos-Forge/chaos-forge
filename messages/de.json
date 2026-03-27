@@ -61,7 +61,8 @@
     "level": "Stufe",
     "deleteTitle": "Charakter löschen",
     "deleteMessage": "Möchtest du \"{name}\" wirklich unwiderruflich löschen?",
-    "printView": "Druckansicht"
+    "printView": "Druckansicht",
+    "spellbook": "Zauberbuch"
   },
   "wizard": {
     "basics": "Grunddaten",
@@ -140,6 +141,10 @@
     "levelPerClass": "Stufe pro Klasse",
     "multiclass": "Multiclass",
     "gold": "Schatz",
+    "currencyPP": "Platin",
+    "currencyGP": "Gold",
+    "currencySP": "Silber",
+    "currencyCP": "Kupfer",
     "racialAbilities": "Rassenfähigkeiten",
     "classAbilities": "Klassenfähigkeiten",
     "thac0": "ETW0 (THAC0)",
@@ -519,7 +524,8 @@
     "badgePrivate": "Privat",
     "badgePublic": "Öffentlich",
     "badgeShared": "Geteilt",
-    "sharedBy": "Geteilt von {player}"
+    "sharedBy": "Geteilt von {player}",
+    "noUsers": "Keine anderen Spieler registriert."
   },
   "spellbook": {
     "title": "Zauberbuch",

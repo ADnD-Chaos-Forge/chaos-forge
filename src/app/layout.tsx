@@ -70,7 +70,7 @@ export default async function RootLayout({
                   width={280}
                   height={120}
                   priority
-                  className="h-10 w-auto sm:h-20"
+                  className="h-14 w-auto sm:h-28"
                 />
               </Link>
             </header>

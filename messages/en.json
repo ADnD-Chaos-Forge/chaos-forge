@@ -61,7 +61,8 @@
     "level": "Level",
     "deleteTitle": "Delete Character",
     "deleteMessage": "Do you really want to permanently delete \"{name}\"?",
-    "printView": "Print View"
+    "printView": "Print View",
+    "spellbook": "Spellbook"
   },
   "wizard": {
     "basics": "Basics",
@@ -140,6 +141,10 @@
     "levelPerClass": "Level per Class",
     "multiclass": "Multiclass",
     "gold": "Treasure",
+    "currencyPP": "Platinum",
+    "currencyGP": "Gold",
+    "currencySP": "Silver",
+    "currencyCP": "Copper",
     "racialAbilities": "Racial Abilities",
     "classAbilities": "Class Abilities",
     "thac0": "THAC0",
@@ -519,7 +524,8 @@
     "badgePrivate": "Private",
     "badgePublic": "Public",
     "badgeShared": "Shared",
-    "sharedBy": "Shared by {player}"
+    "sharedBy": "Shared by {player}",
+    "noUsers": "No other players registered."
   },
   "spellbook": {
     "title": "Spellbook",
