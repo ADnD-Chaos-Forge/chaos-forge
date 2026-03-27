@@ -4,7 +4,6 @@ import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
@@ -275,11 +274,9 @@ export default function ImportCharacterPage() {
 
       {/* Scanned result — editable */}
       {scanned && (
-        <Card data-testid="import-result">
-          <CardHeader>
-            <CardTitle className="font-heading text-xl text-primary">{t("resultTitle")}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+        <div className="glass glow-neutral rounded-xl p-6" data-testid="import-result">
+          <h2 className="font-heading text-xl text-primary mb-4">{t("resultTitle")}</h2>
+          <div className="flex flex-col gap-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="import-name">Name</Label>
@@ -357,8 +354,8 @@ export default function ImportCharacterPage() {
                 {saving ? t("creating") : t("createCharacter")}
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {error && (

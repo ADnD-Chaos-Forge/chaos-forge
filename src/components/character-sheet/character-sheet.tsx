@@ -385,7 +385,10 @@ export function CharacterSheet({
         </TabsList>
 
         {/* Stats Tab */}
-        <TabsContent value="stats" className="flex flex-col gap-6">
+        <TabsContent
+          value="stats"
+          className="glass glow-neutral rounded-xl p-4 flex flex-col gap-6"
+        >
           {/* Personal Details */}
           <details data-testid="personal-details-section">
             <summary className="cursor-pointer font-heading text-lg">
@@ -898,7 +901,10 @@ export function CharacterSheet({
         </TabsContent>
 
         {/* Combat Tab */}
-        <TabsContent value="combat" className="flex flex-col gap-6">
+        <TabsContent
+          value="combat"
+          className="glass glow-neutral rounded-xl p-4 flex flex-col gap-6"
+        >
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div className="rounded-md border border-border p-4 text-center">
               <div className="text-xs text-muted-foreground">{t("thac0")}</div>
@@ -975,7 +981,7 @@ export function CharacterSheet({
         </TabsContent>
 
         {/* Notes Tab */}
-        <TabsContent value="notes">
+        <TabsContent value="notes" className="glass glow-neutral rounded-xl p-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="notes">{t("notes")}</Label>
             <textarea
@@ -989,7 +995,7 @@ export function CharacterSheet({
           </div>
         </TabsContent>
 
-        <TabsContent value="equipment">
+        <TabsContent value="equipment" className="glass glow-neutral rounded-xl p-4">
           <TabEquipment
             characterId={character.id}
             userId={userId}
@@ -1011,7 +1017,7 @@ export function CharacterSheet({
         </TabsContent>
 
         {showSpells && primaryClassId && (
-          <TabsContent value="spells">
+          <TabsContent value="spells" className="glass glow-neutral rounded-xl p-4">
             <TabSpells
               characterId={character.id}
               userId={userId}
@@ -1028,7 +1034,7 @@ export function CharacterSheet({
         )}
 
         {showThiefSkills && (
-          <TabsContent value="thief-skills">
+          <TabsContent value="thief-skills" className="glass glow-neutral rounded-xl p-4">
             <TabThiefSkills
               character={character}
               raceId={(character.race_id as RaceId) ?? "human"}
@@ -1039,7 +1045,7 @@ export function CharacterSheet({
           </TabsContent>
         )}
 
-        <TabsContent value="proficiencies">
+        <TabsContent value="proficiencies" className="glass glow-neutral rounded-xl p-4">
           <TabProficiencies
             characterId={character.id}
             userId={userId}
