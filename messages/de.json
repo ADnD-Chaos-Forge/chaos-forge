@@ -500,6 +500,19 @@
     "formats": "JPG, PNG oder WebP (max. 2 MB)",
     "uploading": "Lade hoch..."
   },
+  "sharing": {
+    "title": "Teilen: {name}",
+    "shareButton": "Teilen",
+    "publicLabel": "Öffentlich",
+    "publicDescription": "Für alle Spieler sichtbar machen",
+    "sharedWith": "Geteilt mit",
+    "noShares": "Noch mit niemandem geteilt.",
+    "selectUser": "Spieler auswählen...",
+    "badgePrivate": "Privat",
+    "badgePublic": "Öffentlich",
+    "badgeShared": "Geteilt",
+    "sharedBy": "Geteilt von {player}"
+  },
   "spellbook": {
     "title": "Zauberbuch",
     "back": "Zurück zum Charakter",
