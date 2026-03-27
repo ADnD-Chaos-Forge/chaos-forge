@@ -20,7 +20,11 @@ const NAV_ITEMS = [
   { href: "/characters/import", icon: FileUp, labelKey: "import" as const, testId: "nav-import" },
 ];
 
-export function AppNav() {
+interface AppNavProps {
+  userEmail?: string;
+}
+
+export function AppNav({ userEmail }: AppNavProps) {
   const t = useTranslations("nav");
   const pathname = usePathname();
 
@@ -52,6 +56,11 @@ export function AppNav() {
           })}
         </div>
         <div className="flex items-center gap-2">
+          {userEmail && (
+            <span className="text-xs text-muted-foreground" data-testid="nav-user-email">
+              {userEmail}
+            </span>
+          )}
           <LocaleToggle />
           <ThemeToggle />
           <LogoutButton />
