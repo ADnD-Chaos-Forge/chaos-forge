@@ -347,7 +347,7 @@ export function CharacterSheet({
 
       <Tabs defaultValue="stats" className="w-full">
         <TabsList
-          className="no-scrollbar w-full justify-start overflow-x-auto scroll-smooth"
+          className="no-scrollbar flex w-full !max-w-full flex-nowrap justify-start overflow-x-auto overflow-y-hidden scroll-smooth"
           data-testid="sheet-tabs"
         >
           <TabsTrigger value="stats" data-testid="tab-trigger-stats">
