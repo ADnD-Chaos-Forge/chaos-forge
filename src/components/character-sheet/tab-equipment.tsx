@@ -5,13 +5,9 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  calculateEncumbrance,
-  getEncumbranceLabel,
-  calculateAC,
-  getMovementRate,
-} from "@/lib/rules/equipment";
+import { calculateEncumbrance, calculateAC, getMovementRate } from "@/lib/rules/equipment";
 import { useTranslations } from "next-intl";
+import { lbsToKg } from "@/lib/utils/units";
 import type {
   CharacterEquipmentWithDetails,
   WeaponRow,
@@ -31,6 +27,7 @@ interface TabEquipmentProps {
   inventory: CharacterInventoryWithDetails[];
   allGeneralItems: GeneralItemRow[];
   baseMovement: number;
+  readOnly?: boolean;
 }
 
 export function TabEquipment({
@@ -44,6 +41,7 @@ export function TabEquipment({
   inventory,
   allGeneralItems,
   baseMovement,
+  readOnly = false,
 }: TabEquipmentProps) {
   const router = useRouter();
   const t = useTranslations("equipment");
@@ -83,7 +81,14 @@ export function TabEquipment({
   const totalWeight = equipmentWeight + inventoryWeight;
 
   const encumbranceLevel = calculateEncumbrance(totalWeight, strWeightAllow);
-  const encumbranceLabel = getEncumbranceLabel(encumbranceLevel);
+  const encumbranceLabelMap: Record<string, string> = {
+    unencumbered: t("encUnencumbered"),
+    light: t("encLight"),
+    moderate: t("encModerate"),
+    heavy: t("encHeavy"),
+    severe: t("encSevere"),
+  };
+  const encumbranceLabel = encumbranceLabelMap[encumbranceLevel];
 
   const equippedArmor = equipment.find(
     (e) => e.armor && e.equipped && e.armor.name.toLowerCase() !== "schild"
@@ -312,9 +317,9 @@ export function TabEquipment({
         <div className="rounded-md border border-border p-4 text-center">
           <div className="text-xs text-muted-foreground">{t("totalWeight")}</div>
           <div className="font-heading text-3xl text-primary" data-testid="equipment-total-weight">
-            {totalWeight}
+            {lbsToKg(totalWeight)}
           </div>
-          <div className="text-xs text-muted-foreground">{t("pounds")}</div>
+          <div className="text-xs text-muted-foreground">kg</div>
         </div>
         <div className="rounded-md border border-border p-4 text-center">
           <div className="text-xs text-muted-foreground">{t("encumbrance")}</div>
@@ -322,7 +327,7 @@ export function TabEquipment({
             <Badge variant={getEncumbranceBadgeVariant(encumbranceLevel)}>{encumbranceLabel}</Badge>
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
-            {t("maxWeight", { weight: strWeightAllow })}
+            {t("maxWeight", { weight: lbsToKg(strWeightAllow) })}
           </div>
         </div>
       </div>
@@ -355,15 +360,17 @@ export function TabEquipment({
                     </span>
                   )}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={loading}
-                  onClick={() => toggleEquip(item)}
-                  data-testid={`unequip-btn-${item.id}`}
-                >
-                  {t("unequip")}
-                </Button>
+                {!readOnly && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={loading}
+                    onClick={() => toggleEquip(item)}
+                    data-testid={`unequip-btn-${item.id}`}
+                  >
+                    {t("unequip")}
+                  </Button>
+                )}
               </div>
             ))}
           </div>
@@ -374,14 +381,16 @@ export function TabEquipment({
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-heading text-lg">{t("inventory")}</h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowAddDialog(true)}
-            data-testid="add-item-btn"
-          >
-            {t("addItem")}
-          </Button>
+          {!readOnly && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAddDialog(true)}
+              data-testid="add-item-btn"
+            >
+              {t("addItem")}
+            </Button>
+          )}
         </div>
         {inventoryItems.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("noItems")}</p>
@@ -409,29 +418,39 @@ export function TabEquipment({
                     <td className="py-2 pr-4">
                       <Badge variant="outline">{getItemType(item)}</Badge>
                     </td>
-                    <td className="py-2 pr-4 text-right font-mono">{getItemWeight(item)}</td>
+                    <td className="py-2 pr-4 text-right font-mono">
+                      {lbsToKg(getItemWeight(item))} kg
+                    </td>
                     <td className="py-2 pr-4 text-right font-mono">{item.quantity}</td>
                     <td className="py-2 pr-4 text-center">
-                      <Button
-                        variant={item.equipped ? "default" : "outline"}
-                        size="xs"
-                        disabled={loading}
-                        onClick={() => toggleEquip(item)}
-                        data-testid={`equip-toggle-${item.id}`}
-                      >
-                        {item.equipped ? t("equipped") : t("equip")}
-                      </Button>
+                      {!readOnly ? (
+                        <Button
+                          variant={item.equipped ? "default" : "outline"}
+                          size="xs"
+                          disabled={loading}
+                          onClick={() => toggleEquip(item)}
+                          data-testid={`equip-toggle-${item.id}`}
+                        >
+                          {item.equipped ? t("equipped") : t("equip")}
+                        </Button>
+                      ) : (
+                        <Badge variant={item.equipped ? "default" : "outline"}>
+                          {item.equipped ? t("equipped") : "—"}
+                        </Badge>
+                      )}
                     </td>
                     <td className="py-2 text-right">
-                      <Button
-                        variant="destructive"
-                        size="xs"
-                        disabled={loading}
-                        onClick={() => removeItem(item.id)}
-                        data-testid={`remove-item-${item.id}`}
-                      >
-                        {t("remove")}
-                      </Button>
+                      {!readOnly && (
+                        <Button
+                          variant="destructive"
+                          size="xs"
+                          disabled={loading}
+                          onClick={() => removeItem(item.id)}
+                          data-testid={`remove-item-${item.id}`}
+                        >
+                          {t("remove")}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -442,7 +461,7 @@ export function TabEquipment({
       </div>
 
       {/* Add Item Dialog (simple overlay) */}
-      {showAddDialog && (
+      {showAddDialog && !readOnly && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
           data-testid="add-item-dialog"
@@ -542,8 +561,8 @@ export function TabEquipment({
                           <div className="font-medium">{weapon.name}</div>
                           <div className="text-xs text-muted-foreground">
                             {t("damage")}: {weapon.damage_sm}/{weapon.damage_l} | {t("speed")}:{" "}
-                            {weapon.speed} | {t("weight")}: {weapon.weight} | {t("cost")}:{" "}
-                            {weapon.cost_gp} GP
+                            {weapon.speed} | {t("weight")}: {lbsToKg(weapon.weight)} kg |{" "}
+                            {t("cost")}: {weapon.cost_gp} GP
                           </div>
                         </div>
                         <Button
@@ -689,8 +708,8 @@ export function TabEquipment({
                         <div>
                           <div className="font-medium">{armor.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {t("acValue")}: {armor.ac} | {t("weight")}: {armor.weight} | {t("cost")}
-                            : {armor.cost_gp} GP
+                            {t("acValue")}: {armor.ac} | {t("weight")}: {lbsToKg(armor.weight)} kg |{" "}
+                            {t("cost")}: {armor.cost_gp} GP
                           </div>
                         </div>
                         <Button
@@ -818,7 +837,9 @@ export function TabEquipment({
                       <td className="py-2 text-center font-mono">{item.weapon!.damage_sm}</td>
                       <td className="py-2 text-center font-mono">{item.weapon!.damage_l}</td>
                       <td className="py-2 text-center font-mono">{item.weapon!.speed}</td>
-                      <td className="py-2 text-center font-mono">{item.weapon!.weight}</td>
+                      <td className="py-2 text-center font-mono">
+                        {lbsToKg(item.weapon!.weight)} kg
+                      </td>
                     </tr>
                   ))}
               </tbody>
@@ -881,13 +902,15 @@ export function TabEquipment({
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-heading text-lg">{t("inventoryTitle")}</h3>
-          <Button
-            size="sm"
-            onClick={() => setShowAddInventory(true)}
-            data-testid="add-inventory-btn"
-          >
-            {t("addItem")}
-          </Button>
+          {!readOnly && (
+            <Button
+              size="sm"
+              onClick={() => setShowAddInventory(true)}
+              data-testid="add-inventory-btn"
+            >
+              {t("addItem")}
+            </Button>
+          )}
         </div>
 
         {inventory.length === 0 ? (
@@ -903,22 +926,31 @@ export function TabEquipment({
                 <div className="flex items-center gap-3">
                   <span className="font-medium">{inv.item?.name ?? inv.custom_name ?? "—"}</span>
                   <span className="text-xs text-muted-foreground">
-                    {inv.item ? `${inv.item.weight} lbs` : ""}
+                    {inv.item ? `${lbsToKg(inv.item.weight)} kg` : ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min={1}
-                    value={inv.quantity}
-                    onChange={(e) =>
-                      updateInventoryQuantity(inv.id, Math.max(1, parseInt(e.target.value) || 1))
-                    }
-                    className="w-14 rounded border border-input bg-input px-2 py-1 text-center text-sm"
-                  />
-                  <Button variant="ghost" size="sm" onClick={() => removeInventoryItem(inv.id)}>
-                    ✕
-                  </Button>
+                  {!readOnly ? (
+                    <>
+                      <input
+                        type="number"
+                        min={1}
+                        value={inv.quantity}
+                        onChange={(e) =>
+                          updateInventoryQuantity(
+                            inv.id,
+                            Math.max(1, parseInt(e.target.value) || 1)
+                          )
+                        }
+                        className="w-14 rounded border border-input bg-input px-2 py-1 text-center text-sm"
+                      />
+                      <Button variant="ghost" size="sm" onClick={() => removeInventoryItem(inv.id)}>
+                        ✕
+                      </Button>
+                    </>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">x{inv.quantity}</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -926,7 +958,7 @@ export function TabEquipment({
         )}
 
         {/* Add Inventory Dialog */}
-        {showAddInventory && (
+        {showAddInventory && !readOnly && (
           <div className="mt-3 rounded-md border border-border p-4">
             <input
               type="text"
@@ -952,7 +984,7 @@ export function TabEquipment({
                   >
                     <span>{item.name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {item.weight > 0 ? `${item.weight} lbs` : ""}{" "}
+                      {item.weight > 0 ? `${lbsToKg(item.weight)} kg` : ""}{" "}
                       {item.cost_gp > 0 ? `${item.cost_gp} GP` : ""}
                     </span>
                   </button>

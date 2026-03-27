@@ -12,11 +12,13 @@ import { Spinner } from "@/components/ui/spinner";
 export default function LoginPage() {
   const t = useTranslations("login");
   const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [step, setStep] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
@@ -45,23 +47,62 @@ export default function LoginPage() {
         window.location.href = "/characters";
         return;
       }
-      // Not a test user — fall through to normal Magic Link
 
+      // Send OTP code (no emailRedirectTo = sends 6-digit code instead of magic link)
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+      const { error: otpError } = await supabase.auth.signInWithOtp({ email });
 
-      if (error) {
-        setError(error.message);
+      if (otpError) {
+        setError(otpError.message);
       } else {
         setMessage(t("success"));
+        setStep("code");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ein unbekannter Fehler ist aufgetreten.");
+      setError(err instanceof Error ? err.message : "Unknown error");
+    }
+
+    setLoading(false);
+  }
+
+  async function handleVerifyCode(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email,
+        token: code,
+        type: "email",
+      });
+
+      if (verifyError) {
+        setError(t("invalidCode"));
+      } else {
+        window.location.href = "/characters";
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    }
+
+    setLoading(false);
+  }
+
+  async function handleResend() {
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+    setCode("");
+
+    const supabase = createClient();
+    const { error: resendError } = await supabase.auth.signInWithOtp({ email });
+
+    if (resendError) {
+      setError(resendError.message);
+    } else {
+      setMessage(t("success"));
     }
 
     setLoading(false);
@@ -72,43 +113,105 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="font-heading text-2xl text-primary">{t("title")}</CardTitle>
-          <CardDescription>{t("description")}</CardDescription>
+          <CardDescription>
+            {step === "email" ? t("description") : t("enterCode", { email })}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="email">{t("emailLabel")}</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder={t("emailPlaceholder")}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                data-testid="login-email-input"
-              />
-            </div>
-            <Button type="submit" disabled={loading} data-testid="login-submit-button">
-              {loading ? (
-                <>
-                  <Spinner className="mr-2" />
-                  {t("submitting")}
-                </>
-              ) : (
-                t("submit")
-              )}
-            </Button>
-            {message && (
-              <p className="text-sm text-green-500" data-testid="login-success-message">
-                {message}
-              </p>
-            )}
-            {error && (
-              <p className="text-sm text-destructive" data-testid="login-error-message">
-                {error}
-              </p>
-            )}
-          </form>
+          {step === "email" ? (
+            <form onSubmit={handleSendCode} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="email">{t("emailLabel")}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder={t("emailPlaceholder")}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  data-testid="login-email-input"
+                />
+              </div>
+              <Button type="submit" disabled={loading} data-testid="login-submit-button">
+                {loading ? (
+                  <>
+                    <Spinner className="mr-2" />
+                    {t("submitting")}
+                  </>
+                ) : (
+                  t("submit")
+                )}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyCode} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="code">{t("codeLabel")}</Label>
+                <Input
+                  id="code"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={8}
+                  placeholder={t("codePlaceholder")}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                  className="text-center font-mono text-2xl tracking-[0.3em]"
+                  autoFocus
+                  required
+                  data-testid="login-code-input"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading || code.length < 6}
+                data-testid="login-verify-button"
+              >
+                {loading ? (
+                  <>
+                    <Spinner className="mr-2" />
+                    {t("verifyingCode")}
+                  </>
+                ) : (
+                  t("verifyCode")
+                )}
+              </Button>
+              <div className="flex justify-between text-sm">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={loading}
+                  className="text-primary hover:underline"
+                  data-testid="login-resend-button"
+                >
+                  {t("resendCode")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("email");
+                    setCode("");
+                    setError(null);
+                    setMessage(null);
+                  }}
+                  className="text-muted-foreground hover:underline"
+                >
+                  {t("changeEmail")}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {message && (
+            <p className="mt-4 text-sm text-green-500" data-testid="login-success-message">
+              {message}
+            </p>
+          )}
+          {error && (
+            <p className="mt-4 text-sm text-destructive" data-testid="login-error-message">
+              {error}
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

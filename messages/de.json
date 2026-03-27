@@ -25,12 +25,20 @@
   },
   "login": {
     "title": "Willkommen, Abenteurer",
-    "description": "Melde dich mit deiner E-Mail an — wir senden dir einen magischen Link.",
+    "description": "Melde dich mit deiner E-Mail an — wir senden dir einen Bestätigungscode.",
     "emailLabel": "E-Mail",
     "emailPlaceholder": "held@chaosrpg.de",
-    "submit": "Magic Link senden",
-    "submitting": "Sende Magic Link...",
-    "success": "Prüfe dein Postfach — wir haben dir einen Magic Link gesendet!",
+    "submit": "Code senden",
+    "submitting": "Sende Code...",
+    "success": "Code gesendet! Prüfe dein Postfach.",
+    "enterCode": "Gib den Bestätigungscode ein, den wir an {email} gesendet haben.",
+    "codeLabel": "Bestätigungscode",
+    "codePlaceholder": "00000000",
+    "verifyCode": "Code bestätigen",
+    "verifyingCode": "Prüfe Code...",
+    "invalidCode": "Ungültiger oder abgelaufener Code. Bitte erneut versuchen.",
+    "resendCode": "Code erneut senden",
+    "changeEmail": "Andere E-Mail verwenden",
     "supabaseNotConfigured": "Supabase ist nicht konfiguriert. Bitte .env.local mit NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_ANON_KEY anlegen."
   },
   "nav": {
@@ -165,7 +173,13 @@
     "modHpPerLevel": "HP/Stufe",
     "modLanguages": "Sprachen",
     "modMagDef": "Mag.Abwehr",
-    "modHenchmen": "Gefolgsleute"
+    "modHenchmen": "Gefolgsleute",
+    "abilityModStr": "Treffer {hit}, Schaden {dmg}",
+    "abilityModDex": "RK {ac}",
+    "abilityModCon": "HP {hp}/Stufe",
+    "abilityModInt": "{count} Sprachen",
+    "abilityModWis": "Mag.Abwehr {adj}",
+    "abilityModCha": "{count} Gefolgsleute"
   },
   "equipment": {
     "title": "Ausrüstung",
@@ -202,8 +216,8 @@
     "meleAndRanged": "Nah-/Fernkampf",
     "noArmor": "Keine Rüstung",
     "shield": "Schild",
-    "pounds": "Pfund",
-    "maxWeight": "Max. {weight} Pfund",
+    "pounds": "kg",
+    "maxWeight": "Max. {weight} kg",
     "noEquipped": "Keine Gegenstände ausgerüstet.",
     "damage": "Schaden",
     "itemLabel": "Gegenstand",
@@ -217,7 +231,12 @@
     "noArmorAvailable": "Keine Rüstungen verfügbar.",
     "searchPlaceholder": "Suche nach Name...",
     "cancel": "Abbrechen",
-    "base": "Basis"
+    "base": "Basis",
+    "encUnencumbered": "Unbelastet",
+    "encLight": "Leicht belastet",
+    "encModerate": "Mäßig belastet",
+    "encHeavy": "Schwer belastet",
+    "encSevere": "Überbelastet"
   },
   "spells": {
     "title": "Zauber",
@@ -240,7 +259,12 @@
     "notACaster": "Diese Klasse kann keine Zauber wirken.",
     "castingTime": "Zauberzeit",
     "savingThrow": "Rettungswurf",
-    "removeSpell": "Entfernen"
+    "removeSpell": "Entfernen",
+    "learnSpellError": "Zauber konnte nicht erlernt werden. Du hast keine Berechtigung, diesen Charakter zu bearbeiten.",
+    "spellPoints": "Zauberpunkte",
+    "totalPoints": "Zauberpunkte gesamt",
+    "spellCosts": "Kosten pro Stufe",
+    "spellSlots": "Zauberplätze"
   },
   "proficiencies": {
     "title": "Fertigkeiten",
@@ -265,7 +289,8 @@
     "suggestedLanguages": "Vorgeschlagene Sprachen",
     "noMatchingNwp": "Keine passenden Fertigkeiten gefunden.",
     "createAndAdd": "Erstellen & Hinzufügen",
-    "nwpNamePlaceholder": "Name der Fertigkeit"
+    "nwpNamePlaceholder": "Name der Fertigkeit",
+    "addLanguageError": "Sprache konnte nicht hinzugefügt werden. Du hast keine Berechtigung, diesen Charakter zu bearbeiten."
   },
   "sessions": {
     "title": "Die Chronik des Chaos",
@@ -402,7 +427,6 @@
     "readLang": "Sprachen",
     "backstab": "Hinterhalt",
     "equipment": "Ausrüstung",
-    "weight": "Gewicht",
     "spellbook": "Zauberbuch",
     "proficiencies": "Fertigkeiten",
     "weaponProf": "Waffenfertigkeiten",
@@ -415,7 +439,19 @@
     "armorType": "Rüstung",
     "equippedStatus": "Angelegt",
     "inventoryStatus": "Inventar",
-    "specialization": "Spezialisierung"
+    "specialization": "Spezialisierung",
+    "stamina": "Ausdauer",
+    "muscle": "Muskelkraft",
+    "aim": "Zielen",
+    "balance": "Balance",
+    "health": "Gesundheit",
+    "fitness": "Fitness",
+    "reason": "Verstand",
+    "knowledge": "Wissen",
+    "intuition": "Intuition",
+    "willpower": "Willenskraft",
+    "leadership": "Führung",
+    "appearance": "Erscheinung"
   },
   "theme": {
     "toggleDark": "Zum dunklen Modus wechseln",
@@ -462,5 +498,24 @@
     "dropzone": "Bild hierher ziehen oder klicken zum Auswählen",
     "formats": "JPG, PNG oder WebP (max. 2 MB)",
     "uploading": "Lade hoch..."
+  },
+  "spellbook": {
+    "title": "Zauberbuch",
+    "back": "Zurück zum Charakter",
+    "learnSpell": "Zauber lernen",
+    "searchPlaceholder": "Zauber suchen...",
+    "filterAll": "Alle",
+    "filterPrepared": "Vorbereitet",
+    "prepare": "Vorbereiten",
+    "unprepare": "Absetzen",
+    "remove": "Entfernen",
+    "noSpells": "Noch keine Zauber erlernt.",
+    "learnFirst": "Lerne deinen ersten Zauber!",
+    "spellDetails": "Details",
+    "learnDialogTitle": "Zauber erlernen",
+    "learnSearch": "Zauber suchen...",
+    "learnButton": "Lernen",
+    "closeDialog": "Schließen",
+    "spellPoints": "Zauberpunkte"
   }
 }

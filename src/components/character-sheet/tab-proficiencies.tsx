@@ -21,6 +21,7 @@ import type {
   CharacterNWPWithDetails,
   NonweaponProficiencyRow,
   CharacterLanguageRow,
+  WeaponRow,
 } from "@/lib/supabase/types";
 
 const NWP_GROUP_FILTER_KEYS = ["all", "general", "warrior", "priest", "rogue", "wizard"] as const;
@@ -79,7 +80,9 @@ interface TabProficienciesProps {
   weaponProficiencies: CharacterWeaponProficiencyRow[];
   nonweaponProficiencies: CharacterNWPWithDetails[];
   allNonweaponProficiencies: NonweaponProficiencyRow[];
+  allWeapons: WeaponRow[];
   languages: CharacterLanguageRow[];
+  readOnly?: boolean;
 }
 
 export function TabProficiencies({
@@ -93,15 +96,19 @@ export function TabProficiencies({
   weaponProficiencies,
   nonweaponProficiencies,
   allNonweaponProficiencies,
+  allWeapons,
   languages,
+  readOnly = false,
 }: TabProficienciesProps) {
   const router = useRouter();
   const t = useTranslations("proficiencies");
   const tcom = useTranslations("common");
   const tg = useTranslations("nwpGroups");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [newWeaponName, setNewWeaponName] = useState("");
   const [newWeaponSpecialized, setNewWeaponSpecialized] = useState(false);
+  const [weaponDropdownOpen, setWeaponDropdownOpen] = useState(false);
   const [nwpSearchQuery, setNwpSearchQuery] = useState("");
   const [nwpGroupFilter, setNwpGroupFilter] = useState<string>("all");
   const [showCustomNwpForm, setShowCustomNwpForm] = useState(false);
@@ -124,15 +131,19 @@ export function TabProficiencies({
     0
   );
 
-  // Filter NWPs: general group is always accessible, plus the character's class group
-  const accessibleGroups = ["general", classGroup];
+  // All NWP groups accessible (house rule: no restrictions, only warnings)
   const availableNwps = useMemo(() => {
     return allNonweaponProficiencies.filter(
-      (nwp) =>
-        accessibleGroups.includes(nwp.group_type) &&
-        !nonweaponProficiencies.some((existing) => existing.proficiency_id === nwp.id)
+      (nwp) => !nonweaponProficiencies.some((existing) => existing.proficiency_id === nwp.id)
     );
-  }, [allNonweaponProficiencies, nonweaponProficiencies, accessibleGroups]);
+  }, [allNonweaponProficiencies, nonweaponProficiencies]);
+
+  // Filtered weapons for autocomplete dropdown
+  const filteredWeapons = useMemo(() => {
+    const q = newWeaponName.trim().toLowerCase();
+    if (!q) return allWeapons;
+    return allWeapons.filter((w) => w.name.toLowerCase().includes(q));
+  }, [allWeapons, newWeaponName]);
 
   // Filtered NWPs by search query and group filter
   const filteredAvailableNwps = useMemo(() => {
@@ -261,11 +272,18 @@ export function TabProficiencies({
     if (allLanguageNames.includes(trimmed)) return;
 
     setLoading(true);
+    setError(null);
     const supabase = createClient();
-    await supabase.from("character_languages").insert({
+    const { error: insertError } = await supabase.from("character_languages").insert({
       character_id: characterId,
       language_name: trimmed,
     });
+    if (insertError) {
+      console.error("Failed to add language:", insertError);
+      setError(t("addLanguageError"));
+      setLoading(false);
+      return;
+    }
     setNewLanguage("");
     setLoading(false);
     router.refresh();
@@ -281,6 +299,14 @@ export function TabProficiencies({
 
   return (
     <div className="flex flex-col gap-6" data-testid="tab-proficiencies">
+      {error && (
+        <div
+          className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
+          data-testid="proficiencies-error"
+        >
+          {error}
+        </div>
+      )}
       {/* Weapon Proficiencies */}
       <div data-testid="weapon-proficiencies-section">
         <div className="mb-3 flex items-center justify-between">
@@ -309,47 +335,85 @@ export function TabProficiencies({
                     <Badge data-testid={`weapon-specialized-${wp.id}`}>{t("specialization")}</Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  {showSpecialization && (
-                    <label className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <input
-                        type="checkbox"
-                        checked={wp.specialization}
-                        onChange={() => toggleSpecialization(wp)}
-                        disabled={loading}
-                        data-testid={`weapon-specialization-toggle-${wp.id}`}
-                      />
-                      {t("specialization")}
-                    </label>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeWeaponProficiency(wp.id)}
-                    disabled={loading}
-                    data-testid={`weapon-remove-${wp.id}`}
-                  >
-                    {tcom("remove")}
-                  </Button>
-                </div>
+                {!readOnly && (
+                  <div className="flex items-center gap-2">
+                    {showSpecialization && (
+                      <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={wp.specialization}
+                          onChange={() => toggleSpecialization(wp)}
+                          disabled={loading}
+                          data-testid={`weapon-specialization-toggle-${wp.id}`}
+                        />
+                        {t("specialization")}
+                      </label>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeWeaponProficiency(wp.id)}
+                      disabled={loading}
+                      data-testid={`weapon-remove-${wp.id}`}
+                    >
+                      {tcom("remove")}
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
 
         {/* Add weapon */}
-        {usedWeaponSlots < weaponSlots && (
+        {!readOnly && usedWeaponSlots < weaponSlots && (
           <div className="flex items-center gap-2" data-testid="add-weapon-proficiency">
-            <Input
-              placeholder={t("weaponName")}
-              value={newWeaponName}
-              onChange={(e) => setNewWeaponName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") addWeaponProficiency();
-              }}
-              className="flex-1"
-              data-testid="weapon-name-input"
-            />
+            <div className="relative flex-1">
+              <Input
+                placeholder={t("weaponName")}
+                value={newWeaponName}
+                onChange={(e) => {
+                  setNewWeaponName(e.target.value);
+                  setWeaponDropdownOpen(true);
+                }}
+                onFocus={() => setWeaponDropdownOpen(true)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setWeaponDropdownOpen(false);
+                    addWeaponProficiency();
+                  }
+                  if (e.key === "Escape") setWeaponDropdownOpen(false);
+                }}
+                className="w-full"
+                data-testid="weapon-name-input"
+                autoComplete="off"
+              />
+              {weaponDropdownOpen && filteredWeapons.length > 0 && (
+                <div
+                  className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-border bg-background shadow-lg"
+                  data-testid="weapon-dropdown"
+                >
+                  {filteredWeapons.map((weapon) => (
+                    <button
+                      key={weapon.id}
+                      type="button"
+                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-muted"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setNewWeaponName(weapon.name);
+                        setWeaponDropdownOpen(false);
+                      }}
+                      data-testid={`weapon-option-${weapon.id}`}
+                    >
+                      <span className="font-medium">{weapon.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {weapon.damage_sm}/{weapon.damage_l}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             {showSpecialization && (
               <label className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
                 <input
@@ -358,11 +422,14 @@ export function TabProficiencies({
                   onChange={(e) => setNewWeaponSpecialized(e.target.checked)}
                   data-testid="weapon-specialization-checkbox"
                 />
-                Spezialisierung
+                {t("specialization")}
               </label>
             )}
             <Button
-              onClick={addWeaponProficiency}
+              onClick={() => {
+                setWeaponDropdownOpen(false);
+                addWeaponProficiency();
+              }}
               disabled={loading || !newWeaponName.trim()}
               data-testid="weapon-add-button"
             >
@@ -407,15 +474,17 @@ export function TabProficiencies({
                       {t("abilityCheck")}: {abilityTarget}
                     </span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeNonweaponProficiency(nwp.id)}
-                    disabled={loading}
-                    data-testid={`nwp-remove-${nwp.id}`}
-                  >
-                    {tcom("remove")}
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeNonweaponProficiency(nwp.id)}
+                      disabled={loading}
+                      data-testid={`nwp-remove-${nwp.id}`}
+                    >
+                      {tcom("remove")}
+                    </Button>
+                  )}
                 </div>
               );
             })}
@@ -423,7 +492,7 @@ export function TabProficiencies({
         )}
 
         {/* Add NWP - searchable list */}
-        {usedNwpSlots < nwpSlots && (
+        {!readOnly && usedNwpSlots < nwpSlots && (
           <div data-testid="add-nwp">
             {/* Search input */}
             <input
@@ -647,22 +716,24 @@ export function TabProficiencies({
                 data-testid={`language-${lang.language_name}`}
               >
                 <span className="text-sm font-medium">{lang.language_name}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeLanguage(lang.id)}
-                  disabled={loading}
-                  data-testid={`language-remove-${lang.language_name}`}
-                >
-                  Entfernen
-                </Button>
+                {!readOnly && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeLanguage(lang.id)}
+                    disabled={loading}
+                    data-testid={`language-remove-${lang.language_name}`}
+                  >
+                    Entfernen
+                  </Button>
+                )}
               </div>
             ))}
           </div>
         )}
 
         {/* Add language */}
-        {languages.length < maxLanguages && (
+        {!readOnly && languages.length < maxLanguages && (
           <div data-testid="add-language">
             <div className="mb-3 flex items-center gap-2">
               <Input

@@ -18,6 +18,7 @@ interface TabThiefSkillsProps {
   raceId: RaceId;
   level: number;
   onUpdate: (field: keyof CharacterRow, value: number) => void;
+  readOnly?: boolean;
 }
 
 const SKILL_FIELDS: {
@@ -34,7 +35,13 @@ const SKILL_FIELDS: {
   { key: "readLanguages", dbField: "thief_read_languages", i18nKey: "readLanguages" },
 ];
 
-export function TabThiefSkills({ character, raceId, level, onUpdate }: TabThiefSkillsProps) {
+export function TabThiefSkills({
+  character,
+  raceId,
+  level,
+  onUpdate,
+  readOnly = false,
+}: TabThiefSkillsProps) {
   const t = useTranslations("sheet");
   const baseSkills = getBaseThiefSkills(level);
   const racialAdj = getRacialThiefAdjustments(raceId);
@@ -67,6 +74,7 @@ export function TabThiefSkills({ character, raceId, level, onUpdate }: TabThiefS
                   onChange={(e) =>
                     onUpdate(dbField, Math.max(0, Math.min(99, parseInt(e.target.value) || 0)))
                   }
+                  disabled={readOnly}
                   className="w-20 text-center font-mono text-lg"
                   data-testid={`thief-input-${key}`}
                 />

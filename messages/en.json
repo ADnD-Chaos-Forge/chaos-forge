@@ -25,12 +25,20 @@
   },
   "login": {
     "title": "Welcome, Adventurer",
-    "description": "Sign in with your email — we'll send you a magic link.",
+    "description": "Sign in with your email — we'll send you a verification code.",
     "emailLabel": "Email",
     "emailPlaceholder": "hero@chaosrpg.com",
-    "submit": "Send Magic Link",
-    "submitting": "Sending Magic Link...",
-    "success": "Check your inbox — we've sent you a magic link!",
+    "submit": "Send Code",
+    "submitting": "Sending Code...",
+    "success": "Code sent! Check your inbox.",
+    "enterCode": "Enter the verification code we sent to {email}.",
+    "codeLabel": "Verification Code",
+    "codePlaceholder": "00000000",
+    "verifyCode": "Verify Code",
+    "verifyingCode": "Verifying...",
+    "invalidCode": "Invalid or expired code. Please try again.",
+    "resendCode": "Resend Code",
+    "changeEmail": "Use a different email",
     "supabaseNotConfigured": "Supabase is not configured. Please create .env.local with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
   },
   "nav": {
@@ -165,7 +173,13 @@
     "modHpPerLevel": "HP/Level",
     "modLanguages": "Languages",
     "modMagDef": "Mag. Defense",
-    "modHenchmen": "Henchmen"
+    "modHenchmen": "Henchmen",
+    "abilityModStr": "Hit {hit}, Damage {dmg}",
+    "abilityModDex": "AC {ac}",
+    "abilityModCon": "HP {hp}/Level",
+    "abilityModInt": "{count} Languages",
+    "abilityModWis": "Mag. Defense {adj}",
+    "abilityModCha": "{count} Henchmen"
   },
   "equipment": {
     "title": "Equipment",
@@ -202,8 +216,8 @@
     "meleAndRanged": "Melee/Ranged",
     "noArmor": "No armor",
     "shield": "Shield",
-    "pounds": "lbs",
-    "maxWeight": "Max. {weight} lbs",
+    "pounds": "kg",
+    "maxWeight": "Max. {weight} kg",
     "noEquipped": "No items equipped.",
     "damage": "Damage",
     "itemLabel": "Item",
@@ -217,7 +231,12 @@
     "noArmorAvailable": "No armor available.",
     "searchPlaceholder": "Search by name...",
     "cancel": "Cancel",
-    "base": "Base"
+    "base": "Base",
+    "encUnencumbered": "Unencumbered",
+    "encLight": "Lightly encumbered",
+    "encModerate": "Moderately encumbered",
+    "encHeavy": "Heavily encumbered",
+    "encSevere": "Severely encumbered"
   },
   "spells": {
     "title": "Spells",
@@ -240,7 +259,12 @@
     "notACaster": "This class cannot cast spells.",
     "castingTime": "Casting Time",
     "savingThrow": "Saving Throw",
-    "removeSpell": "Remove"
+    "removeSpell": "Remove",
+    "learnSpellError": "Failed to learn spell. You may not have permission to modify this character.",
+    "spellPoints": "Spell Points",
+    "totalPoints": "Total Spell Points",
+    "spellCosts": "Cost per Level",
+    "spellSlots": "Spell Slots"
   },
   "proficiencies": {
     "title": "Proficiencies",
@@ -265,7 +289,8 @@
     "suggestedLanguages": "Suggested Languages",
     "noMatchingNwp": "No matching proficiencies found.",
     "createAndAdd": "Create & Add",
-    "nwpNamePlaceholder": "Proficiency name"
+    "nwpNamePlaceholder": "Proficiency name",
+    "addLanguageError": "Failed to add language. You may not have permission to modify this character."
   },
   "sessions": {
     "title": "The Chronicle of Chaos",
@@ -402,7 +427,6 @@
     "readLang": "Read Lang.",
     "backstab": "Backstab",
     "equipment": "Equipment",
-    "weight": "Weight",
     "spellbook": "Spellbook",
     "proficiencies": "Proficiencies",
     "weaponProf": "Weapon Proficiencies",
@@ -415,7 +439,19 @@
     "armorType": "Armor",
     "equippedStatus": "Equipped",
     "inventoryStatus": "Inventory",
-    "specialization": "Specialization"
+    "specialization": "Specialization",
+    "stamina": "Stamina",
+    "muscle": "Muscle",
+    "aim": "Aim",
+    "balance": "Balance",
+    "health": "Health",
+    "fitness": "Fitness",
+    "reason": "Reason",
+    "knowledge": "Knowledge",
+    "intuition": "Intuition",
+    "willpower": "Willpower",
+    "leadership": "Leadership",
+    "appearance": "Appearance"
   },
   "theme": {
     "toggleDark": "Switch to dark mode",
@@ -462,5 +498,24 @@
     "dropzone": "Drag image here or click to select",
     "formats": "JPG, PNG or WebP (max. 2 MB)",
     "uploading": "Uploading..."
+  },
+  "spellbook": {
+    "title": "Spellbook",
+    "back": "Back to Character",
+    "learnSpell": "Learn Spell",
+    "searchPlaceholder": "Search spells...",
+    "filterAll": "All",
+    "filterPrepared": "Prepared",
+    "prepare": "Prepare",
+    "unprepare": "Unprepare",
+    "remove": "Remove",
+    "noSpells": "No spells learned yet.",
+    "learnFirst": "Learn your first spell!",
+    "spellDetails": "Details",
+    "learnDialogTitle": "Learn Spell",
+    "learnSearch": "Search spells...",
+    "learnButton": "Learn",
+    "closeDialog": "Close",
+    "spellPoints": "Spell Points"
   }
 }

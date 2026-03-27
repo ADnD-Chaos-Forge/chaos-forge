@@ -123,6 +123,57 @@ export interface SpellLearnResult {
 /**
  * Check if a character can learn a specific spell.
  */
+// ─── PRIEST SPELL POINTS (Player's Option: Spells & Magic) ───────────────────
+// Spell Points replace fixed slots — priests get a pool of points they can
+// spend flexibly on any spell they know. Spell cost = spell level squared.
+
+// Table 26: Priest Spell Point Progression
+const PRIEST_SPELL_POINTS: number[] = [
+  // L1-L20
+  10, 15, 20, 28, 36, 45, 55, 65, 78, 92, 107, 123, 140, 158, 177, 197, 218, 240, 263, 287,
+];
+
+// Table 28: Spell Point Cost by Priest Spell Level
+// Cost = level of the spell (1=1, 2=2, 3=4, 4=6, 5=8, 6=10, 7=12)
+const PRIEST_SPELL_POINT_COST: number[] = [
+  1,
+  2,
+  4,
+  6,
+  8,
+  10,
+  12, // spell levels 1-7
+];
+
+// Table 27: Bonus Spell Points from WIS
+// WIS 13=+1, 14=+2, 15=+4, 16=+8, 17=+12, 18=+16
+const PRIEST_BONUS_SPELL_POINTS: Record<number, number> = {
+  13: 1,
+  14: 2,
+  15: 4,
+  16: 8,
+  17: 12,
+  18: 16,
+};
+
+export function getPriestSpellPoints(level: number): number {
+  const idx = Math.min(level, PRIEST_SPELL_POINTS.length) - 1;
+  return PRIEST_SPELL_POINTS[Math.max(0, idx)];
+}
+
+export function getPriestBonusSpellPoints(wisScore: number): number {
+  let bonus = 0;
+  for (const [wis, points] of Object.entries(PRIEST_BONUS_SPELL_POINTS)) {
+    if (wisScore >= parseInt(wis)) bonus = points;
+  }
+  return bonus;
+}
+
+export function getPriestSpellCost(spellLevel: number): number {
+  if (spellLevel < 1 || spellLevel > 7) return 0;
+  return PRIEST_SPELL_POINT_COST[spellLevel - 1];
+}
+
 export function canLearnSpell(
   classId: ClassId,
   spellSchool: MagicSchool | undefined,

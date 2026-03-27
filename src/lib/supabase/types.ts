@@ -93,6 +93,7 @@ export interface CharacterSpellRow {
 export interface WeaponRow {
   id: string;
   name: string;
+  name_en: string | null;
   damage_sm: string;
   damage_l: string;
   weapon_type: "melee" | "ranged" | "both";
@@ -109,6 +110,7 @@ export interface WeaponRow {
 export interface ArmorRow {
   id: string;
   name: string;
+  name_en: string | null;
   ac: number;
   weight: number;
   cost_gp: number;
@@ -155,6 +157,7 @@ export interface CharacterSpellWithDetails extends CharacterSpellRow {
 export interface NonweaponProficiencyRow {
   id: string;
   name: string;
+  name_en: string | null;
   ability: string;
   modifier: number;
   group_type: string;

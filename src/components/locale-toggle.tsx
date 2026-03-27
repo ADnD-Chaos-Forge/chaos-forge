@@ -1,37 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
+function getLocaleFromCookie(): string {
+  if (typeof document === "undefined") return "de";
+  return (
+    document.cookie
+      .split("; ")
+      .find((c) => c.startsWith("NEXT_LOCALE="))
+      ?.split("=")[1] ?? "de"
+  );
+}
+
+function subscribe(callback: () => void) {
+  // Re-check on storage/cookie changes (no native cookie event, so we use a simple interval)
+  const id = setInterval(callback, 1000);
+  return () => clearInterval(id);
+}
+
+function getServerSnapshot() {
+  return "de";
+}
+
 export function LocaleToggle() {
   const router = useRouter();
-  const [current, setCurrent] = useState<string | null>(null);
+  const current = useSyncExternalStore(subscribe, getLocaleFromCookie, getServerSnapshot);
 
-  useEffect(() => {
-    const locale =
-      document.cookie
-        .split("; ")
-        .find((c) => c.startsWith("NEXT_LOCALE="))
-        ?.split("=")[1] ?? "de";
-    setCurrent(locale);
-  }, []);
-
-  function toggleLocale() {
+  const toggleLocale = useCallback(() => {
     const next = current === "en" ? "de" : "en";
     document.cookie = `NEXT_LOCALE=${next};path=/;max-age=31536000`;
-    setCurrent(next);
     router.refresh();
-  }
-
-  // Render nothing until client-side hydration is done (avoids mismatch)
-  if (current === null) {
-    return (
-      <Button variant="ghost" size="sm" data-testid="locale-toggle" aria-hidden>
-        &nbsp;&nbsp;
-      </Button>
-    );
-  }
+  }, [current, router]);
 
   return (
     <Button
