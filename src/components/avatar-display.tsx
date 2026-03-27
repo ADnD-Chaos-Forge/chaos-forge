@@ -3,6 +3,8 @@ interface AvatarDisplayProps {
   avatarUrl: string | null;
   size?: number;
   className?: string;
+  /** "circle" for lists/cards, "square" for the character sheet header. */
+  variant?: "circle" | "square";
 }
 
 function getInitials(name: string): string {
@@ -14,7 +16,15 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-export function AvatarDisplay({ name, avatarUrl, size = 80, className = "" }: AvatarDisplayProps) {
+export function AvatarDisplay({
+  name,
+  avatarUrl,
+  size = 80,
+  className = "",
+  variant = "circle",
+}: AvatarDisplayProps) {
+  const borderRadius = variant === "circle" ? "rounded-full" : "rounded-lg";
+
   if (avatarUrl) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
@@ -23,7 +33,7 @@ export function AvatarDisplay({ name, avatarUrl, size = 80, className = "" }: Av
         alt={`Avatar von ${name}`}
         width={size}
         height={size}
-        className={`rounded-full object-cover ${className}`}
+        className={`${borderRadius} object-cover ${className}`}
         style={{ width: size, height: size }}
         data-testid="avatar-image"
       />
@@ -32,7 +42,7 @@ export function AvatarDisplay({ name, avatarUrl, size = 80, className = "" }: Av
 
   return (
     <div
-      className={`flex items-center justify-center rounded-full bg-primary/20 font-heading text-primary ${className}`}
+      className={`flex items-center justify-center ${borderRadius} bg-primary/20 font-heading text-primary ${className}`}
       style={{ width: size, height: size, fontSize: size * 0.35 }}
       data-testid="avatar-initials"
     >

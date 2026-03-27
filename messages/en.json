@@ -61,8 +61,7 @@
     "level": "Level",
     "deleteTitle": "Delete Character",
     "deleteMessage": "Do you really want to permanently delete \"{name}\"?",
-    "printView": "Print View",
-    "spellbook": "Spellbook"
+    "printView": "Print View"
   },
   "wizard": {
     "basics": "Basics",
@@ -497,8 +496,10 @@
     "change": "Change",
     "uploadTitle": "Upload Avatar",
     "dropzone": "Drag image here or click to select",
-    "formats": "JPG, PNG or WebP (max. 2 MB)",
-    "uploading": "Uploading..."
+    "formats": "JPG, PNG or WebP (max. 10 MB)",
+    "uploading": "Uploading...",
+    "zoom": "Zoom",
+    "pickAnother": "Pick a different image"
   },
   "spellbook": {
     "title": "Spellbook",
