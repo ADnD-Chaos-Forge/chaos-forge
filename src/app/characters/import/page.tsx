@@ -14,7 +14,10 @@ interface ScannedCharacter {
   name: string;
   race: RaceId;
   class: ClassId;
+  kit: string | null;
   level: number;
+  alignment: string;
+  xp: number;
   str: number;
   strExceptional: number | null;
   dex: number;
@@ -23,6 +26,10 @@ interface ScannedCharacter {
   wis: number;
   cha: number;
   hpMax: number;
+  goldGp: number;
+  goldSp: number;
+  goldCp: number;
+  goldPp: number;
 }
 
 interface FilePreview {
@@ -142,8 +149,11 @@ export default function ImportCharacterPage() {
           user_id: user.id,
           name: scanned.name,
           level: scanned.level,
+          alignment: scanned.alignment ?? "true_neutral",
           race_id: scanned.race,
           class_id: scanned.class,
+          kit: scanned.kit ?? null,
+          xp_current: scanned.xp ?? 0,
           str: scanned.str,
           str_exceptional: scanned.strExceptional,
           dex: scanned.dex,
@@ -153,6 +163,10 @@ export default function ImportCharacterPage() {
           cha: scanned.cha,
           hp_current: scanned.hpMax,
           hp_max: scanned.hpMax,
+          gold_gp: scanned.goldGp ?? 0,
+          gold_sp: scanned.goldSp ?? 0,
+          gold_cp: scanned.goldCp ?? 0,
+          gold_pp: scanned.goldPp ?? 0,
         })
         .select("id")
         .single();
@@ -169,7 +183,7 @@ export default function ImportCharacterPage() {
           character_id: data.id,
           class_id: scanned.class,
           level: scanned.level,
-          xp_current: 0,
+          xp_current: scanned.xp ?? 0,
         });
       }
 

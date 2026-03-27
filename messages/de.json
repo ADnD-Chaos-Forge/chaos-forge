@@ -105,7 +105,12 @@
     "savingThrows": "Rettungswürfe",
     "createCharacter": "Charakter erstellen",
     "creating": "Erstelle Charakter...",
-    "infravision": "Infravision"
+    "infravision": "Infravision",
+    "kit": "Kit",
+    "kitDescription": "Wähle optional ein Kit für deinen Charakter. Kits modifizieren Fähigkeiten und Trefferwürfel.",
+    "noKit": "Kein Kit",
+    "noKitDesc": "Standard-Klasse ohne Kit-Modifikationen.",
+    "noKitsAvailable": "Für die gewählte Klasse sind keine Kits verfügbar."
   },
   "sheet": {
     "stats": "Werte",

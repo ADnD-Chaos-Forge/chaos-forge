@@ -105,7 +105,12 @@
     "savingThrows": "Saving Throws",
     "createCharacter": "Create Character",
     "creating": "Creating character...",
-    "infravision": "Infravision"
+    "infravision": "Infravision",
+    "kit": "Kit",
+    "kitDescription": "Optionally choose a kit for your character. Kits modify abilities and hit dice.",
+    "noKit": "No Kit",
+    "noKitDesc": "Standard class without kit modifications.",
+    "noKitsAvailable": "No kits available for the selected class."
   },
   "sheet": {
     "stats": "Stats",

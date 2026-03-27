@@ -104,12 +104,12 @@ export const CLASSES: Record<ClassId, ClassDefinition> = {
     exceptionalStrength: true,
     classAbilities: [
       {
-        name: "Böses erkennen (60 Fuß)",
-        name_en: "Detect Evil (60 ft)",
+        name: "Böses erkennen (18 m)",
+        name_en: "Detect Evil (18 m)",
         description:
-          "Der Paladin kann durch Konzentration die Anwesenheit und Richtung von Bösem im Umkreis von 60 Fuß erspüren. Diese Fähigkeit funktioniert ähnlich wie der Zauber 'Böses erkennen'.",
+          "Der Paladin kann durch Konzentration die Anwesenheit und Richtung von Bösem im Umkreis von 18 m erspüren. Diese Fähigkeit funktioniert ähnlich wie der Zauber 'Böses erkennen'.",
         description_en:
-          "By concentrating, the paladin can sense the presence and direction of evil within 60 feet. This ability functions similarly to the Detect Evil spell.",
+          "By concentrating, the paladin can sense the presence and direction of evil within 18 m. This ability functions similarly to the Detect Evil spell.",
       },
       {
         name: "Handauflegen (2 HP/Stufe pro Tag)",

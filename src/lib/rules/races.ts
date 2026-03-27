@@ -112,12 +112,12 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     abilityMaximums: { con: 17 },
     racialAbilities: [
       {
-        name: "Infravision 60 Fuß",
-        name_en: "Infravision 60 ft",
+        name: "Infravision (18 m)",
+        name_en: "Infravision (18 m)",
         description:
-          "Elfen können im Dunkeln bis zu 60 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen. Infravision funktioniert nicht bei Tageslicht oder in der Nähe starker Lichtquellen.",
+          "Elfen können im Dunkeln bis zu 18 m weit sehen, indem sie Wärmestrahlung wahrnehmen. Infravision funktioniert nicht bei Tageslicht oder in der Nähe starker Lichtquellen.",
         description_en:
-          "Elves can see in the dark up to 60 feet by perceiving heat radiation. Infravision does not work in daylight or near strong light sources.",
+          "Elves can see in the dark up to 18 m by perceiving heat radiation. Infravision does not work in daylight or near strong light sources.",
       },
       {
         name: "Resistenz gegen Schlaf- und Bezauberungszauber (90%)",
@@ -194,12 +194,12 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     abilityMinimums: { int: 4, con: 4 },
     racialAbilities: [
       {
-        name: "Infravision 30 Fuß",
-        name_en: "Infravision 30 ft",
+        name: "Infravision (9 m)",
+        name_en: "Infravision (9 m)",
         description:
-          "Halbelfen können im Dunkeln bis zu 30 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen. Die Reichweite ist geringer als bei reinen Elfen.",
+          "Halbelfen können im Dunkeln bis zu 9 m weit sehen, indem sie Wärmestrahlung wahrnehmen. Die Reichweite ist geringer als bei reinen Elfen.",
         description_en:
-          "Half-elves can see in the dark up to 30 feet by perceiving heat radiation. The range is shorter than that of pure elves.",
+          "Half-elves can see in the dark up to 9 m by perceiving heat radiation. The range is shorter than that of pure elves.",
       },
       {
         name: "Resistenz gegen Schlaf- und Bezauberungszauber (30%)",
@@ -238,12 +238,12 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     abilityMaximums: { cha: 16 },
     racialAbilities: [
       {
-        name: "Infravision 60 Fuß",
-        name_en: "Infravision 60 ft",
+        name: "Infravision (18 m)",
+        name_en: "Infravision (18 m)",
         description:
-          "Zwerge können im Dunkeln bis zu 60 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen. Diese Fähigkeit stammt von ihrem Leben unter der Erde.",
+          "Zwerge können im Dunkeln bis zu 18 m weit sehen, indem sie Wärmestrahlung wahrnehmen. Diese Fähigkeit stammt von ihrem Leben unter der Erde.",
         description_en:
-          "Dwarves can see in the dark up to 60 feet by perceiving heat radiation. This ability stems from their life underground.",
+          "Dwarves can see in the dark up to 18 m by perceiving heat radiation. This ability stems from their life underground.",
       },
       {
         name: "Rettungswurf-Bonus gegen Gift und Magie (+1 pro 3,5 CON)",
@@ -285,12 +285,12 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     abilityMaximums: { str: 17, wis: 17 },
     racialAbilities: [
       {
-        name: "Infravision 60 Fuß",
-        name_en: "Infravision 60 ft",
+        name: "Infravision (18 m)",
+        name_en: "Infravision (18 m)",
         description:
-          "Gnome können im Dunkeln bis zu 60 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen. Diese Fähigkeit stammt von ihrem unterirdischen Erbe.",
+          "Gnome können im Dunkeln bis zu 18 m weit sehen, indem sie Wärmestrahlung wahrnehmen. Diese Fähigkeit stammt von ihrem unterirdischen Erbe.",
         description_en:
-          "Gnomes can see in the dark up to 60 feet by perceiving heat radiation. This ability stems from their subterranean heritage.",
+          "Gnomes can see in the dark up to 18 m by perceiving heat radiation. This ability stems from their subterranean heritage.",
       },
       {
         name: "Rettungswurf-Bonus gegen Magie (+1 pro 3,5 CON)",
@@ -334,11 +334,11 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     abilityMaximums: { str: 17, wis: 17 },
     racialAbilities: [
       {
-        name: "Infravision 30 Fuß",
-        name_en: "Infravision 30 ft",
+        name: "Infravision (9 m)",
+        name_en: "Infravision (9 m)",
         description:
-          "Halblinge können im Dunkeln bis zu 30 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen.",
-        description_en: "Halflings can see in the dark up to 30 feet by perceiving heat radiation.",
+          "Halblinge können im Dunkeln bis zu 9 m weit sehen, indem sie Wärmestrahlung wahrnehmen.",
+        description_en: "Halflings can see in the dark up to 9 m by perceiving heat radiation.",
       },
       {
         name: "Rettungswurf-Bonus gegen Gift und Magie (+1 pro 3,5 CON)",
@@ -386,12 +386,12 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     abilityMaximums: { int: 17, wis: 14, cha: 12 },
     racialAbilities: [
       {
-        name: "Infravision 60 Fuß",
-        name_en: "Infravision 60 ft",
+        name: "Infravision (18 m)",
+        name_en: "Infravision (18 m)",
         description:
-          "Halb-Orks können im Dunkeln bis zu 60 Fuß weit sehen, indem sie Wärmestrahlung wahrnehmen. Dieses Erbe stammt von ihrem orkischen Elternteil.",
+          "Halb-Orks können im Dunkeln bis zu 18 m weit sehen, indem sie Wärmestrahlung wahrnehmen. Dieses Erbe stammt von ihrem orkischen Elternteil.",
         description_en:
-          "Half-orcs can see in the dark up to 60 feet by perceiving heat radiation. This heritage comes from their orcish parent.",
+          "Half-orcs can see in the dark up to 18 m by perceiving heat radiation. This heritage comes from their orcish parent.",
       },
     ],
     defaultLanguages: ["Common", "Orkisch"],

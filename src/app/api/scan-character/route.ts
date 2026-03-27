@@ -107,7 +107,10 @@ Erwartetes Format:
   "name": "Charaktername",
   "race": "human|elf|half_elf|dwarf|gnome|halfling|half_orc",
   "class": "fighter|ranger|paladin|mage|cleric|druid|thief|bard",
+  "kit": null,
   "level": 1,
+  "alignment": "true_neutral",
+  "xp": 0,
   "str": 10,
   "strExceptional": null,
   "dex": 10,
@@ -115,7 +118,11 @@ Erwartetes Format:
   "int": 10,
   "wis": 10,
   "cha": 10,
-  "hpMax": 10
+  "hpMax": 10,
+  "goldGp": 0,
+  "goldSp": 0,
+  "goldCp": 0,
+  "goldPp": 0
 }
 
 Hinweise:
@@ -123,7 +130,11 @@ Hinweise:
 - "class" muss einer der angegebenen IDs sein
 - "strExceptional" ist nur relevant bei STR 18 und Krieger-Klassen (1-100, wobei 100 = "18/00")
 - Wenn ein Wert nicht lesbar ist, verwende einen sinnvollen Standardwert
-- Übersetze deutsche Bezeichnungen (z.B. "Mensch" → "human", "Kämpfer" → "fighter")`,
+- Übersetze deutsche Bezeichnungen (z.B. "Mensch" → "human", "Kämpfer" → "fighter")
+- "kit" kann "barbarian" sein wenn als Kit angegeben, sonst null
+- "alignment" muss eine ID sein: lawful_good, neutral_good, chaotic_good, lawful_neutral, true_neutral, chaotic_neutral, lawful_evil, neutral_evil, chaotic_evil
+- "xp" ist der aktuelle XP-Stand des Charakters
+- "goldGp/goldSp/goldCp/goldPp" sind die Münzwerte (Gold, Silber, Kupfer, Platin)`,
             },
           ],
         },
