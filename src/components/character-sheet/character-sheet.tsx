@@ -236,20 +236,23 @@ export function CharacterSheet({
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl p-6" data-testid="character-sheet">
+    <div className="mx-auto w-full max-w-4xl p-4 sm:p-6" data-testid="character-sheet">
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between">
-        <div className="flex items-start gap-4">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3 sm:gap-4">
           <AvatarUpload
             characterId={character.id}
             userId={userId}
             characterName={character.name}
             currentAvatarUrl={character.avatar_url}
-            size={120}
+            size={80}
             variant="square"
           />
-          <div>
-            <h1 className="font-heading text-3xl text-primary" data-testid="sheet-name">
+          <div className="min-w-0 flex-1">
+            <h1
+              className="truncate font-heading text-2xl text-primary sm:text-3xl"
+              data-testid="sheet-name"
+            >
               {character.name}
             </h1>
             <div className="mt-1 flex flex-wrap gap-2">
@@ -267,10 +270,11 @@ export function CharacterSheet({
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {isOwner && (
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setShowShareDialog(true)}
               data-testid="sheet-share-button"
             >
@@ -279,18 +283,23 @@ export function CharacterSheet({
           )}
           {showSpells && (
             <Link href={`/characters/${character.id}/spellbook`}>
-              <Button variant="outline" data-testid="sheet-spellbook-button">
+              <Button variant="outline" size="sm" data-testid="sheet-spellbook-button">
                 {tc("spellbook")}
               </Button>
             </Link>
           )}
           <Link href={`/characters/${character.id}/print`}>
-            <Button variant="outline" data-testid="sheet-print-button">
+            <Button variant="outline" size="sm" data-testid="sheet-print-button">
               {tc("printView")}
             </Button>
           </Link>
           {dirty && isOwner && (
-            <Button onClick={handleSave} disabled={saving} data-testid="sheet-save-button">
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={saving}
+              data-testid="sheet-save-button"
+            >
               {saving ? (
                 <>
                   <Spinner className="mr-2" />
@@ -304,6 +313,7 @@ export function CharacterSheet({
           {isOwner && (
             <Button
               variant="destructive"
+              size="sm"
               onClick={() => setShowDeleteConfirm(true)}
               data-testid="sheet-delete-button"
             >
@@ -335,7 +345,10 @@ export function CharacterSheet({
       )}
 
       <Tabs defaultValue="stats" className="w-full">
-        <TabsList className="w-full justify-start" data-testid="sheet-tabs">
+        <TabsList
+          className="w-full justify-start overflow-x-auto scroll-smooth"
+          data-testid="sheet-tabs"
+        >
           <TabsTrigger value="stats" data-testid="tab-trigger-stats">
             {t("stats")}
           </TabsTrigger>
