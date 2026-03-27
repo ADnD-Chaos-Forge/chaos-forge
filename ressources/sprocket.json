@@ -1,0 +1,149 @@
+{
+  "personal_information": {
+    "name": "Sprocket 'Fixit' Tanglewire",
+    "player": "User",
+    "race": "Gnome",
+    "gender": "Male",
+    "height": "3'4\"",
+    "age": "42",
+    "class": "Illusionist / Thief",
+    "level": "8 / 8",
+    "weight": "85 lbs",
+    "xp": "135,000",
+    "alignment": "Chaotic Neutral",
+    "next_level": "170,000",
+    "kit": "Gnomish Inventor"
+  },
+  "ability_scores": {
+    "strength": {
+      "stamina": 9,
+      "muscle": 9,
+      "weight_allowance": "35 lbs",
+      "bend_bars_lift_gates": "1%",
+      "open_doors": "5",
+      "attack_adj": 0,
+      "damage_adj": 0,
+      "max_press": "90 lbs"
+    },
+    "dexterity": {
+      "aim": 17,
+      "balance": 17,
+      "missile_adjustment": "+2",
+      "reaction_adjustment": "+2",
+      "armor_class_adj": "-3",
+      "open_locks": "+10%",
+      "pick_pockets": "+5%",
+      "move_silently": "+5%",
+      "climb_walls": "0%"
+    },
+    "constitution": {
+      "health": 18,
+      "fitness": 18,
+      "system_shock": "99%",
+      "poison_save": "+0",
+      "hp_adjustment": "+2",
+      "resurrection_chance": "100%",
+      "note": "CON 18 maintained by Constitution Capacitor"
+    },
+    "intelligence": {
+      "reason": 16,
+      "knowledge": 16,
+      "illusion_immunity": "None",
+      "max_spell_level": "8th",
+      "max_spells_per_level": "9",
+      "bonus_proficiencies": "5",
+      "chance_to_learn_spell": "70%"
+    },
+    "intuition": { "wisdom": 10, "bonus_clerical_spells": "0", "clerical_spell_failure": "15%" },
+    "willpower": { "value": 10, "magic_defense_adj": "+0", "spell_immunity": "None" },
+    "leadership": { "charisma": 11, "loyalty_base": "+0", "max_henchmen": "4" },
+    "appearance": { "value": 11, "initial_reaction_adj": "+0" }
+  },
+  "saving_throws": {
+    "paralyzation_poison_death": 10,
+    "petrification_polymorph": 11,
+    "rod_staff_wand": 9,
+    "breath_weapon": 12,
+    "spell": 10,
+    "gnome_racial_bonus": "+5 vs. Rod/Staff/Wand/Spell due to CON 18"
+  },
+  "combat": {
+    "hit_points": 42,
+    "base_thaco": 17,
+    "melee_thaco": 17,
+    "missile_thaco": 15,
+    "armor_class": {
+      "natural": 10,
+      "armor_reinforced_leather": -4,
+      "dexterity_adj": -3,
+      "final": 3
+    },
+    "special_attacks": "Backstab x3 Damage"
+  },
+  "thief_skills": {
+    "find_remove_traps": "95%",
+    "open_locks": "80%",
+    "move_silently": "65%",
+    "hide_in_shadows": "45%",
+    "climb_walls": "65%",
+    "pick_pockets": "40%",
+    "hear_noise": "30%"
+  },
+  "spellbook": {
+    "slots_per_day": "5 / 4 / 4 / 3 (Includes Specialist Bonus)",
+    "level_1": ["Color Spray", "Mirror Image", "Auditory Illusion", "Light", "Identify"],
+    "level_2": ["Invisibility", "Knock", "Nystul's Magical Aura"],
+    "level_3": ["Haste", "Spectral Force", "Invisibility 10' Radius", "Fly"],
+    "level_4": ["Improved Invisibility", "Minor Creation", "Bestow Curse"]
+  },
+  "proficiencies": {
+    "weapon": ["Short Sword", "Quarterstaff", "Dagger/Knife"],
+    "non_weapon": [
+      { "name": "Engineering", "score": 13 },
+      { "name": "Alchemy", "score": 13 },
+      { "name": "Anatomy", "score": 14 },
+      { "name": "Appraising", "score": 16 },
+      { "name": "Set Snares", "score": 16 },
+      { "name": "Herbalism", "score": 14 }
+    ]
+  },
+  "inventory": {
+    "items_readied": [
+      "Gnomische Allsicht-Brille",
+      "Konstitutions-Kondensator (Unfehlbarer Motor)",
+      "Moment-Klinge (Falt-Kurzschwert)"
+    ],
+    "items_worn": [
+      "Verstärkte Lederweste (AC 6 base)",
+      "Gnomischer Mantel (dunkel, viele Innentaschen)",
+      "Gürteltaschen (Groß x2, Klein x4)",
+      "Inventor's Bandolier (für Ampullen)"
+    ],
+    "items_carried": [
+      "Unverhoffter Stab (Teleskop-Gehstock)",
+      "Mix-and-Match-Klingen x5 (Wurfmesser-Set)",
+      "Diebeswerkzeug (Meisterqualität)",
+      "Magischer Komponentenbeutel",
+      "Schreibset (Tinte, Feder, 5 Blatt Pergament)",
+      "Kleiner Stahlspiegel",
+      "Glaskratzer & Kreide",
+      "Seidenseil (50 ft) & Enterhaken",
+      "Krähenfüße (Beutel)",
+      "Schriftrollenhülse (leer)"
+    ],
+    "items_stored": [
+      "Reiseproviant (1 Woche)",
+      "Wasserschlauch",
+      "Schlafsack (kompakt)",
+      "Feuerstein & Stahl",
+      "Kupfer-Elixier x2 (für Reparaturen)",
+      "Ersatzlinsen & Feinmechanik-Öl"
+    ],
+    "currency": { "gold_pieces": 380, "silver_pieces": 15, "copper_pieces": 9 }
+  },
+  "character_background": {
+    "motivation": "Sprocket strebt nach der Perfektion seiner Erfindungen, insbesondere der Allsicht-Brille und des Motors.",
+    "dark_side": "Er zeigt rücksichtslose Hingabe an die Forschung und nutzt Feinde oft als Versuchsobjekte für anatomische Studien oder chemische Tests.",
+    "history": "Baute den Kondensator nach einem Duergar-Überfall, der sein Herz schwächte. Sein Clanname 'Tanglewire' steht für eine lange Tradition von Mechanikern."
+  }
+}

@@ -165,7 +165,13 @@
     "modHpPerLevel": "HP/Stufe",
     "modLanguages": "Sprachen",
     "modMagDef": "Mag.Abwehr",
-    "modHenchmen": "Gefolgsleute"
+    "modHenchmen": "Gefolgsleute",
+    "abilityModStr": "Treffer {hit}, Schaden {dmg}",
+    "abilityModDex": "RK {ac}",
+    "abilityModCon": "HP {hp}/Stufe",
+    "abilityModInt": "{count} Sprachen",
+    "abilityModWis": "Mag.Abwehr {adj}",
+    "abilityModCha": "{count} Gefolgsleute"
   },
   "equipment": {
     "title": "Ausrüstung",
@@ -217,7 +223,12 @@
     "noArmorAvailable": "Keine Rüstungen verfügbar.",
     "searchPlaceholder": "Suche nach Name...",
     "cancel": "Abbrechen",
-    "base": "Basis"
+    "base": "Basis",
+    "encUnencumbered": "Unbelastet",
+    "encLight": "Leicht belastet",
+    "encModerate": "Mäßig belastet",
+    "encHeavy": "Schwer belastet",
+    "encSevere": "Überbelastet"
   },
   "spells": {
     "title": "Zauber",
@@ -240,7 +251,8 @@
     "notACaster": "Diese Klasse kann keine Zauber wirken.",
     "castingTime": "Zauberzeit",
     "savingThrow": "Rettungswurf",
-    "removeSpell": "Entfernen"
+    "removeSpell": "Entfernen",
+    "learnSpellError": "Zauber konnte nicht erlernt werden. Du hast keine Berechtigung, diesen Charakter zu bearbeiten."
   },
   "proficiencies": {
     "title": "Fertigkeiten",
@@ -265,7 +277,8 @@
     "suggestedLanguages": "Vorgeschlagene Sprachen",
     "noMatchingNwp": "Keine passenden Fertigkeiten gefunden.",
     "createAndAdd": "Erstellen & Hinzufügen",
-    "nwpNamePlaceholder": "Name der Fertigkeit"
+    "nwpNamePlaceholder": "Name der Fertigkeit",
+    "addLanguageError": "Sprache konnte nicht hinzugefügt werden. Du hast keine Berechtigung, diesen Charakter zu bearbeiten."
   },
   "sessions": {
     "title": "Die Chronik des Chaos",

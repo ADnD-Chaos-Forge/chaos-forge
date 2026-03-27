@@ -79,6 +79,7 @@ interface TabSpellsProps {
   wisScore: number;
   spells: CharacterSpellWithDetails[];
   allSpells: SpellRow[];
+  readOnly?: boolean;
 }
 
 export function TabSpells({
@@ -91,11 +92,13 @@ export function TabSpells({
   wisScore,
   spells,
   allSpells,
+  readOnly = false,
 }: TabSpellsProps) {
   const router = useRouter();
   const t = useTranslations("spells");
   const locale = useLocale();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const spellName = useCallback(
     (spell: SpellRow) => (locale === "en" && spell.name_en ? spell.name_en : spell.name),
@@ -205,6 +208,7 @@ export function TabSpells({
   async function handleCreateCustomSpell() {
     if (!customSpell.name.trim()) return;
     setLoading(true);
+    setError(null);
     const supabase = createClient();
     const components: string[] = [];
     if (customSpell.components.V) components.push("V");
@@ -273,14 +277,18 @@ export function TabSpells({
 
   async function handleLearnSpell(spellId: string) {
     setLoading(true);
+    setError(null);
     const supabase = createClient();
-    const { error } = await supabase.from("character_spells").insert({
+    const { error: insertError } = await supabase.from("character_spells").insert({
       character_id: characterId,
       spell_id: spellId,
       prepared: false,
     });
-    if (error) {
-      console.error("Failed to learn spell:", error);
+    if (insertError) {
+      console.error("Failed to learn spell:", insertError);
+      setError(t("learnSpellError"));
+      setLoading(false);
+      return;
     }
     setLoading(false);
     setLearnDialogOpen(false);
@@ -354,15 +362,17 @@ export function TabSpells({
       </div>
 
       {/* Learn Spell Button */}
-      <div className="flex justify-end">
-        <Button
-          onClick={() => setLearnDialogOpen(true)}
-          disabled={loading}
-          data-testid="learn-spell-button"
-        >
-          Zauber erlernen
-        </Button>
-      </div>
+      {!readOnly && (
+        <div className="flex justify-end">
+          <Button
+            onClick={() => setLearnDialogOpen(true)}
+            disabled={loading}
+            data-testid="learn-spell-button"
+          >
+            Zauber erlernen
+          </Button>
+        </div>
+      )}
 
       {/* Spells grouped by level */}
       {Array.from({ length: maxSpellLevel }, (_, i) => i + 1).map((spellLevel) => {
@@ -399,25 +409,32 @@ export function TabSpells({
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant={charSpell.prepared ? "default" : "outline"}
-                          size="sm"
-                          disabled={loading || (!charSpell.prepared && !canPrepare)}
-                          onClick={() => handleTogglePrepared(spell.id, charSpell.prepared)}
-                          data-testid={`spell-prepare-toggle-${spell.id}`}
-                        >
-                          {charSpell.prepared ? t("unprepareSpell") : t("prepareSpell")}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={loading}
-                          onClick={() => handleRemoveSpell(spell.id)}
-                          className="text-destructive hover:text-destructive"
-                          data-testid={`spell-remove-${spell.id}`}
-                        >
-                          {t("removeSpell")}
-                        </Button>
+                        {!readOnly && (
+                          <>
+                            <Button
+                              variant={charSpell.prepared ? "default" : "outline"}
+                              size="sm"
+                              disabled={loading || (!charSpell.prepared && !canPrepare)}
+                              onClick={() => handleTogglePrepared(spell.id, charSpell.prepared)}
+                              data-testid={`spell-prepare-toggle-${spell.id}`}
+                            >
+                              {charSpell.prepared ? t("unprepareSpell") : t("prepareSpell")}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={loading}
+                              onClick={() => handleRemoveSpell(spell.id)}
+                              className="text-destructive hover:text-destructive"
+                              data-testid={`spell-remove-${spell.id}`}
+                            >
+                              {t("removeSpell")}
+                            </Button>
+                          </>
+                        )}
+                        {readOnly && charSpell.prepared && (
+                          <Badge variant="default">{t("prepareSpell")}</Badge>
+                        )}
                       </div>
                     </CardHeader>
                     {isExpanded && (
@@ -468,7 +485,7 @@ export function TabSpells({
       )}
 
       {/* Learn Spell Dialog (modal overlay) */}
-      {learnDialogOpen && (
+      {learnDialogOpen && !readOnly && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
           data-testid="learn-spell-dialog"
@@ -551,6 +568,14 @@ export function TabSpells({
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
+              {error && (
+                <div
+                  className="mb-3 rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
+                  data-testid="learn-spell-error"
+                >
+                  {error}
+                </div>
+              )}
               {filteredLearnableSpells.length === 0 ? (
                 <div className="py-4 text-center text-sm text-muted-foreground">
                   Keine erlernbaren Zauber gefunden.

@@ -165,7 +165,13 @@
     "modHpPerLevel": "HP/Level",
     "modLanguages": "Languages",
     "modMagDef": "Mag. Defense",
-    "modHenchmen": "Henchmen"
+    "modHenchmen": "Henchmen",
+    "abilityModStr": "Hit {hit}, Damage {dmg}",
+    "abilityModDex": "AC {ac}",
+    "abilityModCon": "HP {hp}/Level",
+    "abilityModInt": "{count} Languages",
+    "abilityModWis": "Mag. Defense {adj}",
+    "abilityModCha": "{count} Henchmen"
   },
   "equipment": {
     "title": "Equipment",
@@ -217,7 +223,12 @@
     "noArmorAvailable": "No armor available.",
     "searchPlaceholder": "Search by name...",
     "cancel": "Cancel",
-    "base": "Base"
+    "base": "Base",
+    "encUnencumbered": "Unencumbered",
+    "encLight": "Lightly encumbered",
+    "encModerate": "Moderately encumbered",
+    "encHeavy": "Heavily encumbered",
+    "encSevere": "Severely encumbered"
   },
   "spells": {
     "title": "Spells",
@@ -240,7 +251,8 @@
     "notACaster": "This class cannot cast spells.",
     "castingTime": "Casting Time",
     "savingThrow": "Saving Throw",
-    "removeSpell": "Remove"
+    "removeSpell": "Remove",
+    "learnSpellError": "Failed to learn spell. You may not have permission to modify this character."
   },
   "proficiencies": {
     "title": "Proficiencies",
@@ -265,7 +277,8 @@
     "suggestedLanguages": "Suggested Languages",
     "noMatchingNwp": "No matching proficiencies found.",
     "createAndAdd": "Create & Add",
-    "nwpNamePlaceholder": "Proficiency name"
+    "nwpNamePlaceholder": "Proficiency name",
+    "addLanguageError": "Failed to add language. You may not have permission to modify this character."
   },
   "sessions": {
     "title": "The Chronicle of Chaos",

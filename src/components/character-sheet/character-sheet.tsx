@@ -139,11 +139,13 @@ export function CharacterSheet({
   const baseAC = 10 + dexMods.defensiveAdj;
 
   function update(field: keyof CharacterRow, value: string | number | null) {
+    if (!isOwner) return;
     setCharacter((prev) => ({ ...prev, [field]: value }));
     setDirty(true);
   }
 
   function updateClassField(classId: string, field: "level" | "xp_current", value: number) {
+    if (!isOwner) return;
     setCharClasses((prev) =>
       prev.map((cc) => (cc.class_id === classId ? { ...cc, [field]: value } : cc))
     );
@@ -266,7 +268,7 @@ export function CharacterSheet({
               {tc("printView")}
             </Button>
           </Link>
-          {dirty && (
+          {dirty && isOwner && (
             <Button onClick={handleSave} disabled={saving} data-testid="sheet-save-button">
               {saving ? (
                 <>
@@ -432,37 +434,46 @@ export function CharacterSheet({
                   key: "str" as const,
                   label: "STR",
                   value: character.str,
-                  mods: `${t("modHit")} ${strMods.hitAdj >= 0 ? "+" : ""}${strMods.hitAdj}, ${t("modDamage")} ${strMods.dmgAdj >= 0 ? "+" : ""}${strMods.dmgAdj}`,
+                  mods: t("abilityModStr", {
+                    hit: `${strMods.hitAdj >= 0 ? "+" : ""}${strMods.hitAdj}`,
+                    dmg: `${strMods.dmgAdj >= 0 ? "+" : ""}${strMods.dmgAdj}`,
+                  }),
                 },
                 {
                   key: "dex" as const,
                   label: "DEX",
                   value: character.dex,
-                  mods: `${t("modAC")} ${dexMods.defensiveAdj >= 0 ? "+" : ""}${dexMods.defensiveAdj}`,
+                  mods: t("abilityModDex", {
+                    ac: `${dexMods.defensiveAdj >= 0 ? "+" : ""}${dexMods.defensiveAdj}`,
+                  }),
                 },
                 {
                   key: "con" as const,
                   label: "CON",
                   value: character.con,
-                  mods: `${t("modHpPerLevel")} ${conMods.hpAdj >= 0 ? "+" : ""}${conMods.hpAdj}`,
+                  mods: t("abilityModCon", {
+                    hp: `${conMods.hpAdj >= 0 ? "+" : ""}${conMods.hpAdj}`,
+                  }),
                 },
                 {
                   key: "int" as const,
                   label: "INT",
                   value: character.int,
-                  mods: `${intMods.numberOfLanguages} ${t("modLanguages")}`,
+                  mods: t("abilityModInt", { count: intMods.numberOfLanguages }),
                 },
                 {
                   key: "wis" as const,
                   label: "WIS",
                   value: character.wis,
-                  mods: `${t("modMagDef")} ${wisMods.magicalDefenseAdj >= 0 ? "+" : ""}${wisMods.magicalDefenseAdj}`,
+                  mods: t("abilityModWis", {
+                    adj: `${wisMods.magicalDefenseAdj >= 0 ? "+" : ""}${wisMods.magicalDefenseAdj}`,
+                  }),
                 },
                 {
                   key: "cha" as const,
                   label: "CHA",
                   value: character.cha,
-                  mods: `${chaMods.maxHenchmen} ${t("modHenchmen")}`,
+                  mods: t("abilityModCha", { count: chaMods.maxHenchmen }),
                 },
               ].map(({ key, label, value, mods }) => {
                 const subScoreMap: Record<
@@ -919,6 +930,7 @@ export function CharacterSheet({
             inventory={inventory}
             allGeneralItems={allGeneralItems}
             baseMovement={race?.baseMovement ?? 12}
+            readOnly={!isOwner}
           />
         </TabsContent>
 
@@ -934,6 +946,7 @@ export function CharacterSheet({
               wisScore={character.wis}
               spells={spells}
               allSpells={allSpells}
+              readOnly={!isOwner}
             />
           </TabsContent>
         )}
@@ -945,6 +958,7 @@ export function CharacterSheet({
               raceId={(character.race_id as RaceId) ?? "human"}
               level={primaryLevel}
               onUpdate={update}
+              readOnly={!isOwner}
             />
           </TabsContent>
         )}
@@ -962,6 +976,7 @@ export function CharacterSheet({
             nonweaponProficiencies={nonweaponProficiencies}
             allNonweaponProficiencies={allNonweaponProficiencies}
             languages={languages}
+            readOnly={!isOwner}
           />
         </TabsContent>
       </Tabs>

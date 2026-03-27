@@ -80,6 +80,7 @@ interface TabProficienciesProps {
   nonweaponProficiencies: CharacterNWPWithDetails[];
   allNonweaponProficiencies: NonweaponProficiencyRow[];
   languages: CharacterLanguageRow[];
+  readOnly?: boolean;
 }
 
 export function TabProficiencies({
@@ -94,12 +95,14 @@ export function TabProficiencies({
   nonweaponProficiencies,
   allNonweaponProficiencies,
   languages,
+  readOnly = false,
 }: TabProficienciesProps) {
   const router = useRouter();
   const t = useTranslations("proficiencies");
   const tcom = useTranslations("common");
   const tg = useTranslations("nwpGroups");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [newWeaponName, setNewWeaponName] = useState("");
   const [newWeaponSpecialized, setNewWeaponSpecialized] = useState(false);
   const [nwpSearchQuery, setNwpSearchQuery] = useState("");
@@ -124,15 +127,12 @@ export function TabProficiencies({
     0
   );
 
-  // Filter NWPs: general group is always accessible, plus the character's class group
-  const accessibleGroups = ["general", classGroup];
+  // All NWP groups accessible (house rule: no restrictions, only warnings)
   const availableNwps = useMemo(() => {
     return allNonweaponProficiencies.filter(
-      (nwp) =>
-        accessibleGroups.includes(nwp.group_type) &&
-        !nonweaponProficiencies.some((existing) => existing.proficiency_id === nwp.id)
+      (nwp) => !nonweaponProficiencies.some((existing) => existing.proficiency_id === nwp.id)
     );
-  }, [allNonweaponProficiencies, nonweaponProficiencies, accessibleGroups]);
+  }, [allNonweaponProficiencies, nonweaponProficiencies]);
 
   // Filtered NWPs by search query and group filter
   const filteredAvailableNwps = useMemo(() => {
@@ -261,11 +261,18 @@ export function TabProficiencies({
     if (allLanguageNames.includes(trimmed)) return;
 
     setLoading(true);
+    setError(null);
     const supabase = createClient();
-    await supabase.from("character_languages").insert({
+    const { error: insertError } = await supabase.from("character_languages").insert({
       character_id: characterId,
       language_name: trimmed,
     });
+    if (insertError) {
+      console.error("Failed to add language:", insertError);
+      setError(t("addLanguageError"));
+      setLoading(false);
+      return;
+    }
     setNewLanguage("");
     setLoading(false);
     router.refresh();
@@ -281,6 +288,14 @@ export function TabProficiencies({
 
   return (
     <div className="flex flex-col gap-6" data-testid="tab-proficiencies">
+      {error && (
+        <div
+          className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
+          data-testid="proficiencies-error"
+        >
+          {error}
+        </div>
+      )}
       {/* Weapon Proficiencies */}
       <div data-testid="weapon-proficiencies-section">
         <div className="mb-3 flex items-center justify-between">
@@ -309,36 +324,38 @@ export function TabProficiencies({
                     <Badge data-testid={`weapon-specialized-${wp.id}`}>{t("specialization")}</Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  {showSpecialization && (
-                    <label className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <input
-                        type="checkbox"
-                        checked={wp.specialization}
-                        onChange={() => toggleSpecialization(wp)}
-                        disabled={loading}
-                        data-testid={`weapon-specialization-toggle-${wp.id}`}
-                      />
-                      {t("specialization")}
-                    </label>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeWeaponProficiency(wp.id)}
-                    disabled={loading}
-                    data-testid={`weapon-remove-${wp.id}`}
-                  >
-                    {tcom("remove")}
-                  </Button>
-                </div>
+                {!readOnly && (
+                  <div className="flex items-center gap-2">
+                    {showSpecialization && (
+                      <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={wp.specialization}
+                          onChange={() => toggleSpecialization(wp)}
+                          disabled={loading}
+                          data-testid={`weapon-specialization-toggle-${wp.id}`}
+                        />
+                        {t("specialization")}
+                      </label>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeWeaponProficiency(wp.id)}
+                      disabled={loading}
+                      data-testid={`weapon-remove-${wp.id}`}
+                    >
+                      {tcom("remove")}
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
 
         {/* Add weapon */}
-        {usedWeaponSlots < weaponSlots && (
+        {!readOnly && usedWeaponSlots < weaponSlots && (
           <div className="flex items-center gap-2" data-testid="add-weapon-proficiency">
             <Input
               placeholder={t("weaponName")}
@@ -407,15 +424,17 @@ export function TabProficiencies({
                       {t("abilityCheck")}: {abilityTarget}
                     </span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeNonweaponProficiency(nwp.id)}
-                    disabled={loading}
-                    data-testid={`nwp-remove-${nwp.id}`}
-                  >
-                    {tcom("remove")}
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeNonweaponProficiency(nwp.id)}
+                      disabled={loading}
+                      data-testid={`nwp-remove-${nwp.id}`}
+                    >
+                      {tcom("remove")}
+                    </Button>
+                  )}
                 </div>
               );
             })}
@@ -423,7 +442,7 @@ export function TabProficiencies({
         )}
 
         {/* Add NWP - searchable list */}
-        {usedNwpSlots < nwpSlots && (
+        {!readOnly && usedNwpSlots < nwpSlots && (
           <div data-testid="add-nwp">
             {/* Search input */}
             <input
@@ -647,22 +666,24 @@ export function TabProficiencies({
                 data-testid={`language-${lang.language_name}`}
               >
                 <span className="text-sm font-medium">{lang.language_name}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeLanguage(lang.id)}
-                  disabled={loading}
-                  data-testid={`language-remove-${lang.language_name}`}
-                >
-                  Entfernen
-                </Button>
+                {!readOnly && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeLanguage(lang.id)}
+                    disabled={loading}
+                    data-testid={`language-remove-${lang.language_name}`}
+                  >
+                    Entfernen
+                  </Button>
+                )}
               </div>
             ))}
           </div>
         )}
 
         {/* Add language */}
-        {languages.length < maxLanguages && (
+        {!readOnly && languages.length < maxLanguages && (
           <div data-testid="add-language">
             <div className="mb-3 flex items-center gap-2">
               <Input

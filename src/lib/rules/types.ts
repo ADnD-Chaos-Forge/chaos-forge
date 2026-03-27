@@ -131,7 +131,9 @@ export type SphereAccess = "major" | "minor";
 /** Ability description for class/race abilities */
 export interface ClassAbility {
   name: string;
+  name_en: string;
   description: string;
+  description_en: string;
 }
 
 /** Multiclass / Dualclass support */
