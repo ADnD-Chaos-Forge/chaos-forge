@@ -113,3 +113,34 @@ export function getAttacksPerRound(classGroup: ClassGroup, level: number): strin
   if (level >= 7) return "3/2";
   return "1";
 }
+
+// ─── WEAPON-ADJUSTED COMBAT VALUES ──────────────────────────────────────────
+
+/**
+ * Calculate adjusted THAC0 for a specific weapon, incorporating ability
+ * modifiers and proficiency penalties.
+ *
+ * PHB: Melee THAC0 = base - STR hitAdj - proficiency penalty
+ *      Ranged THAC0 = base - DEX missileAdj - proficiency penalty
+ */
+export function getAdjustedWeaponThac0(
+  baseThac0: number,
+  strHitAdj: number,
+  dexMissileAdj: number,
+  weaponType: "melee" | "ranged" | "both",
+  proficiencyPenalty: number
+): { melee: number; ranged: number | null } {
+  return {
+    melee: baseThac0 - strHitAdj - proficiencyPenalty,
+    ranged: weaponType !== "melee" ? baseThac0 - dexMissileAdj - proficiencyPenalty : null,
+  };
+}
+
+/**
+ * Format a damage string with STR damage bonus.
+ * e.g. "1d8" + 2 → "1d8+2", "1d6" + -1 → "1d6-1"
+ */
+export function formatDamageWithBonus(baseDamage: string, strDmgAdj: number): string {
+  if (strDmgAdj === 0) return baseDamage;
+  return `${baseDamage}${strDmgAdj > 0 ? "+" : ""}${strDmgAdj}`;
+}
