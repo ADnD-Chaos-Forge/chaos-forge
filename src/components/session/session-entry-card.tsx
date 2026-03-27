@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,8 @@ export function SessionEntryCard({
   isOwner,
 }: SessionEntryCardProps) {
   const router = useRouter();
+  const t = useTranslations("sessions");
+  const tc = useTranslations("common");
   const [editing, setEditing] = useState(false);
   const [content, setContent] = useState(entry.content);
   const [saving, setSaving] = useState(false);
@@ -61,7 +64,7 @@ export function SessionEntryCard({
                   onClick={() => setEditing(true)}
                   data-testid={`entry-edit-${entry.id}`}
                 >
-                  Bearbeiten
+                  {tc("edit")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -70,7 +73,7 @@ export function SessionEntryCard({
                   className="text-destructive hover:text-destructive"
                   data-testid={`entry-delete-${entry.id}`}
                 >
-                  Löschen
+                  {tc("delete")}
                 </Button>
               </div>
             )}
@@ -94,7 +97,7 @@ export function SessionEntryCard({
                     setEditing(false);
                   }}
                 >
-                  Abbrechen
+                  {tc("cancel")}
                 </Button>
                 <Button
                   size="sm"
@@ -102,7 +105,7 @@ export function SessionEntryCard({
                   disabled={saving}
                   data-testid={`entry-save-${entry.id}`}
                 >
-                  {saving ? "Speichere..." : "Speichern"}
+                  {saving ? tc("saving") : tc("save")}
                 </Button>
               </div>
             </div>
@@ -123,8 +126,8 @@ export function SessionEntryCard({
 
       <ConfirmDialog
         open={showDeleteConfirm}
-        title="Beitrag löschen"
-        message="Möchtest du diesen Beitrag wirklich löschen?"
+        title={t("deleteEntry")}
+        message={t("deleteEntryMessage")}
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
