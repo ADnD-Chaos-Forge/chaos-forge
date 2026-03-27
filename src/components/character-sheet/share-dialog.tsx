@@ -11,6 +11,7 @@ interface ShareDialogProps {
   open: boolean;
   characterId: string;
   characterName: string;
+  currentUserId: string;
   isPublic: boolean;
   onClose: () => void;
   onVisibilityChange: (isPublic: boolean) => void;
@@ -20,6 +21,7 @@ export function ShareDialog({
   open,
   characterId,
   characterName,
+  currentUserId,
   isPublic,
   onClose,
   onVisibilityChange,
@@ -109,9 +111,9 @@ export function ShareDialog({
 
   if (!open) return null;
 
-  // Users that are not already shared with
+  // Users that are not already shared with and not the current user
   const sharedUserIds = new Set(shares.map((s) => s.shared_with_user_id));
-  const availableUsers = users.filter((u) => !sharedUserIds.has(u.id));
+  const availableUsers = users.filter((u) => !sharedUserIds.has(u.id) && u.id !== currentUserId);
 
   return (
     <div
@@ -178,6 +180,11 @@ export function ShareDialog({
         </div>
 
         {/* Add share */}
+        {!loading && users.length === 0 && (
+          <p className="text-sm text-muted-foreground" data-testid="share-no-users">
+            {t("noUsers")}
+          </p>
+        )}
         {!loading && availableUsers.length > 0 && (
           <div className="flex gap-2">
             <select

@@ -336,6 +336,7 @@ export function CharacterSheet({
           open={showShareDialog}
           characterId={character.id}
           characterName={character.name}
+          currentUserId={userId}
           isPublic={character.is_public}
           onClose={() => setShowShareDialog(false)}
           onVisibilityChange={(val) => {
@@ -346,7 +347,7 @@ export function CharacterSheet({
 
       <Tabs defaultValue="stats" className="w-full">
         <TabsList
-          className="w-full justify-start overflow-x-auto scroll-smooth"
+          className="no-scrollbar w-full justify-start overflow-x-auto scroll-smooth"
           data-testid="sheet-tabs"
         >
           <TabsTrigger value="stats" data-testid="tab-trigger-stats">
@@ -822,13 +823,12 @@ export function CharacterSheet({
 
           <div>
             <h3 className="mb-3 font-heading text-lg">{t("gold")}</h3>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {[
-                { key: "gold_pp" as const, label: "PP" },
-                { key: "gold_gp" as const, label: "GP" },
-                { key: "gold_ep" as const, label: "EP" },
-                { key: "gold_sp" as const, label: "SP" },
-                { key: "gold_cp" as const, label: "CP" },
+                { key: "gold_pp" as const, label: t("currencyPP") },
+                { key: "gold_gp" as const, label: t("currencyGP") },
+                { key: "gold_sp" as const, label: t("currencySP") },
+                { key: "gold_cp" as const, label: t("currencyCP") },
               ].map(({ key, label }) => (
                 <div key={key} className="flex flex-col gap-1">
                   <Label

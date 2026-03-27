@@ -15,7 +15,6 @@ function getLocaleFromCookie(): string {
 }
 
 function subscribe(callback: () => void) {
-  // Re-check on storage/cookie changes (no native cookie event, so we use a simple interval)
   const id = setInterval(callback, 1000);
   return () => clearInterval(id);
 }
@@ -42,7 +41,7 @@ export function LocaleToggle() {
       data-testid="locale-toggle"
       aria-label={current === "de" ? "Switch to English" : "Auf Deutsch wechseln"}
     >
-      {current === "de" ? "EN" : "DE"}
+      {current.toUpperCase()}
     </Button>
   );
 }
