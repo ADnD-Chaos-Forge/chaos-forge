@@ -249,7 +249,12 @@ export function AvatarUpload({
             )}
 
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={handleClose} style={{ minHeight: 44 }}>
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                style={{ minHeight: 44 }}
+                data-testid="avatar-cancel-button"
+              >
                 {tcom("cancel")}
               </Button>
               {selectedFile && croppedAreaPixels && (
