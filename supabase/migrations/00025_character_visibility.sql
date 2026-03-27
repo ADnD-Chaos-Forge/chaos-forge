@@ -20,6 +20,9 @@ ALTER TABLE character_shares ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Owner can manage shares" ON character_shares
   FOR ALL USING (
     EXISTS (SELECT 1 FROM characters WHERE id = character_shares.character_id AND user_id = auth.uid())
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM characters WHERE id = character_shares.character_id AND user_id = auth.uid())
   );
 
 -- 5. Users can see shares directed at them
