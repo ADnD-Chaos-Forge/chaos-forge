@@ -28,10 +28,10 @@ export function StepAbilities({ state, onChange, showExceptionalStr }: StepAbili
               id={`ability-${key}`}
               type="number"
               min={3}
-              max={18}
+              max={25}
               value={state[key]}
               onChange={(e) => {
-                const val = Math.max(3, Math.min(18, parseInt(e.target.value) || 3));
+                const val = Math.max(3, Math.min(25, parseInt(e.target.value) || 3));
                 onChange({ [key]: val });
               }}
               data-testid={`wizard-ability-${key}`}

@@ -222,6 +222,7 @@
     "newSpellSlots": "Neue Zauberplätze",
     "newProfSlots": "Neue Waffenfertigkeits-Slots",
     "newNwpSlots": "Neue Fertigkeits-Slots",
+    "addClass": "Klasse hinzufügen...",
     "xpHistory": "XP-Verlauf",
     "xpHistoryEmpty": "Noch keine XP vergeben.",
     "xpEarned": "Erfahrungspunkte"
@@ -282,6 +283,8 @@
     "encModerate": "Mäßig belastet",
     "encHeavy": "Schwer belastet",
     "encSevere": "Überbelastet",
+    "hitMod": "Angriff +/-",
+    "dmgMod": "Schaden +/-",
     "thac0Melee": "ETW0 Nahkampf",
     "thac0Ranged": "ETW0 Fernkampf",
     "weaponType": "Waffentyp",

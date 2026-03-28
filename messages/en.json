@@ -222,6 +222,7 @@
     "newSpellSlots": "New Spell Slots",
     "newProfSlots": "New Weapon Proficiency Slots",
     "newNwpSlots": "New Non-Weapon Proficiency Slots",
+    "addClass": "Add class...",
     "xpHistory": "XP History",
     "xpHistoryEmpty": "No XP awarded yet.",
     "xpEarned": "Experience Points"
@@ -282,6 +283,8 @@
     "encModerate": "Moderately encumbered",
     "encHeavy": "Heavily encumbered",
     "encSevere": "Severely encumbered",
+    "hitMod": "Hit +/-",
+    "dmgMod": "Dmg +/-",
     "thac0Melee": "THAC0 Melee",
     "thac0Ranged": "THAC0 Ranged",
     "weaponType": "Weapon Type",

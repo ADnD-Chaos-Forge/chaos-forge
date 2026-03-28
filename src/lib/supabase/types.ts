@@ -89,6 +89,8 @@ export interface CharacterEquipmentRow {
   armor_id: string | null;
   quantity: number;
   equipped: boolean;
+  hit_bonus: number;
+  damage_bonus: number;
 }
 
 export interface CharacterSpellRow {

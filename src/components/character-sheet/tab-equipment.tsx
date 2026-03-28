@@ -317,6 +317,19 @@ export function TabEquipment({
     setLoading(false);
   }
 
+  async function updateEquipmentBonus(
+    id: string,
+    field: "hit_bonus" | "damage_bonus",
+    value: number
+  ) {
+    const supabase = createClient();
+    await supabase
+      .from("character_equipment")
+      .update({ [field]: value })
+      .eq("id", id);
+    router.refresh();
+  }
+
   function getItemName(item: CharacterEquipmentWithDetails): string {
     if (item.weapon) return localized(item.weapon.name, item.weapon.name_en, locale);
     if (item.armor) return localized(item.armor.name, item.armor.name_en, locale);
@@ -376,9 +389,19 @@ export function TabEquipment({
     return getNonproficiencyPenalty(primaryClassGroup);
   }
 
-  function getWeaponThac0(weapon: WeaponRow) {
+  function getWeaponThac0(weapon: WeaponRow, hitBonus = 0) {
     const penalty = getWeaponProficiencyPenalty(weapon.name);
-    return getAdjustedWeaponThac0(baseThac0, strHitAdj, dexMissileAdj, weapon.weapon_type, penalty);
+    const base = getAdjustedWeaponThac0(
+      baseThac0,
+      strHitAdj,
+      dexMissileAdj,
+      weapon.weapon_type,
+      penalty
+    );
+    return {
+      melee: base.melee !== null ? base.melee - hitBonus : null,
+      ranged: base.ranged !== null ? base.ranged - hitBonus : null,
+    };
   }
 
   return (
@@ -930,6 +953,8 @@ export function TabEquipment({
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th className="py-2">{t("name")}</th>
                   <th className="py-2 text-center">{t("weaponType")}</th>
+                  <th className="py-2 text-center">{t("hitMod")}</th>
+                  <th className="py-2 text-center">{t("dmgMod")}</th>
                   <th className="py-2 text-center">{t("thac0Melee")}</th>
                   <th className="py-2 text-center">{t("thac0Ranged")}</th>
                   <th className="py-2 text-center">{t("damageSMWithStr")}</th>
@@ -945,7 +970,9 @@ export function TabEquipment({
                   .filter((e) => e.weapon)
                   .map((item) => {
                     const weapon = item.weapon!;
-                    const thac0s = getWeaponThac0(weapon);
+                    const hitBonus = item.hit_bonus ?? 0;
+                    const dmgBonus = item.damage_bonus ?? 0;
+                    const thac0s = getWeaponThac0(weapon, hitBonus);
                     const isProficient = weaponProficiencies.some(
                       (wp) => wp.weapon_name.toLowerCase() === weapon.name.toLowerCase()
                     );
@@ -975,6 +1002,36 @@ export function TabEquipment({
                         <td className="py-2 text-center" data-testid={`weapon-type-${item.id}`}>
                           <Badge variant="outline">{getItemType(item)}</Badge>
                         </td>
+                        <td className="py-2 text-center">
+                          <input
+                            type="number"
+                            value={hitBonus}
+                            onChange={(e) =>
+                              updateEquipmentBonus(
+                                item.id,
+                                "hit_bonus",
+                                parseInt(e.target.value) || 0
+                              )
+                            }
+                            className="w-12 rounded border border-input bg-input text-center text-sm"
+                            data-testid={`weapon-hit-bonus-${item.id}`}
+                          />
+                        </td>
+                        <td className="py-2 text-center">
+                          <input
+                            type="number"
+                            value={dmgBonus}
+                            onChange={(e) =>
+                              updateEquipmentBonus(
+                                item.id,
+                                "damage_bonus",
+                                parseInt(e.target.value) || 0
+                              )
+                            }
+                            className="w-12 rounded border border-input bg-input text-center text-sm"
+                            data-testid={`weapon-dmg-bonus-${item.id}`}
+                          />
+                        </td>
                         <td
                           className="py-2 text-center font-mono"
                           data-testid={`weapon-thac0-melee-${item.id}`}
@@ -991,13 +1048,13 @@ export function TabEquipment({
                           className="py-2 text-center font-mono"
                           data-testid={`weapon-damage-sm-${item.id}`}
                         >
-                          {formatDamageWithBonus(weapon.damage_sm, strDmgAdj)}
+                          {formatDamageWithBonus(weapon.damage_sm, strDmgAdj + dmgBonus)}
                         </td>
                         <td
                           className="py-2 text-center font-mono"
                           data-testid={`weapon-damage-l-${item.id}`}
                         >
-                          {formatDamageWithBonus(weapon.damage_l, strDmgAdj)}
+                          {formatDamageWithBonus(weapon.damage_l, strDmgAdj + dmgBonus)}
                         </td>
                         <td
                           className="py-2 text-center font-mono"

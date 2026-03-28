@@ -34,6 +34,7 @@ import { getAttacksPerRound } from "@/lib/rules/combat";
 import { calculateAC } from "@/lib/rules/equipment";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import { getKit, getEffectiveHitDie, getKitsForClass } from "@/lib/rules/kits";
+import { getAllClasses } from "@/lib/rules/classes";
 import { Spinner } from "@/components/ui/spinner";
 import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -117,6 +118,7 @@ export function CharacterSheet({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [xpDialogOpen, setXpDialogOpen] = useState(false);
+  const [addClassId, setAddClassId] = useState("");
 
   const isOwner = character.user_id === userId;
 
@@ -156,6 +158,17 @@ export function CharacterSheet({
   const primaryClassGroup = classGroups[0] ?? "warrior";
   const primaryLevel = activeClasses[0]?.level ?? character.level;
 
+  // For spells: find the caster class (wizard/priest/bard), not necessarily the first class
+  const casterClass = activeClasses.find((cc) => {
+    const g = CLASSES[cc.class_id as ClassId]?.group;
+    return g === "wizard" || g === "priest" || cc.class_id === "bard";
+  });
+  const casterClassId: ClassId | null = (casterClass?.class_id as ClassId) ?? primaryClassId;
+  const casterClassGroup = casterClass
+    ? (CLASSES[casterClass.class_id as ClassId]?.group ?? "warrior")
+    : primaryClassGroup;
+  const casterLevel = casterClass?.level ?? primaryLevel;
+
   const strMods = getStrengthModifiers(character.str, character.str_exceptional ?? undefined);
   const dexMods = getDexterityModifiers(character.dex);
   const conMods = getConstitutionModifiers(character.con);
@@ -177,6 +190,34 @@ export function CharacterSheet({
     if (!isOwner) return;
     setCharacter((prev) => ({ ...prev, [field]: value }));
     setDirty(true);
+  }
+
+  async function handleAddClass(classId: string) {
+    if (!classId) return;
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("character_classes")
+      .insert({
+        character_id: character.id,
+        class_id: classId,
+        level: 1,
+        xp_current: 0,
+        is_active: true,
+      })
+      .select("*")
+      .single();
+    if (!error && data) {
+      setCharClasses((prev) => [...prev, data]);
+      setAddClassId("");
+      router.refresh();
+    }
+  }
+
+  async function handleRemoveClass(ccId: string) {
+    const supabase = createClient();
+    await supabase.from("character_classes").delete().eq("id", ccId);
+    setCharClasses((prev) => prev.filter((cc) => cc.id !== ccId));
+    router.refresh();
   }
 
   function updateClassField(classId: string, field: "level" | "xp_current", value: number) {
@@ -683,7 +724,7 @@ export function CharacterSheet({
                       id={`sheet-${key}`}
                       type="number"
                       min={3}
-                      max={18}
+                      max={25}
                       value={value}
                       onChange={(e) =>
                         update(key, Math.max(3, Math.min(18, parseInt(e.target.value) || 3)))
@@ -736,7 +777,7 @@ export function CharacterSheet({
                               id={`sheet-${sub.key1}`}
                               type="number"
                               min={3}
-                              max={18}
+                              max={25}
                               value={(character[sub.key1] as number) ?? ""}
                               onChange={(e) =>
                                 update(
@@ -761,7 +802,7 @@ export function CharacterSheet({
                               id={`sheet-${sub.key2}`}
                               type="number"
                               min={3}
-                              max={18}
+                              max={25}
                               value={(character[sub.key2] as number) ?? ""}
                               onChange={(e) =>
                                 update(
@@ -860,29 +901,42 @@ export function CharacterSheet({
                     className="rounded-md border border-border p-3"
                     data-testid={`sheet-xp-${cc.class_id}`}
                   >
-                    <div className="mb-2 flex items-center gap-3">
-                      <span className="font-heading text-sm">
-                        {clsDef ? localized(clsDef.name, clsDef.name_en, locale) : cc.class_id}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <Label className="text-xs text-muted-foreground">{tc("level")}</Label>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={20}
-                          value={cc.level}
-                          onChange={(e) =>
-                            updateClassField(
-                              cc.class_id,
-                              "level",
-                              Math.max(1, Math.min(20, parseInt(e.target.value) || 1))
-                            )
-                          }
-                          className="w-16 text-center font-mono text-sm"
-                          aria-label={`Level ${clsDef?.name ?? cc.class_id}`}
-                          data-testid={`sheet-level-${cc.class_id}`}
-                        />
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="font-heading text-sm">
+                          {clsDef ? localized(clsDef.name, clsDef.name_en, locale) : cc.class_id}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Label className="text-xs text-muted-foreground">{tc("level")}</Label>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={20}
+                            value={cc.level}
+                            onChange={(e) =>
+                              updateClassField(
+                                cc.class_id,
+                                "level",
+                                Math.max(1, Math.min(20, parseInt(e.target.value) || 1))
+                              )
+                            }
+                            className="w-16 text-center font-mono text-sm"
+                            aria-label={`Level ${clsDef?.name ?? cc.class_id}`}
+                            data-testid={`sheet-level-${cc.class_id}`}
+                          />
+                        </div>
                       </div>
+                      {isOwner && activeClasses.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleRemoveClass(cc.id)}
+                          data-testid={`sheet-remove-class-${cc.class_id}`}
+                        >
+                          {tcom("remove")}
+                        </Button>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <Input
@@ -918,6 +972,35 @@ export function CharacterSheet({
                 );
               })}
             </div>
+
+            {/* Add class */}
+            {isOwner && (
+              <div className="mt-3 flex items-center gap-2" data-testid="add-class-section">
+                <select
+                  value={addClassId}
+                  onChange={(e) => setAddClassId(e.target.value)}
+                  className="rounded-md border border-input bg-input px-3 py-1.5 text-sm"
+                  data-testid="add-class-select"
+                >
+                  <option value="">{t("addClass")}</option>
+                  {getAllClasses()
+                    .filter((cls) => !classIds.includes(cls.id as ClassId))
+                    .map((cls) => (
+                      <option key={cls.id} value={cls.id}>
+                        {localized(cls.name, cls.name_en, locale)}
+                      </option>
+                    ))}
+                </select>
+                <Button
+                  size="sm"
+                  onClick={() => handleAddClass(addClassId)}
+                  disabled={!addClassId}
+                  data-testid="add-class-button"
+                >
+                  {tcom("add")}
+                </Button>
+              </div>
+            )}
 
             {/* XP History (last 5) */}
             {xpHistory.length > 0 && (
@@ -1184,9 +1267,9 @@ export function CharacterSheet({
             <TabSpells
               characterId={character.id}
               userId={userId}
-              classId={primaryClassId}
-              classGroup={primaryClassGroup}
-              level={primaryLevel}
+              classId={casterClassId!}
+              classGroup={casterClassGroup}
+              level={casterLevel}
               intScore={character.int}
               wisScore={character.wis}
               spells={spells}
