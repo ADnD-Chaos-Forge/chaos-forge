@@ -1,8 +1,23 @@
 import { test, expect } from "@playwright/test";
 import { loginAsTestUser } from "./helpers/auth";
+import { setupTestData, teardownTestData, type TestFixture } from "./helpers/test-data";
 import { CharacterSheetPage } from "./pages/character-sheet.page";
 import { SpellbookPage } from "./pages/spellbook.page";
 import { LoginPage } from "./pages/login.page";
+
+// ─── Test data lifecycle ───────────────────────────────────────────────────
+
+let fixture: TestFixture;
+
+test.beforeAll(async () => {
+  fixture = await setupTestData("reg");
+});
+
+test.afterAll(async () => {
+  await teardownTestData(fixture);
+});
+
+// ─── Login ─────────────────────────────────────────────────────────────────
 
 test.describe("Login Page", () => {
   test("shows email input and code send button", async ({ page }) => {
@@ -20,16 +35,16 @@ test.describe("Login Page", () => {
   });
 });
 
+// ─── Character Sheet — Owner ───────────────────────────────────────────────
+
 test.describe("Character Sheet — Owner", () => {
   test("shows character name, can edit, save, and switch tabs", async ({ page }) => {
     test.setTimeout(90000);
     await loginAsTestUser(page);
     const sheet = new CharacterSheetPage(page);
 
-    // Navigate to Gor (owned by test user)
-    const firstCard = page.locator("a", { hasText: "Gor" });
-    await expect(firstCard).toBeVisible({ timeout: 10000 });
-    await firstCard.click();
+    // Navigate to own fighter via direct URL
+    await sheet.goto(fixture.ownFighterId);
     await sheet.container.waitFor({ timeout: 30000 });
 
     // Character name visible
@@ -50,27 +65,13 @@ test.describe("Character Sheet — Owner", () => {
     await expect(page.getByTestId("equipment-ac")).toBeVisible({ timeout: 5000 });
     await expect(page.getByTestId("equipment-movement")).toBeVisible({ timeout: 5000 });
 
-    // Spells tab (if visible)
-    const spellsTrigger = page.getByTestId("tab-trigger-spells");
-    if (await spellsTrigger.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await spellsTrigger.click();
-      await page.waitForTimeout(1000);
-      await expect(page.getByTestId("tab-spells")).toBeVisible({ timeout: 5000 });
-    }
-
-    // Thief skills tab (if visible)
-    const thiefTrigger = page.getByTestId("tab-trigger-thief-skills");
-    if (await thiefTrigger.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await thiefTrigger.click();
-      await page.waitForTimeout(1000);
-      await expect(sheet.thiefPickLocks).toBeVisible({ timeout: 5000 });
-    }
-
     // Proficiencies tab
     await sheet.switchTab("proficiencies");
     await expect(page.getByTestId("weapon-proficiencies-section")).toBeVisible({ timeout: 5000 });
   });
 });
+
+// ─── Character Sheet — Read-Only ───────────────────────────────────────────
 
 test.describe("Character Sheet — Read-Only", () => {
   test("non-owner cannot see save or delete buttons", async ({ page }) => {
@@ -78,21 +79,16 @@ test.describe("Character Sheet — Read-Only", () => {
     await loginAsTestUser(page);
     const sheet = new CharacterSheetPage(page);
 
-    // Elara is owned by another user, so she's in the "Other Characters" section
-    const otherSection = page.getByTestId("other-characters-section");
-    if (await otherSection.isVisible()) {
-      await otherSection.locator("summary").click();
-    }
-
-    const elara = page.locator("a", { hasText: "Elara" });
-    await expect(elara).toBeVisible({ timeout: 10000 });
-    await elara.click();
+    // Navigate directly to the other user's caster
+    await sheet.goto(fixture.otherCasterId);
     await sheet.container.waitFor({ timeout: 30000 });
 
     // Delete button should NOT be visible for non-owner
     await expect(sheet.deleteButton).not.toBeVisible({ timeout: 3000 });
   });
 });
+
+// ─── Loading & Navigation ──────────────────────────────────────────────────
 
 test.describe("Loading & Navigation", () => {
   test("characters page loads without error", async ({ page }) => {
@@ -103,21 +99,16 @@ test.describe("Loading & Navigation", () => {
   });
 });
 
+// ─── Spellbook ─────────────────────────────────────────────────────────────
+
 test.describe("Spellbook", () => {
   test("caster character shows spellbook button and page loads", async ({ page }) => {
     test.setTimeout(60000);
     await loginAsTestUser(page);
     const sheet = new CharacterSheetPage(page);
 
-    // Elara is owned by another user, so she's in the "Other Characters" section
-    const otherSection = page.getByTestId("other-characters-section");
-    if (await otherSection.isVisible()) {
-      await otherSection.locator("summary").click();
-    }
-
-    const elara = page.locator("a", { hasText: "Elara" });
-    await expect(elara).toBeVisible({ timeout: 10000 });
-    await elara.click();
+    // Navigate directly to the caster
+    await sheet.goto(fixture.otherCasterId);
     await sheet.container.waitFor({ timeout: 30000 });
 
     // Spellbook button should be visible for caster
@@ -138,10 +129,8 @@ test.describe("Spellbook", () => {
     await loginAsTestUser(page);
     const sheet = new CharacterSheetPage(page);
 
-    // Navigate to Gor (fighter, no spells)
-    const gor = page.locator("a", { hasText: "Gor" });
-    await expect(gor).toBeVisible({ timeout: 10000 });
-    await gor.click();
+    // Navigate directly to the fighter
+    await sheet.goto(fixture.ownFighterId);
     await sheet.container.waitFor({ timeout: 30000 });
 
     // Spellbook button should NOT be visible for fighter
@@ -149,20 +138,16 @@ test.describe("Spellbook", () => {
   });
 });
 
+// ─── Print View ────────────────────────────────────────────────────────────
+
 test.describe("Print View", () => {
   test("print view loads with all sections", async ({ page }) => {
     test.setTimeout(60000);
     await loginAsTestUser(page);
-    const sheet = new CharacterSheetPage(page);
 
-    const gor = page.locator("a", { hasText: "Gor" });
-    await expect(gor).toBeVisible({ timeout: 10000 });
-    await gor.click();
-    await sheet.container.waitFor({ timeout: 30000 });
-
-    await sheet.printButton.click();
-    await page.waitForTimeout(5000);
-    await expect(page.getByTestId("print-sheet")).toBeVisible({ timeout: 10000 });
+    // Navigate directly to print view
+    await page.goto(`/characters/${fixture.ownFighterId}/print`);
+    await expect(page.getByTestId("print-sheet")).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId("print-section-personal")).toBeVisible();
     await expect(page.getByTestId("print-section-abilities")).toBeVisible();
     await expect(page.getByTestId("print-section-combat")).toBeVisible();

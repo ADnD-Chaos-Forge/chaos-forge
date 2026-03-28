@@ -1,6 +1,19 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { loginAsTestUser } from "./helpers/auth";
+import { setupTestData, teardownTestData, type TestFixture } from "./helpers/test-data";
+
+// ─── Test data lifecycle ───────────────────────────────────────────────────
+
+let fixture: TestFixture;
+
+test.beforeAll(async () => {
+  fixture = await setupTestData("a11y");
+});
+
+test.afterAll(async () => {
+  await teardownTestData(fixture);
+});
 
 // ─── Mobile Responsive Tests (iPhone 13 viewport) ──────────────────────────
 
@@ -56,10 +69,8 @@ test.describe("Mobile Responsive (iPhone 13)", () => {
     test.setTimeout(60000);
     await page.setViewportSize(MOBILE_VIEWPORT);
     await loginAsTestUser(page);
-    // Navigate to first character
-    const firstCard = page.locator("[data-testid^='character-card-']").first();
-    await expect(firstCard).toBeVisible({ timeout: 10000 });
-    await firstCard.click();
+    // Navigate directly to own fighter
+    await page.goto(`/characters/${fixture.ownFighterId}`);
     // Tabs should be visible and wrapped (not scrolling)
     const tabs = page.getByTestId("sheet-tabs");
     await expect(tabs).toBeVisible({ timeout: 15000 });
@@ -90,9 +101,8 @@ test.describe("Accessibility — Authenticated Pages (WCAG 2 AA)", () => {
   test("character sheet should have no critical a11y violations", async ({ page }) => {
     test.setTimeout(60000);
     await loginAsTestUser(page);
-    const firstCard = page.locator("[data-testid^='character-card-']").first();
-    await expect(firstCard).toBeVisible({ timeout: 10000 });
-    await firstCard.click();
+    // Navigate directly to own fighter
+    await page.goto(`/characters/${fixture.ownFighterId}`);
     await page.getByTestId("sheet-tabs").waitFor({ timeout: 15000 });
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
     const critical = results.violations.filter((v) => v.impact === "critical");
