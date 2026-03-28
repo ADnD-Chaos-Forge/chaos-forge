@@ -159,6 +159,8 @@
     "currencyCP": "Kupfer",
     "racialAbilities": "Rassenfähigkeiten",
     "classAbilities": "Klassenfähigkeiten",
+    "kit": "Kit",
+    "noKit": "Kein Kit",
     "kitAbilities": "Kit-Fähigkeiten",
     "thac0": "ETW0 (THAC0)",
     "armorClass": "Rüstungsklasse",

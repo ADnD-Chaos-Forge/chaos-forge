@@ -47,9 +47,20 @@ interface ScannedCharacter {
   playerName: string | null;
   age: number | null;
   gender: string | null;
+  height: string | null;
+  weight: number | null;
   weaponProficiencies: { name: string; specialized: boolean }[];
   equipment: string[];
   nwps: string[];
+}
+
+/** Parse imperial height like 5'10" or "5 ft 10 in" to centimeters */
+function parseImperialHeight(h: string): number {
+  const match = h.match(/(\d+)'?\s*(\d+)?/);
+  if (!match) return 0;
+  const feet = parseInt(match[1]) || 0;
+  const inches = parseInt(match[2]) || 0;
+  return (feet * 12 + inches) * 2.54;
 }
 
 interface FilePreview {
@@ -202,6 +213,8 @@ export default function ImportCharacterPage() {
           player_name: scanned.playerName || "",
           age: scanned.age,
           gender: scanned.gender || "",
+          height_cm: scanned.height ? Math.round(parseImperialHeight(scanned.height)) : null,
+          weight_kg: scanned.weight ? Math.round(scanned.weight * 0.4536) : null,
         })
         .select("id")
         .single();
@@ -230,6 +243,56 @@ export default function ImportCharacterPage() {
           specialization: wp.specialized,
         }));
         await supabase.from("character_weapon_proficiencies").insert(wpRows);
+      }
+
+      // Try to match and insert equipment (weapons + armor)
+      if (scanned.equipment?.length > 0) {
+        // Fetch all weapons and armor from DB to match by name
+        const { data: allWeapons } = await supabase.from("weapons").select("id, name, name_en");
+        const { data: allArmor } = await supabase.from("armor").select("id, name, name_en");
+
+        for (const item of scanned.equipment) {
+          const itemLower = item
+            .toLowerCase()
+            .replace(/\s*x\d+$/, "")
+            .trim();
+          const qty = item.match(/x(\d+)$/)?.[1] ? parseInt(item.match(/x(\d+)$/)![1]) : 1;
+
+          // Try to match weapon
+          const weapon = allWeapons?.find(
+            (w) =>
+              w.name.toLowerCase().includes(itemLower) ||
+              (w.name_en && w.name_en.toLowerCase().includes(itemLower)) ||
+              itemLower.includes(w.name.toLowerCase()) ||
+              (w.name_en && itemLower.includes(w.name_en.toLowerCase()))
+          );
+          if (weapon) {
+            await supabase.from("character_equipment").insert({
+              character_id: data.id,
+              weapon_id: weapon.id,
+              quantity: qty,
+              equipped: itemLower.includes("readied") || itemLower.includes("worn") || true,
+            });
+            continue;
+          }
+
+          // Try to match armor
+          const armor = allArmor?.find(
+            (a) =>
+              a.name.toLowerCase().includes(itemLower) ||
+              (a.name_en && a.name_en.toLowerCase().includes(itemLower)) ||
+              itemLower.includes(a.name.toLowerCase()) ||
+              (a.name_en && itemLower.includes(a.name_en.toLowerCase()))
+          );
+          if (armor) {
+            await supabase.from("character_equipment").insert({
+              character_id: data.id,
+              armor_id: armor.id,
+              quantity: 1,
+              equipped: true,
+            });
+          }
+        }
       }
 
       router.push(`/characters/${data.id}`);

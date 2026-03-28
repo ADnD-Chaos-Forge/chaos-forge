@@ -159,6 +159,8 @@
     "currencyCP": "Copper",
     "racialAbilities": "Racial Abilities",
     "classAbilities": "Class Abilities",
+    "kit": "Kit",
+    "noKit": "No Kit",
     "kitAbilities": "Kit Abilities",
     "thac0": "THAC0",
     "armorClass": "Armor Class",
