@@ -215,8 +215,9 @@ export function TabEquipment({
       .from("weapons")
       .insert({
         name: customWeapon.name.trim(),
-        damage_sm: customWeapon.damage_sm.trim(),
-        damage_l: customWeapon.damage_l.trim(),
+        damage_sm: customWeapon.damage_sm.trim() || "1d4",
+        damage_l: customWeapon.damage_l.trim() || "1d4",
+        weapon_type: "melee",
         speed: customWeapon.speed ? Number(customWeapon.speed) : 0,
         weight: customWeapon.weight ? Number(customWeapon.weight) : 0,
         cost_gp: customWeapon.cost_gp ? Number(customWeapon.cost_gp) : 0,
@@ -252,6 +253,7 @@ export function TabEquipment({
         ac: customArmor.ac ? Number(customArmor.ac) : 10,
         weight: customArmor.weight ? Number(customArmor.weight) : 0,
         cost_gp: customArmor.cost_gp ? Number(customArmor.cost_gp) : 0,
+        max_movement: 12,
         is_custom: true,
         created_by: userId,
       })
