@@ -377,7 +377,10 @@ export function CharacterSheet({
       )}
 
       <Tabs defaultValue="stats" className="w-full">
-        <TabsList className="flex w-full flex-wrap justify-start gap-0.5" data-testid="sheet-tabs">
+        <TabsList
+          className="flex h-auto w-full flex-wrap justify-start gap-0.5"
+          data-testid="sheet-tabs"
+        >
           <TabsTrigger value="stats" data-testid="tab-trigger-stats">
             {t("stats")}
           </TabsTrigger>
