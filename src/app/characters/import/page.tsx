@@ -103,19 +103,25 @@ export default function ImportCharacterPage() {
     const selectedFiles = Array.from(e.target.files ?? []);
     if (selectedFiles.length === 0) return;
 
-    const validationError = validateFiles(selectedFiles);
+    // Combine with existing files
+    const allFiles = [...filePreviews.map((fp) => fp.file), ...selectedFiles];
+
+    const validationError = validateFiles(allFiles);
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    const previews: FilePreview[] = selectedFiles.map((file) => ({
+    const newPreviews: FilePreview[] = selectedFiles.map((file) => ({
       file,
       previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
     }));
 
-    setFilePreviews(previews);
+    setFilePreviews((prev) => [...prev, ...newPreviews]);
     setError(null);
+
+    // Reset input so the same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function removeFile(index: number) {
