@@ -114,6 +114,7 @@ export function TabSpells({
     setSlotsAdj(newAdj);
     const supabase = createClient();
     await supabase.from("characters").update({ spell_slots_adj: newAdj }).eq("id", characterId);
+    router.refresh();
   }
 
   const spellName = useCallback(
