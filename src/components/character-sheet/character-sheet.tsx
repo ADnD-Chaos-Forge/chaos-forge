@@ -56,6 +56,7 @@ import type {
   CharacterLanguageRow,
   CharacterInventoryWithDetails,
   GeneralItemRow,
+  CharacterFightingStyleRow,
 } from "@/lib/supabase/types";
 
 interface CharacterSheetProps {
@@ -73,6 +74,7 @@ interface CharacterSheetProps {
   allGeneralItems: GeneralItemRow[];
   allNonweaponProficiencies: NonweaponProficiencyRow[];
   languages: CharacterLanguageRow[];
+  fightingStyles: CharacterFightingStyleRow[];
 }
 
 export function CharacterSheet({
@@ -90,6 +92,7 @@ export function CharacterSheet({
   inventory,
   allGeneralItems,
   languages,
+  fightingStyles,
 }: CharacterSheetProps) {
   const router = useRouter();
   const locale = useLocale();
@@ -1136,6 +1139,7 @@ export function CharacterSheet({
             allNonweaponProficiencies={allNonweaponProficiencies}
             allWeapons={allWeapons}
             languages={languages}
+            fightingStyles={fightingStyles}
             readOnly={!isOwner}
           />
         </TabsContent>

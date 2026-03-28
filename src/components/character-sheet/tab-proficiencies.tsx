@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import {
   getWeaponProficiencySlots,
   getNonweaponProficiencySlots,
@@ -22,8 +23,15 @@ import type {
   CharacterNWPWithDetails,
   NonweaponProficiencyRow,
   CharacterLanguageRow,
+  CharacterFightingStyleRow,
   WeaponRow,
 } from "@/lib/supabase/types";
+import {
+  getFightingStyle,
+  getAvailableFightingStyles,
+  canLearnMoreFightingStyles,
+} from "@/lib/rules/fighting-styles";
+import { CLASSES } from "@/lib/rules/classes";
 
 const NWP_GROUP_FILTER_KEYS = ["all", "general", "warrior", "priest", "rogue", "wizard"] as const;
 
@@ -83,6 +91,7 @@ interface TabProficienciesProps {
   allNonweaponProficiencies: NonweaponProficiencyRow[];
   allWeapons: WeaponRow[];
   languages: CharacterLanguageRow[];
+  fightingStyles: CharacterFightingStyleRow[];
   readOnly?: boolean;
 }
 
@@ -99,6 +108,7 @@ export function TabProficiencies({
   allNonweaponProficiencies,
   allWeapons,
   languages,
+  fightingStyles,
   readOnly = false,
 }: TabProficienciesProps) {
   const router = useRouter();
@@ -108,6 +118,7 @@ export function TabProficiencies({
   const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fsDeleteId, setFsDeleteId] = useState<string | null>(null);
   const [newWeaponName, setNewWeaponName] = useState("");
   const [newWeaponSpecialized, setNewWeaponSpecialized] = useState(false);
   const [weaponDropdownOpen, setWeaponDropdownOpen] = useState(false);
@@ -123,10 +134,11 @@ export function TabProficiencies({
   const penalty = getNonproficiencyPenalty(group);
   const showSpecialization = canSpecialize(classId as ClassId);
 
-  const usedWeaponSlots = weaponProficiencies.reduce(
-    (sum, wp) => sum + (wp.specialization ? 2 : 1),
-    0
-  );
+  const fightingStyleSlots = fightingStyles.reduce((sum, fs) => sum + fs.slots_invested, 0);
+
+  const usedWeaponSlots =
+    weaponProficiencies.reduce((sum, wp) => sum + (wp.specialization ? 2 : 1), 0) +
+    fightingStyleSlots;
 
   const usedNwpSlots = nonweaponProficiencies.reduce(
     (sum, nwp) => sum + nwp.proficiency.slots_required,
@@ -259,6 +271,49 @@ export function TabProficiencies({
 
     setCustomNwp(emptyCustomNwpForm);
     setShowCustomNwpForm(false);
+    setLoading(false);
+    router.refresh();
+  }
+
+  // Fighting styles
+  const classDef = CLASSES[classId as keyof typeof CLASSES];
+  const classGroupForStyles = (classDef?.group ?? classGroup) as ClassGroup;
+  const availableFightingStyles = useMemo(() => {
+    const all = getAvailableFightingStyles(classGroupForStyles);
+    return all.filter((s) => !fightingStyles.some((fs) => fs.style_id === s.id));
+  }, [classGroupForStyles, fightingStyles]);
+  const canAddMore = canLearnMoreFightingStyles(classGroupForStyles, fightingStyles.length);
+
+  async function addFightingStyle(styleId: string) {
+    setLoading(true);
+    const supabase = createClient();
+    const { error: insertError } = await supabase.from("character_fighting_styles").insert({
+      character_id: characterId,
+      style_id: styleId,
+      slots_invested: 1,
+    });
+    if (insertError) {
+      console.error("Failed to add fighting style:", insertError);
+    }
+    setLoading(false);
+    router.refresh();
+  }
+
+  async function removeFightingStyle(id: string) {
+    setLoading(true);
+    const supabase = createClient();
+    await supabase.from("character_fighting_styles").delete().eq("id", id);
+    setLoading(false);
+    router.refresh();
+  }
+
+  async function upgradeFightingStyle(fs: CharacterFightingStyleRow) {
+    setLoading(true);
+    const supabase = createClient();
+    await supabase
+      .from("character_fighting_styles")
+      .update({ slots_invested: fs.slots_invested + 1 })
+      .eq("id", fs.id);
     setLoading(false);
     router.refresh();
   }
@@ -448,6 +503,101 @@ export function TabProficiencies({
             </Button>
           </div>
         )}
+      </div>
+
+      {/* Fighting Styles */}
+      <div data-testid="fighting-styles-section">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-heading text-lg">{t("fightingStyles")}</h3>
+          <Badge variant="outline" data-testid="fighting-style-slots-counter">
+            {t("slotsUsed", { used: fightingStyleSlots, total: fightingStyleSlots })}
+          </Badge>
+        </div>
+
+        {/* Fighting styles list */}
+        {fightingStyles.length > 0 && (
+          <div className="mb-4 flex flex-col gap-2" data-testid="fighting-style-list">
+            {fightingStyles.map((fs) => {
+              const style = getFightingStyle(fs.style_id);
+              if (!style) return null;
+              const benefit = style.benefits.find((b) => b.slots === fs.slots_invested);
+              const canUpgrade = fs.slots_invested < style.maxSlots;
+              return (
+                <div
+                  key={fs.id}
+                  className="flex items-center justify-between rounded-md border border-border p-2"
+                  data-testid={`fighting-style-${fs.id}`}
+                >
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">
+                        {localized(style.name, style.name_en, locale)}
+                      </span>
+                      <Badge variant="outline" data-testid={`fighting-style-slots-${fs.id}`}>
+                        {t("slotsInvested", { slots: fs.slots_invested })}
+                      </Badge>
+                    </div>
+                    {benefit && (
+                      <span
+                        className="text-xs text-muted-foreground"
+                        data-testid={`fighting-style-benefit-${fs.id}`}
+                      >
+                        {localized(benefit.description, benefit.description_en, locale)}
+                      </span>
+                    )}
+                  </div>
+                  {!readOnly && (
+                    <div className="flex items-center gap-2">
+                      {canUpgrade && usedWeaponSlots < weaponSlots && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => upgradeFightingStyle(fs)}
+                          disabled={loading}
+                          data-testid={`fighting-style-upgrade-${fs.id}`}
+                        >
+                          {t("upgradeSlot")}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={loading}
+                        onClick={() => setFsDeleteId(fs.id)}
+                        data-testid={`fighting-style-remove-${fs.id}`}
+                      >
+                        {tcom("remove")}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Add fighting style */}
+        {!readOnly &&
+          canAddMore &&
+          usedWeaponSlots < weaponSlots &&
+          availableFightingStyles.length > 0 && (
+            <div data-testid="add-fighting-style">
+              <div className="flex flex-wrap gap-2">
+                {availableFightingStyles.map((style) => (
+                  <Button
+                    key={style.id}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addFightingStyle(style.id)}
+                    disabled={loading}
+                    data-testid={`fighting-style-add-${style.id}`}
+                  >
+                    + {localized(style.name, style.name_en, locale)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
       </div>
 
       {/* Non-Weapon Proficiencies */}
@@ -793,6 +943,19 @@ export function TabProficiencies({
           </div>
         )}
       </div>
+
+      {fsDeleteId && (
+        <ConfirmDialog
+          open={true}
+          title={tcom("remove")}
+          message={t("confirmRemoveStyle")}
+          onConfirm={async () => {
+            await removeFightingStyle(fsDeleteId);
+            setFsDeleteId(null);
+          }}
+          onCancel={() => setFsDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

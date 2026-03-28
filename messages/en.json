@@ -334,7 +334,12 @@
     "noMatchingNwp": "No matching proficiencies found.",
     "createAndAdd": "Create & Add",
     "nwpNamePlaceholder": "Proficiency name",
-    "addLanguageError": "Failed to add language. You may not have permission to modify this character."
+    "addLanguageError": "Failed to add language. You may not have permission to modify this character.",
+    "fightingStyles": "Fighting Styles",
+    "addFightingStyle": "Add Fighting Style",
+    "upgradeSlot": "Upgrade Slot",
+    "slotsInvested": "{slots} Slot(s)",
+    "confirmRemoveStyle": "Do you really want to remove this fighting style?"
   },
   "sessions": {
     "title": "The Chronicle of Chaos",
@@ -497,6 +502,7 @@
     "equippedStatus": "Equipped",
     "inventoryStatus": "Inventory",
     "specialization": "Specialization",
+    "fightingStyles": "Fighting Styles",
     "stamina": "Stamina",
     "muscle": "Muscle",
     "aim": "Aim",
