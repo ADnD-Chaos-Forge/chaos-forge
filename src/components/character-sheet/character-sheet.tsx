@@ -169,12 +169,33 @@ export function CharacterSheet({
     : primaryClassGroup;
   const casterLevel = casterClass?.level ?? primaryLevel;
 
-  const strMods = getStrengthModifiers(character.str, character.str_exceptional ?? undefined);
-  const dexMods = getDexterityModifiers(character.dex);
-  const conMods = getConstitutionModifiers(character.con);
-  const intMods = getIntelligenceModifiers(character.int);
-  const wisMods = getWisdomModifiers(character.wis);
-  const chaMods = getCharismaModifiers(character.cha);
+  const strMods = getStrengthModifiers(
+    character.str,
+    character.str_exceptional ?? undefined,
+    character.str_muscle,
+    character.str_stamina
+  );
+  const dexMods = getDexterityModifiers(character.dex, character.dex_aim, character.dex_balance);
+  const conMods = getConstitutionModifiers(
+    character.con,
+    character.con_health,
+    character.con_fitness
+  );
+  const intMods = getIntelligenceModifiers(
+    character.int,
+    character.int_knowledge,
+    character.int_reason
+  );
+  const wisMods = getWisdomModifiers(
+    character.wis,
+    character.wis_intuition,
+    character.wis_willpower
+  );
+  const chaMods = getCharismaModifiers(
+    character.cha,
+    character.cha_leadership,
+    character.cha_appearance
+  );
   // AC calculation using equipped armor + shield + DEX
   const equippedArmor = equipment.find((e) => e.equipped && e.armor && e.armor.name !== "Shield");
   const hasShield = equipment.some(
@@ -727,7 +748,7 @@ export function CharacterSheet({
                       max={25}
                       value={value}
                       onChange={(e) =>
-                        update(key, Math.max(3, Math.min(18, parseInt(e.target.value) || 3)))
+                        update(key, Math.max(3, Math.min(25, parseInt(e.target.value) || 3)))
                       }
                       className="mt-1 text-center font-mono text-lg"
                       data-testid={`sheet-ability-${key}`}
@@ -783,7 +804,7 @@ export function CharacterSheet({
                                 update(
                                   sub.key1,
                                   e.target.value
-                                    ? Math.max(3, Math.min(18, parseInt(e.target.value) || 3))
+                                    ? Math.max(3, Math.min(25, parseInt(e.target.value) || 3))
                                     : null
                                 )
                               }
@@ -808,7 +829,7 @@ export function CharacterSheet({
                                 update(
                                   sub.key2,
                                   e.target.value
-                                    ? Math.max(3, Math.min(18, parseInt(e.target.value) || 3))
+                                    ? Math.max(3, Math.min(25, parseInt(e.target.value) || 3))
                                     : null
                                 )
                               }
