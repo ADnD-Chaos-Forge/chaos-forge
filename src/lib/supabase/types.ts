@@ -57,6 +57,10 @@ export interface CharacterRow {
   kit: string | null;
   is_public: boolean;
   is_active: boolean;
+  // Manual slot adjustments
+  weapon_slots_adj: number;
+  nwp_slots_adj: number;
+  language_slots_adj: number;
   created_at: string;
   updated_at: string;
 }

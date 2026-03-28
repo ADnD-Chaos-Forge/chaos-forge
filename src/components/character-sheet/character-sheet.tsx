@@ -1223,6 +1223,9 @@ export function CharacterSheet({
             allWeapons={allWeapons}
             languages={languages}
             fightingStyles={fightingStyles}
+            weaponSlotsAdj={character.weapon_slots_adj ?? 0}
+            nwpSlotsAdj={character.nwp_slots_adj ?? 0}
+            languageSlotsAdj={character.language_slots_adj ?? 0}
             readOnly={!isOwner}
           />
         </TabsContent>

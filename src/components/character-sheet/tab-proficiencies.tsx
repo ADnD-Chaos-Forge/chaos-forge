@@ -92,6 +92,9 @@ interface TabProficienciesProps {
   allWeapons: WeaponRow[];
   languages: CharacterLanguageRow[];
   fightingStyles: CharacterFightingStyleRow[];
+  weaponSlotsAdj: number;
+  nwpSlotsAdj: number;
+  languageSlotsAdj: number;
   readOnly?: boolean;
 }
 
@@ -109,6 +112,9 @@ export function TabProficiencies({
   allWeapons,
   languages,
   fightingStyles,
+  weaponSlotsAdj: initialWeaponSlotsAdj,
+  nwpSlotsAdj: initialNwpSlotsAdj,
+  languageSlotsAdj: initialLanguageSlotsAdj,
   readOnly = false,
 }: TabProficienciesProps) {
   const router = useRouter();
@@ -131,10 +137,19 @@ export function TabProficiencies({
   const group = classGroup as ClassGroup;
   const baseWeaponSlots = getWeaponProficiencySlots(group, level);
   const baseNwpSlots = getNonweaponProficiencySlots(group, level, intScore);
-  const [weaponSlotsAdj, setWeaponSlotsAdj] = useState(0);
-  const [nwpSlotsAdj, setNwpSlotsAdj] = useState(0);
+  const [weaponSlotsAdj, setWeaponSlotsAdj] = useState(initialWeaponSlotsAdj);
+  const [nwpSlotsAdj, setNwpSlotsAdj] = useState(initialNwpSlotsAdj);
+  const [languageSlotsAdj, setLanguageSlotsAdj] = useState(initialLanguageSlotsAdj);
   const weaponSlots = baseWeaponSlots + weaponSlotsAdj;
   const nwpSlots = baseNwpSlots + nwpSlotsAdj;
+
+  async function updateSlotAdj(field: string, value: number) {
+    const supabase = createClient();
+    await supabase
+      .from("characters")
+      .update({ [field]: value })
+      .eq("id", characterId);
+  }
   const penalty = getNonproficiencyPenalty(group);
   const showSpecialization = canSpecialize(classId as ClassId);
 
@@ -394,7 +409,11 @@ export function TabProficiencies({
             {!readOnly && (
               <button
                 className="rounded px-1.5 text-sm text-muted-foreground hover:text-foreground"
-                onClick={() => setWeaponSlotsAdj((a) => a - 1)}
+                onClick={() => {
+                  const v = weaponSlotsAdj - 1;
+                  setWeaponSlotsAdj(v);
+                  updateSlotAdj("weapon_slots_adj", v);
+                }}
                 aria-label="Slot entfernen"
               >
                 −
@@ -409,7 +428,11 @@ export function TabProficiencies({
             {!readOnly && (
               <button
                 className="rounded px-1.5 text-sm text-muted-foreground hover:text-foreground"
-                onClick={() => setWeaponSlotsAdj((a) => a + 1)}
+                onClick={() => {
+                  const v = weaponSlotsAdj + 1;
+                  setWeaponSlotsAdj(v);
+                  updateSlotAdj("weapon_slots_adj", v);
+                }}
                 aria-label="Slot hinzufügen"
               >
                 +
@@ -652,7 +675,11 @@ export function TabProficiencies({
             {!readOnly && (
               <button
                 className="rounded px-1.5 text-sm text-muted-foreground hover:text-foreground"
-                onClick={() => setNwpSlotsAdj((a) => a - 1)}
+                onClick={() => {
+                  const v = nwpSlotsAdj - 1;
+                  setNwpSlotsAdj(v);
+                  updateSlotAdj("nwp_slots_adj", v);
+                }}
                 aria-label="Slot entfernen"
               >
                 −
@@ -667,7 +694,11 @@ export function TabProficiencies({
             {!readOnly && (
               <button
                 className="rounded px-1.5 text-sm text-muted-foreground hover:text-foreground"
-                onClick={() => setNwpSlotsAdj((a) => a + 1)}
+                onClick={() => {
+                  const v = nwpSlotsAdj + 1;
+                  setNwpSlotsAdj(v);
+                  updateSlotAdj("nwp_slots_adj", v);
+                }}
                 aria-label="Slot hinzufügen"
               >
                 +
@@ -912,9 +943,45 @@ export function TabProficiencies({
       <div data-testid="languages-section">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-heading text-lg">{t("languages")}</h3>
-          <Badge variant="outline" data-testid="languages-counter">
-            {allLanguageNames.length}/{defaultLanguages.length + maxLanguages} {t("languages")}
-          </Badge>
+          <div className="flex items-center gap-1" data-testid="languages-counter">
+            {!readOnly && (
+              <button
+                className="rounded px-1.5 text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  const v = languageSlotsAdj - 1;
+                  setLanguageSlotsAdj(v);
+                  updateSlotAdj("language_slots_adj", v);
+                }}
+                aria-label="Sprache entfernen"
+              >
+                −
+              </button>
+            )}
+            <Badge
+              variant="outline"
+              className={
+                allLanguageNames.length > defaultLanguages.length + maxLanguages + languageSlotsAdj
+                  ? "border-red-500 text-red-400"
+                  : ""
+              }
+            >
+              {allLanguageNames.length}/{defaultLanguages.length + maxLanguages + languageSlotsAdj}{" "}
+              {t("languages")}
+            </Badge>
+            {!readOnly && (
+              <button
+                className="rounded px-1.5 text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  const v = languageSlotsAdj + 1;
+                  setLanguageSlotsAdj(v);
+                  updateSlotAdj("language_slots_adj", v);
+                }}
+                aria-label="Sprache hinzufügen"
+              >
+                +
+              </button>
+            )}
+          </div>
         </div>
 
         <p className="mb-3 text-sm text-muted-foreground" data-testid="languages-max-info">
@@ -965,7 +1032,7 @@ export function TabProficiencies({
         )}
 
         {/* Add language */}
-        {!readOnly && languages.length < maxLanguages && (
+        {!readOnly && (
           <div data-testid="add-language">
             <div className="mb-3 flex items-center gap-2">
               <Input
