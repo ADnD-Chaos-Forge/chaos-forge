@@ -10,14 +10,23 @@ import { createClient } from "@/lib/supabase/client";
 import type { RaceId, ClassId } from "@/lib/rules/types";
 import { validateImportFiles } from "./import-validation";
 
+interface ScannedClassEntry {
+  class: ClassId;
+  level: number;
+  xp: number;
+}
+
 interface ScannedCharacter {
   name: string;
   race: RaceId;
-  class: ClassId;
+  // Legacy single-class (backward compat)
+  class?: ClassId;
+  level?: number;
+  xp?: number;
+  // New multiclass format
+  classes?: ScannedClassEntry[];
   kit: string | null;
-  level: number;
   alignment: string;
-  xp: number;
   str: number;
   strExceptional: number | null;
   dex: number;
@@ -77,6 +86,7 @@ export default function ImportCharacterPage() {
   const [error, setError] = useState<string | null>(null);
   const [scanned, setScanned] = useState<ScannedCharacter | null>(null);
   const [filePreviews, setFilePreviews] = useState<FilePreview[]>([]);
+  const [preciseMode, setPreciseMode] = useState(false);
 
   const validateFiles = useCallback(
     (files: File[]): string | null => {
@@ -132,6 +142,9 @@ export default function ImportCharacterPage() {
       for (const { file } of filePreviews) {
         formData.append("files", file);
       }
+      if (preciseMode) {
+        formData.append("precise", "true");
+      }
 
       const res = await fetch("/api/scan-character", {
         method: "POST",
@@ -143,7 +156,26 @@ export default function ImportCharacterPage() {
       if (data.error) {
         setError(data.error);
       } else {
-        setScanned(data.character);
+        const char = data.character;
+        // Normalize race subraces to base race
+        const raceMap: Record<string, string> = {
+          stout_halfling: "halfling",
+          tallfellow_halfling: "halfling",
+          hairfeet_halfling: "halfling",
+          standard_half_elf: "half_elf",
+          wood_elf: "elf",
+          high_elf: "elf",
+          grey_elf: "elf",
+          wild_elf: "elf",
+          hill_dwarf: "dwarf",
+          mountain_dwarf: "dwarf",
+          rock_gnome: "gnome",
+          deep_gnome: "gnome",
+        };
+        if (char.race && raceMap[char.race]) {
+          char.race = raceMap[char.race];
+        }
+        setScanned(char);
       }
     } catch {
       setError("Scan fehlgeschlagen.");
@@ -174,17 +206,53 @@ export default function ImportCharacterPage() {
         return;
       }
 
+      // Resolve classes: new multiclass format or legacy single-class
+      const resolvedClasses: ScannedClassEntry[] = scanned.classes?.length
+        ? scanned.classes
+        : scanned.class
+          ? [{ class: scanned.class, level: scanned.level ?? 1, xp: scanned.xp ?? 0 }]
+          : [];
+
+      const primaryClass = resolvedClasses[0]?.class ?? null;
+      const primaryLevel = resolvedClasses[0]?.level ?? 1;
+      const primaryXp = resolvedClasses[0]?.xp ?? 0;
+
+      // Validate kit: only allow known kits
+      const validKits = [
+        "barbarian",
+        "cavalier",
+        "swashbuckler",
+        "berserker",
+        "gladiator",
+        "myrmidon",
+        "assassin",
+        "bounty_hunter",
+        "acrobat",
+        "scout",
+        "burglar",
+        "spy",
+        "witch",
+        "militant_wizard",
+        "savage_wizard",
+        "academician",
+        "fighting_priest",
+        "pacifist_priest",
+        "beastmaster",
+        "blade",
+      ];
+      const validatedKit = scanned.kit && validKits.includes(scanned.kit) ? scanned.kit : null;
+
       const { data, error: insertError } = await supabase
         .from("characters")
         .insert({
           user_id: user.id,
           name: scanned.name,
-          level: scanned.level,
+          level: primaryLevel,
           race_id: scanned.race,
-          class_id: scanned.class,
-          kit: scanned.kit,
+          class_id: primaryClass,
+          kit: validatedKit,
           alignment: scanned.alignment || "true_neutral",
-          xp_current: scanned.xp || 0,
+          xp_current: primaryXp,
           str: scanned.str,
           str_exceptional: scanned.strExceptional,
           dex: scanned.dex,
@@ -225,14 +293,15 @@ export default function ImportCharacterPage() {
         return;
       }
 
-      // Also insert into character_classes
-      if (scanned.class) {
-        await supabase.from("character_classes").insert({
+      // Insert ALL classes (supports multiclass)
+      if (resolvedClasses.length > 0) {
+        const classRows = resolvedClasses.map((cc) => ({
           character_id: data.id,
-          class_id: scanned.class,
-          level: scanned.level,
-          xp_current: scanned.xp || 0,
-        });
+          class_id: cc.class,
+          level: cc.level,
+          xp_current: cc.xp || 0,
+        }));
+        await supabase.from("character_classes").insert(classRows);
       }
 
       // Separate fighting styles from weapon proficiencies
@@ -440,16 +509,22 @@ export default function ImportCharacterPage() {
             </div>
           )}
 
-          {/* Scan button */}
+          {/* Scan mode toggle + button */}
           {filePreviews.length > 0 && (
-            <Button
-              onClick={handleScan}
-              disabled={scanning}
-              className="self-center"
-              data-testid="import-scan-button"
-            >
-              {scanning ? t("scanning") : t("title")}
-            </Button>
+            <div className="flex flex-col items-center gap-3">
+              <label className="flex items-center gap-2 text-sm" data-testid="precise-mode-toggle">
+                <input
+                  type="checkbox"
+                  checked={preciseMode}
+                  onChange={(e) => setPreciseMode(e.target.checked)}
+                  className="rounded"
+                />
+                <span className="text-muted-foreground">{t("preciseMode")}</span>
+              </label>
+              <Button onClick={handleScan} disabled={scanning} data-testid="import-scan-button">
+                {scanning ? t("scanning") : t("title")}
+              </Button>
+            </div>
           )}
         </>
       )}

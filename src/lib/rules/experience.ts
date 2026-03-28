@@ -57,6 +57,45 @@ export function getXpForNextLevel(classId: ClassId, currentLevel: number): numbe
   return table[index];
 }
 
+export interface LevelUpPreview {
+  classId: ClassId;
+  currentLevel: number;
+  newLevel: number;
+  currentXp: number;
+  newXp: number;
+  levelsGained: number;
+}
+
+/**
+ * Preview what happens when XP is added to a character class.
+ * Calculates the new level based on XP thresholds.
+ */
+export function previewXpGain(
+  classId: ClassId,
+  currentLevel: number,
+  currentXp: number,
+  xpToAdd: number
+): LevelUpPreview {
+  const newXp = currentXp + xpToAdd;
+  let level = currentLevel;
+
+  // Keep leveling up as long as we meet the next threshold
+  let nextLevelXp = getXpForNextLevel(classId, level);
+  while (nextLevelXp !== null && newXp >= nextLevelXp) {
+    level++;
+    nextLevelXp = getXpForNextLevel(classId, level);
+  }
+
+  return {
+    classId,
+    currentLevel,
+    newLevel: level,
+    currentXp,
+    newXp,
+    levelsGained: level - currentLevel,
+  };
+}
+
 /** Returns the XP threshold for a given level (0 for level 1) */
 export function getXpThreshold(classId: ClassId, level: number): number {
   if (level <= 1) return 0;

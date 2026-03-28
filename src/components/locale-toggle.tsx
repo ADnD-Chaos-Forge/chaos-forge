@@ -1,8 +1,9 @@
 "use client";
 
-import { useSyncExternalStore, useCallback } from "react";
+import { useSyncExternalStore, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 function getLocaleFromCookie(): string {
   if (typeof document === "undefined") return "de";
@@ -26,22 +27,26 @@ function getServerSnapshot() {
 export function LocaleToggle() {
   const router = useRouter();
   const current = useSyncExternalStore(subscribe, getLocaleFromCookie, getServerSnapshot);
+  const [isPending, startTransition] = useTransition();
 
   const toggleLocale = useCallback(() => {
     const next = current === "en" ? "de" : "en";
     document.cookie = `NEXT_LOCALE=${next};path=/;max-age=31536000`;
-    router.refresh();
-  }, [current, router]);
+    startTransition(() => {
+      router.refresh();
+    });
+  }, [current, router, startTransition]);
 
   return (
     <Button
       variant="ghost"
       size="sm"
       onClick={toggleLocale}
+      disabled={isPending}
       data-testid="locale-toggle"
       aria-label={current === "de" ? "Switch to English" : "Auf Deutsch wechseln"}
     >
-      {current.toUpperCase()}
+      {isPending ? <Spinner className="h-4 w-4" /> : current.toUpperCase()}
     </Button>
   );
 }

@@ -91,6 +91,15 @@ const RACIAL_ADJUSTMENTS: Partial<Record<RaceId, Partial<ThiefSkills>>> = {
     readLanguages: 0,
   },
   human: {},
+  kobold: {
+    pickLocks: 5,
+    findTraps: 5,
+    moveSilently: 10,
+    hideInShadows: 10,
+    climbWalls: -10,
+    detectNoise: 5,
+    readLanguages: -10,
+  },
 };
 
 export function getRacialThiefAdjustments(raceId: RaceId): Partial<ThiefSkills> {

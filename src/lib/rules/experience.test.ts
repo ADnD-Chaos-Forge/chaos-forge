@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getXpForNextLevel, getXpThreshold } from "./experience";
+import { getXpForNextLevel, getXpThreshold, previewXpGain } from "./experience";
 
 describe("XP-001 XP-002 XP-003: Experience Points", () => {
   it("should return 2000 XP for fighter level 2", () => {
@@ -36,5 +36,61 @@ describe("XP-001 XP-002 XP-003: Experience Points", () => {
 
   it("should return null for max level", () => {
     expect(getXpForNextLevel("fighter", 20)).toBeNull();
+  });
+});
+
+describe("previewXpGain", () => {
+  it("should level up fighter from 1 to 2 with 2000 XP", () => {
+    const preview = previewXpGain("fighter", 1, 0, 2000);
+    expect(preview.currentLevel).toBe(1);
+    expect(preview.newLevel).toBe(2);
+    expect(preview.newXp).toBe(2000);
+    expect(preview.levelsGained).toBe(1);
+  });
+
+  it("should handle multi-level jump (fighter 1 → 4 with 8000 XP)", () => {
+    const preview = previewXpGain("fighter", 1, 0, 8000);
+    expect(preview.newLevel).toBe(4);
+    expect(preview.newXp).toBe(8000);
+    expect(preview.levelsGained).toBe(3);
+  });
+
+  it("should not level up if XP insufficient", () => {
+    const preview = previewXpGain("fighter", 1, 0, 500);
+    expect(preview.newLevel).toBe(1);
+    expect(preview.newXp).toBe(500);
+    expect(preview.levelsGained).toBe(0);
+  });
+
+  it("should handle max level (no level up)", () => {
+    const preview = previewXpGain("fighter", 20, 3000000, 100);
+    expect(preview.newLevel).toBe(20);
+    expect(preview.levelsGained).toBe(0);
+  });
+
+  it("should add XP to existing XP", () => {
+    const preview = previewXpGain("fighter", 1, 1500, 600);
+    expect(preview.newXp).toBe(2100);
+    expect(preview.newLevel).toBe(2);
+    expect(preview.levelsGained).toBe(1);
+  });
+
+  it("should work for mage class", () => {
+    const preview = previewXpGain("mage", 1, 0, 5000);
+    expect(preview.newLevel).toBe(3);
+    expect(preview.levelsGained).toBe(2);
+  });
+
+  it("should work for specialist wizard (uses mage table)", () => {
+    const preview = previewXpGain("illusionist", 1, 0, 2500);
+    expect(preview.newLevel).toBe(2);
+    expect(preview.levelsGained).toBe(1);
+  });
+
+  it("should preserve class ID in result", () => {
+    const preview = previewXpGain("thief", 3, 3000, 2000);
+    expect(preview.classId).toBe("thief");
+    expect(preview.currentLevel).toBe(3);
+    expect(preview.currentXp).toBe(3000);
   });
 });

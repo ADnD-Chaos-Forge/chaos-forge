@@ -16,7 +16,8 @@
     "loading": "Loading...",
     "all": "All",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "unknown": "Unknown"
   },
   "landing": {
     "tagline": "Forge your legend",
@@ -65,6 +66,10 @@
     "printView": "Print View",
     "spellbook": "Spellbook",
     "inactiveCharacters": "Inactive Characters",
+    "sharedCharacters": "Shared Characters",
+    "otherCharacters": "Other Characters",
+    "setActive": "Activate",
+    "setInactive": "Deactivate",
     "newCharacterChoice": "How would you like to create your character?",
     "createManually": "Create manually",
     "createManuallyDesc": "Create a new character step by step using the wizard.",
@@ -199,7 +204,27 @@
     "abilityModCon": "HP {hp}/Level",
     "abilityModInt": "{count} Languages",
     "abilityModWis": "Mag. Defense {adj}",
-    "abilityModCha": "{count} Henchmen"
+    "abilityModCha": "{count} Henchmen",
+    "addXp": "Add XP",
+    "xpAmount": "XP Amount",
+    "xpSession": "Assign to session",
+    "xpNote": "Note",
+    "xpNotePlaceholder": "e.g. Bonus for roleplaying",
+    "noSession": "— No Session —",
+    "xpPreview": "Preview",
+    "xpApply": "Apply XP",
+    "levelUp": "Level Up!",
+    "level": "Level",
+    "classes": "Classes",
+    "nextLevel": "Next Level",
+    "maxLevel": "Max Level",
+    "improvedSaves": "Improved Saving Throws",
+    "newSpellSlots": "New Spell Slots",
+    "newProfSlots": "New Weapon Proficiency Slots",
+    "newNwpSlots": "New Non-Weapon Proficiency Slots",
+    "xpHistory": "XP History",
+    "xpHistoryEmpty": "No XP awarded yet.",
+    "xpEarned": "Experience Points"
   },
   "equipment": {
     "title": "Equipment",
@@ -378,7 +403,14 @@
     "record": "Record",
     "stopRecording": "Stop recording",
     "voiceNote": "Voice note",
-    "removeRecording": "Remove recording"
+    "removeRecording": "Remove recording",
+    "editTitle": "Edit title",
+    "saveTitle": "Save title",
+    "savingTitle": "Saving...",
+    "transcribing": "Transcribing...",
+    "transcription": "Transcription",
+    "transcriptionFailed": "Transcription failed",
+    "xpEarned": "Experience Points"
   },
   "tagTypes": {
     "npc": "NPC",
@@ -410,7 +442,8 @@
     "tooManyFiles": "Maximum 5 files allowed.",
     "fileTooLarge": "File \"{name}\" is too large (max. 10 MB per file).",
     "totalTooLarge": "Total size must not exceed 50 MB.",
-    "noFiles": "No files selected."
+    "noFiles": "No files selected.",
+    "preciseMode": "Precise scan (more accurate for handwritten sheets, slower)"
   },
   "print": {
     "print": "Print (Cmd+P)",

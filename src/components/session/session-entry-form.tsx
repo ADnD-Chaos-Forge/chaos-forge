@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { AudioRecorder } from "@/lib/utils/audio-recorder";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ interface SessionEntryFormProps {
 
 export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionEntryFormProps) {
   const router = useRouter();
+  const t = useTranslations("sessions");
+  const tc = useTranslations("common");
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(
     userCharacters.length === 1 ? userCharacters[0].id : null
   );
@@ -52,7 +55,7 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
 
     let audioUrl: string | undefined;
     if (audioBlob) {
-      const filename = `voice-${Date.now()}.webm`;
+      const filename = `voice-${crypto.randomUUID()}.webm`;
       const { data } = await supabase.storage.from("voice-notes").upload(filename, audioBlob);
       if (data) {
         const { data: urlData } = supabase.storage.from("voice-notes").getPublicUrl(filename);
@@ -60,18 +63,33 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
       }
     }
 
-    const { error: insertError } = await supabase.from("session_entries").insert({
-      session_id: sessionId,
-      character_id: selectedCharacterId,
-      user_id: userId,
-      content: content.trim(),
-      ...(audioUrl && { audio_url: audioUrl }),
-    });
+    const { data: insertedEntry, error: insertError } = await supabase
+      .from("session_entries")
+      .insert({
+        session_id: sessionId,
+        character_id: selectedCharacterId,
+        user_id: userId,
+        content: content.trim(),
+        ...(audioUrl && { audio_url: audioUrl }),
+      })
+      .select("id")
+      .single();
 
     if (insertError) {
       setError(insertError.message);
       setSaving(false);
       return;
+    }
+
+    // Fire-and-forget: trigger transcription if audio was uploaded
+    if (audioUrl && insertedEntry) {
+      fetch("/api/transcribe-audio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audioUrl, entryId: insertedEntry.id }),
+      }).catch(() => {
+        // Transcription failure is non-blocking
+      });
     }
 
     setSaving(false);
@@ -84,12 +102,12 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
       className="flex flex-col gap-4 rounded-md border border-dashed border-border p-4"
       data-testid="session-entry-form"
     >
-      <h3 className="font-heading text-lg">Deinen Beitrag schreiben</h3>
+      <h3 className="font-heading text-lg">{t("writeEntry")}</h3>
 
       {/* Character selection */}
       {userCharacters.length > 1 && (
         <div className="flex flex-col gap-2">
-          <Label>Als welcher Charakter?</Label>
+          <Label>{t("whichCharacter")}</Label>
           <div className="flex flex-wrap gap-2">
             {userCharacters.map((char) => (
               <button
@@ -115,15 +133,14 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
         <>
           <div className="flex flex-col gap-2">
             <Label htmlFor="entry-content">
-              Beitrag (Markdown){" "}
-              <span className="text-muted-foreground">— aus der Sicht deines Charakters</span>
+              {t("entryLabel")} <span className="text-muted-foreground">{t("entryHint")}</span>
             </Label>
             <textarea
               id="entry-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="min-h-[120px] w-full rounded-md border border-input bg-input p-3 text-sm"
-              placeholder="Was hat dein Charakter erlebt? Was waren die wichtigsten Momente?"
+              placeholder={t("entryPlaceholder")}
               data-testid="entry-content-textarea"
             />
           </div>
@@ -138,7 +155,7 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
                 onClick={startRecording}
                 data-testid="record-btn"
               >
-                🎙 Aufnahme
+                {t("record")}
               </Button>
             )}
             {isRecording && (
@@ -150,14 +167,14 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
                 data-testid="stop-record-btn"
               >
                 <span className="mr-1.5 inline-block h-2 w-2 animate-pulse rounded-full bg-white" />
-                Aufnahme stoppen
+                {t("stopRecording")}
               </Button>
             )}
             {audioBlob && !isRecording && (
               <div className="flex items-center gap-2" data-testid="audio-preview">
                 <audio controls src={URL.createObjectURL(audioBlob)} className="h-8" />
                 <Button type="button" variant="ghost" size="sm" onClick={() => setAudioBlob(null)}>
-                  Aufnahme entfernen
+                  {t("removeRecording")}
                 </Button>
               </div>
             )}
@@ -169,7 +186,7 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
               disabled={saving || !content.trim()}
               data-testid="entry-submit-button"
             >
-              {saving ? "Speichere..." : "Beitrag veröffentlichen"}
+              {saving ? tc("saving") : t("publishEntry")}
             </Button>
           </div>
         </>

@@ -16,7 +16,8 @@
     "loading": "Lade...",
     "all": "Alle",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "unknown": "Unbekannt"
   },
   "landing": {
     "tagline": "Schmiede deine Legende",
@@ -65,6 +66,10 @@
     "printView": "Druckansicht",
     "spellbook": "Zauberbuch",
     "inactiveCharacters": "Inaktive Charaktere",
+    "sharedCharacters": "Geteilte Charaktere",
+    "otherCharacters": "Weitere Charaktere",
+    "setActive": "Aktivieren",
+    "setInactive": "Deaktivieren",
     "newCharacterChoice": "Wie möchtest du deinen Charakter erstellen?",
     "createManually": "Manuell erstellen",
     "createManuallyDesc": "Erstelle einen neuen Charakter Schritt für Schritt mit dem Assistenten.",
@@ -199,7 +204,27 @@
     "abilityModCon": "HP {hp}/Stufe",
     "abilityModInt": "{count} Sprachen",
     "abilityModWis": "Mag.Abwehr {adj}",
-    "abilityModCha": "{count} Gefolgsleute"
+    "abilityModCha": "{count} Gefolgsleute",
+    "addXp": "XP hinzufügen",
+    "xpAmount": "XP-Betrag",
+    "xpSession": "Session zuordnen",
+    "xpNote": "Notiz",
+    "xpNotePlaceholder": "z.B. Bonus für Rollenspiel",
+    "noSession": "— Keine Session —",
+    "xpPreview": "Vorschau",
+    "xpApply": "XP anwenden",
+    "levelUp": "Stufenaufstieg!",
+    "level": "Stufe",
+    "classes": "Klassen",
+    "nextLevel": "Nächste Stufe",
+    "maxLevel": "Max. Stufe",
+    "improvedSaves": "Verbesserte Rettungswürfe",
+    "newSpellSlots": "Neue Zauberplätze",
+    "newProfSlots": "Neue Waffenfertigkeits-Slots",
+    "newNwpSlots": "Neue Fertigkeits-Slots",
+    "xpHistory": "XP-Verlauf",
+    "xpHistoryEmpty": "Noch keine XP vergeben.",
+    "xpEarned": "Erfahrungspunkte"
   },
   "equipment": {
     "title": "Ausrüstung",
@@ -378,7 +403,14 @@
     "record": "Aufnahme",
     "stopRecording": "Aufnahme stoppen",
     "voiceNote": "Sprachnotiz",
-    "removeRecording": "Aufnahme entfernen"
+    "removeRecording": "Aufnahme entfernen",
+    "editTitle": "Titel bearbeiten",
+    "saveTitle": "Titel speichern",
+    "savingTitle": "Speichere...",
+    "transcribing": "Transkription wird erstellt...",
+    "transcription": "Transkription",
+    "transcriptionFailed": "Transkription fehlgeschlagen",
+    "xpEarned": "Erfahrungspunkte"
   },
   "tagTypes": {
     "npc": "NPC",
@@ -410,7 +442,8 @@
     "tooManyFiles": "Maximal 5 Dateien erlaubt.",
     "fileTooLarge": "Datei \"{name}\" ist zu groß (max. 10 MB pro Datei).",
     "totalTooLarge": "Gesamtgröße darf 50 MB nicht überschreiten.",
-    "noFiles": "Keine Dateien ausgewählt."
+    "noFiles": "Keine Dateien ausgewählt.",
+    "preciseMode": "Präziser Scan (genauer bei handschriftlichen Bögen, langsamer)"
   },
   "print": {
     "print": "Drucken (Cmd+P)",

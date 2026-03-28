@@ -2,7 +2,13 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/supabase/auth";
 import { SessionDetail } from "@/components/session/session-detail";
-import type { SessionRow, SessionEntryRow, TagRow, CharacterRow } from "@/lib/supabase/types";
+import type {
+  SessionRow,
+  SessionEntryRow,
+  TagRow,
+  CharacterRow,
+  XpHistoryRow,
+} from "@/lib/supabase/types";
 
 interface SessionPageProps {
   params: Promise<{ id: string }>;
@@ -60,6 +66,14 @@ export default async function SessionPage({ params }: SessionPageProps) {
     .order("name")
     .returns<TagRow[]>();
 
+  // Fetch XP history for this session
+  const { data: sessionXpHistory } = await supabase
+    .from("xp_history")
+    .select("*")
+    .eq("session_id", id)
+    .order("created_at", { ascending: false })
+    .returns<XpHistoryRow[]>();
+
   return (
     <SessionDetail
       session={session}
@@ -70,6 +84,8 @@ export default async function SessionPage({ params }: SessionPageProps) {
       allTags={allTags ?? []}
       userId={user.id}
       isCreator={session.created_by === user.id}
+      xpHistory={sessionXpHistory ?? []}
+      entryCharacterMap={Object.fromEntries((entryCharacters ?? []).map((c) => [c.id, c]))}
     />
   );
 }

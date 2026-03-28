@@ -397,6 +397,49 @@ export const RACES: Record<RaceId, RaceDefinition> = {
     ],
     defaultLanguages: ["Common", "Orkisch"],
   },
+
+  kobold: {
+    id: "kobold",
+    name: "Kobold",
+    name_en: "Kobold",
+    abilityAdjustments: { str: -1, con: -1, cha: -2 },
+    allowedClasses: ALL_CLASSES,
+    levelLimits: {},
+    multiclassOptions: [
+      ["fighter", "thief"],
+      ["fighter", "cleric"],
+      ["cleric", "thief"],
+    ],
+    infravision: 60,
+    baseMovement: 6,
+    racialAbilities: [
+      {
+        name: "Infravision (18 m)",
+        name_en: "Infravision (18 m)",
+        description:
+          "Kobolde können im Dunkeln bis zu 18 m weit sehen, indem sie Wärmestrahlung wahrnehmen. Diese Fähigkeit stammt von ihrem unterirdischen Lebensraum.",
+        description_en:
+          "Kobolds can see in the dark up to 18 meters by perceiving heat radiation. This ability stems from their subterranean habitat.",
+      },
+      {
+        name: "Zuletzt angegriffen",
+        name_en: "Attacked Last",
+        description:
+          "Feinde unterschätzen Kobolde und betrachten sie als vernachlässigbare Bedrohung. Dadurch werden Kobolde im Kampf zuletzt angegriffen.",
+        description_en:
+          "Enemies dismiss kobolds as negligible threats, attacking them last in combat.",
+      },
+      {
+        name: "Unterirdische Erkennung",
+        name_en: "Mining Detection",
+        description:
+          "Kobolde können unterirdisch gleitende Wände, Neigungen und neue Konstruktionen erkennen, ähnlich wie Zwerge. Diese Fähigkeit erfordert Konzentration.",
+        description_en:
+          "Kobolds can detect underground features such as sliding walls, slopes, and new construction, similar to dwarves. This ability requires concentration.",
+      },
+    ],
+    defaultLanguages: ["Common", "Koboldisch", "Orkisch", "Untercommon"],
+  },
 };
 
 export function getRace(raceId: RaceId): RaceDefinition {
@@ -468,6 +511,12 @@ const STARTING_AGE: Record<RaceId, Record<ClassGroup, AgeRange>> = {
     priest: { base: 14, diceCount: 1, diceSides: 4 },
     rogue: { base: 15, diceCount: 1, diceSides: 6 },
   },
+  kobold: {
+    warrior: { base: 8, diceCount: 1, diceSides: 4 },
+    wizard: { base: 12, diceCount: 1, diceSides: 6 },
+    priest: { base: 10, diceCount: 1, diceSides: 4 },
+    rogue: { base: 10, diceCount: 1, diceSides: 4 },
+  },
 };
 
 export function getStartingAge(raceId: RaceId, classId: ClassId): AgeRange {
@@ -520,6 +569,10 @@ const HEIGHT_TABLE: Record<RaceId, Record<Gender, PhysicalRange>> = {
     male: { baseInches: 58, diceCount: 2, diceSides: 10 },
     female: { baseInches: 56, diceCount: 2, diceSides: 10 },
   },
+  kobold: {
+    male: { baseInches: 30, diceCount: 1, diceSides: 6 },
+    female: { baseInches: 28, diceCount: 1, diceSides: 6 },
+  },
 };
 
 const WEIGHT_TABLE: Record<RaceId, Record<Gender, WeightRange>> = {
@@ -550,6 +603,10 @@ const WEIGHT_TABLE: Record<RaceId, Record<Gender, WeightRange>> = {
   half_orc: {
     male: { baseLbs: 130, diceCount: 5, diceSides: 10 },
     female: { baseLbs: 100, diceCount: 5, diceSides: 10 },
+  },
+  kobold: {
+    male: { baseLbs: 40, diceCount: 2, diceSides: 4 },
+    female: { baseLbs: 35, diceCount: 2, diceSides: 4 },
   },
 };
 

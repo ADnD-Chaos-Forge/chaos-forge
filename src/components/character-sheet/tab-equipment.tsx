@@ -310,9 +310,11 @@ export function TabEquipment({
   }
 
   async function updateInventoryQuantity(id: string, quantity: number) {
+    setLoading(true);
     const supabase = createClient();
     await supabase.from("character_inventory").update({ quantity }).eq("id", id);
     router.refresh();
+    setLoading(false);
   }
 
   function getItemName(item: CharacterEquipmentWithDetails): string {
