@@ -11,8 +11,8 @@ import {
 } from "./races";
 
 describe("RACE-003 RACE-004 RACE-009 RACE-010 RACE-011: Races", () => {
-  it("RACE-001: should define all 7 PHB core races", () => {
-    expect(getAllRaces()).toHaveLength(7);
+  it("RACE-001: should define all 7 PHB core races + Kobold", () => {
+    expect(getAllRaces()).toHaveLength(8);
   });
 
   it("should allow humans to play all classes", () => {

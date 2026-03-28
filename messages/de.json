@@ -410,7 +410,8 @@
     "tooManyFiles": "Maximal 5 Dateien erlaubt.",
     "fileTooLarge": "Datei \"{name}\" ist zu groß (max. 10 MB pro Datei).",
     "totalTooLarge": "Gesamtgröße darf 50 MB nicht überschreiten.",
-    "noFiles": "Keine Dateien ausgewählt."
+    "noFiles": "Keine Dateien ausgewählt.",
+    "preciseMode": "Präziser Scan (genauer bei handschriftlichen Bögen, langsamer)"
   },
   "print": {
     "print": "Drucken (Cmd+P)",

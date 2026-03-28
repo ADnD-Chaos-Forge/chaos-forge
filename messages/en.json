@@ -410,7 +410,8 @@
     "tooManyFiles": "Maximum 5 files allowed.",
     "fileTooLarge": "File \"{name}\" is too large (max. 10 MB per file).",
     "totalTooLarge": "Total size must not exceed 50 MB.",
-    "noFiles": "No files selected."
+    "noFiles": "No files selected.",
+    "preciseMode": "Precise scan (more accurate for handwritten sheets, slower)"
   },
   "print": {
     "print": "Print (Cmd+P)",
