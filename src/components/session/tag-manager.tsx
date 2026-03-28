@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 import type { TagRow } from "@/lib/supabase/types";
 
 const TAG_TYPES = [
@@ -23,9 +25,11 @@ interface TagManagerProps {
 
 export function TagManager({ sessionId, currentTags, allTags }: TagManagerProps) {
   const router = useRouter();
+  const t = useTranslations("sessions");
   const [search, setSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [newTagType, setNewTagType] = useState<string>("npc");
+  const [loading, setLoading] = useState(false);
 
   const currentTagIds = new Set(currentTags.map((t) => t.id));
   const filteredTags = allTags.filter(
@@ -35,14 +39,17 @@ export function TagManager({ sessionId, currentTags, allTags }: TagManagerProps)
     search.trim() && !allTags.some((t) => t.name.toLowerCase() === search.toLowerCase());
 
   async function addExistingTag(tagId: string) {
+    setLoading(true);
     const supabase = createClient();
     await supabase.from("session_tags").insert({ session_id: sessionId, tag_id: tagId });
     setSearch("");
     setShowDropdown(false);
     router.refresh();
+    setLoading(false);
   }
 
   async function createAndAddTag() {
+    setLoading(true);
     const supabase = createClient();
     const { data: newTag } = await supabase
       .from("tags")
@@ -56,16 +63,24 @@ export function TagManager({ sessionId, currentTags, allTags }: TagManagerProps)
     setSearch("");
     setShowDropdown(false);
     router.refresh();
+    setLoading(false);
   }
 
   async function removeTag(tagId: string) {
+    setLoading(true);
     const supabase = createClient();
     await supabase.from("session_tags").delete().eq("session_id", sessionId).eq("tag_id", tagId);
     router.refresh();
+    setLoading(false);
   }
 
   return (
     <div className="flex flex-col gap-2" data-testid="tag-manager">
+      {loading && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Spinner className="h-4 w-4" />
+        </div>
+      )}
       <div className="flex flex-wrap gap-1">
         {currentTags.map((tag) => {
           const typeInfo = TAG_TYPES.find((t) => t.value === tag.type);
@@ -74,7 +89,7 @@ export function TagManager({ sessionId, currentTags, allTags }: TagManagerProps)
               key={tag.id}
               className={`cursor-pointer ${typeInfo?.color ?? ""}`}
               variant="secondary"
-              onClick={() => removeTag(tag.id)}
+              onClick={() => !loading && removeTag(tag.id)}
               data-testid={`tag-${tag.id}`}
             >
               {tag.name} ×
@@ -91,12 +106,13 @@ export function TagManager({ sessionId, currentTags, allTags }: TagManagerProps)
             setShowDropdown(true);
           }}
           onFocus={() => setShowDropdown(true)}
-          placeholder="Tag hinzufügen..."
+          placeholder={t("addTag")}
           className="max-w-xs"
+          disabled={loading}
           data-testid="tag-search-input"
         />
 
-        {showDropdown && search && (
+        {showDropdown && search && !loading && (
           <div className="absolute z-10 mt-1 w-full max-w-xs rounded-md border border-border bg-card shadow-lg">
             {filteredTags.slice(0, 5).map((tag) => (
               <button
@@ -131,13 +147,13 @@ export function TagManager({ sessionId, currentTags, allTags }: TagManagerProps)
                   ))}
                 </div>
                 <Button size="sm" variant="outline" onClick={createAndAddTag} className="w-full">
-                  &quot;{search.trim()}&quot; als neuen Tag erstellen
+                  {t("createTag", { name: search.trim() })}
                 </Button>
               </div>
             )}
 
             {filteredTags.length === 0 && !canCreateNew && (
-              <p className="px-3 py-2 text-sm text-muted-foreground">Keine Tags gefunden.</p>
+              <p className="px-3 py-2 text-sm text-muted-foreground">{t("noTags")}</p>
             )}
           </div>
         )}

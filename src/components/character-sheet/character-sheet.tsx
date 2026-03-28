@@ -39,11 +39,17 @@ import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ShareDialog } from "./share-dialog";
 import Link from "next/link";
-import type { CharacterRow, CharacterClassRow } from "@/lib/supabase/types";
+import type {
+  CharacterRow,
+  CharacterClassRow,
+  SessionRow,
+  XpHistoryRow,
+} from "@/lib/supabase/types";
 import { TabEquipment } from "./tab-equipment";
 import { TabSpells } from "./tab-spells";
 import { TabThiefSkills } from "./tab-thief-skills";
 import { TabProficiencies } from "./tab-proficiencies";
+import { XpAddDialog } from "./xp-add-dialog";
 import type {
   CharacterEquipmentWithDetails,
   CharacterSpellWithDetails,
@@ -75,6 +81,8 @@ interface CharacterSheetProps {
   allNonweaponProficiencies: NonweaponProficiencyRow[];
   languages: CharacterLanguageRow[];
   fightingStyles: CharacterFightingStyleRow[];
+  sessions: Pick<SessionRow, "id" | "title" | "session_date">[];
+  xpHistory: XpHistoryRow[];
 }
 
 export function CharacterSheet({
@@ -93,6 +101,8 @@ export function CharacterSheet({
   allGeneralItems,
   languages,
   fightingStyles,
+  sessions,
+  xpHistory,
 }: CharacterSheetProps) {
   const router = useRouter();
   const locale = useLocale();
@@ -106,6 +116,7 @@ export function CharacterSheet({
   const [dirty, setDirty] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [xpDialogOpen, setXpDialogOpen] = useState(false);
 
   const isOwner = character.user_id === userId;
 
@@ -339,6 +350,24 @@ export function CharacterSheet({
               ) : (
                 tcom("save")
               )}
+            </Button>
+          )}
+          {isOwner && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                const supabase = createClient();
+                await supabase
+                  .from("characters")
+                  .update({ is_active: !character.is_active })
+                  .eq("id", character.id);
+                setCharacter((prev) => ({ ...prev, is_active: !prev.is_active }));
+                router.refresh();
+              }}
+              data-testid="sheet-toggle-active-button"
+            >
+              {character.is_active !== false ? tc("setInactive") : tc("setActive")}
             </Button>
           )}
           {isOwner && (
@@ -796,7 +825,19 @@ export function CharacterSheet({
 
           {/* XP per Class */}
           <div>
-            <h3 className="mb-3 font-heading text-lg">{t("xp")}</h3>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-heading text-lg">{t("xp")}</h3>
+              {isOwner && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setXpDialogOpen(true)}
+                  data-testid="sheet-add-xp-button"
+                >
+                  {t("addXp")}
+                </Button>
+              )}
+            </div>
             <div className="flex flex-col gap-4">
               {activeClasses.map((cc) => {
                 const clsDef = CLASSES[cc.class_id as ClassId];
@@ -877,7 +918,46 @@ export function CharacterSheet({
                 );
               })}
             </div>
+
+            {/* XP History (last 5) */}
+            {xpHistory.length > 0 && (
+              <details className="mt-3" data-testid="xp-history-section">
+                <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+                  {t("xpHistory")} ({xpHistory.length})
+                </summary>
+                <div className="mt-2 flex flex-col gap-1">
+                  {xpHistory.slice(0, 5).map((xh) => {
+                    const session = sessions.find((s) => s.id === xh.session_id);
+                    return (
+                      <div
+                        key={xh.id}
+                        className="flex items-center justify-between rounded border border-border px-3 py-1.5 text-sm"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium">+{xh.xp_amount.toLocaleString()} XP</span>
+                          {xh.note && (
+                            <span className="text-xs text-muted-foreground">{xh.note}</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {session && <span className="mr-2">{session.title}</span>}
+                          {new Date(xh.created_at).toLocaleDateString(locale)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </details>
+            )}
           </div>
+
+          <XpAddDialog
+            open={xpDialogOpen}
+            characterId={character.id}
+            characterClasses={charClasses}
+            sessions={sessions}
+            onClose={() => setXpDialogOpen(false)}
+          />
 
           <Separator />
 

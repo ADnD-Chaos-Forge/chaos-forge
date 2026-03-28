@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
+import { Pencil, Check, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -12,7 +15,13 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { SessionEntryForm } from "./session-entry-form";
 import { SessionEntryCard } from "./session-entry-card";
 import { TagManager } from "./tag-manager";
-import type { SessionRow, SessionEntryRow, TagRow, CharacterRow } from "@/lib/supabase/types";
+import type {
+  SessionRow,
+  SessionEntryRow,
+  TagRow,
+  CharacterRow,
+  XpHistoryRow,
+} from "@/lib/supabase/types";
 
 const TAG_COLORS: Record<string, string> = {
   npc: "bg-red-900/50 text-red-200",
@@ -30,6 +39,11 @@ interface SessionDetailProps {
   allTags: TagRow[];
   userId: string;
   isCreator: boolean;
+  xpHistory: XpHistoryRow[];
+  entryCharacterMap: Record<
+    string,
+    Pick<CharacterRow, "id" | "name" | "avatar_url" | "race_id" | "class_id">
+  >;
 }
 
 export function SessionDetail({
@@ -41,13 +55,30 @@ export function SessionDetail({
   allTags,
   userId,
   isCreator,
+  xpHistory,
+  entryCharacterMap,
 }: SessionDetailProps) {
   const router = useRouter();
+  const t = useTranslations("sessions");
+  const tc = useTranslations("common");
   const [summary, setSummary] = useState(session.summary);
   const [savingSummary, setSavingSummary] = useState(false);
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [summaryDirty, setSummaryDirty] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleValue, setTitleValue] = useState(session.title);
+  const [savingTitle, setSavingTitle] = useState(false);
+
+  async function handleSaveTitle() {
+    if (!titleValue.trim()) return;
+    setSavingTitle(true);
+    const supabase = createClient();
+    await supabase.from("sessions").update({ title: titleValue.trim() }).eq("id", session.id);
+    setSavingTitle(false);
+    setEditingTitle(false);
+    router.refresh();
+  }
 
   async function handleDeleteSession() {
     const supabase = createClient();
@@ -84,8 +115,9 @@ export function SessionDetail({
 
     try {
       const formattedEntries = entries.map((e) => ({
-        characterName: characterMap[e.character_id]?.name ?? "Unbekannt",
-        content: e.content,
+        characterName: characterMap[e.character_id]?.name ?? tc("unknown"),
+        content:
+          e.content + (e.audio_transcription ? `\n\n[Sprachnotiz]: ${e.audio_transcription}` : ""),
       }));
 
       const res = await fetch("/api/summarize-session", {
@@ -113,10 +145,63 @@ export function SessionDetail({
     <div className="mx-auto w-full max-w-4xl p-6" data-testid="session-detail">
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="font-heading text-3xl text-primary" data-testid="session-title">
-            {session.title}
-          </h1>
+        <div className="flex-1">
+          {editingTitle ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={titleValue}
+                onChange={(e) => setTitleValue(e.target.value)}
+                className="font-heading text-2xl text-primary"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveTitle();
+                  if (e.key === "Escape") {
+                    setTitleValue(session.title);
+                    setEditingTitle(false);
+                  }
+                }}
+                data-testid="title-input"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSaveTitle}
+                disabled={savingTitle || !titleValue.trim()}
+                data-testid="save-title-button"
+                aria-label={t("saveTitle")}
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setTitleValue(session.title);
+                  setEditingTitle(false);
+                }}
+                aria-label={tc("cancel")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <h1 className="font-heading text-3xl text-primary" data-testid="session-title">
+                {session.title}
+              </h1>
+              {isCreator && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingTitle(true)}
+                  data-testid="edit-title-button"
+                  aria-label={t("editTitle")}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )}
           <p className="mt-1 text-sm text-muted-foreground">{dateStr}</p>
         </div>
         {isCreator && (
@@ -125,7 +210,7 @@ export function SessionDetail({
             onClick={() => setShowDeleteConfirm(true)}
             data-testid="session-delete-button"
           >
-            Löschen
+            {t("deleteTitle")}
           </Button>
         )}
       </div>
@@ -152,11 +237,11 @@ export function SessionDetail({
 
       {/* Entries */}
       <div className="my-6 flex flex-col gap-4">
-        <h2 className="font-heading text-xl">Charakter-Beiträge</h2>
+        <h2 className="font-heading text-xl">{t("entries")}</h2>
 
         {entries.length === 0 && (
           <p className="text-sm text-muted-foreground" data-testid="no-entries">
-            Noch keine Beiträge. Schreibe den ersten!
+            {t("noEntries")}
           </p>
         )}
 
@@ -166,7 +251,7 @@ export function SessionDetail({
             <SessionEntryCard
               key={entry.id}
               entry={entry}
-              characterName={char?.name ?? "Unbekannt"}
+              characterName={char?.name ?? tc("unknown")}
               characterAvatarUrl={char?.avatar_url ?? null}
               isOwner={entry.user_id === userId}
             />
@@ -183,18 +268,47 @@ export function SessionDetail({
         )}
 
         {!userHasCharacters && (
-          <p className="text-sm text-muted-foreground">
-            Erstelle zuerst einen Charakter, um einen Beitrag zu schreiben.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("noCharactersHint")}</p>
         )}
       </div>
+
+      {/* XP earned in this session */}
+      {xpHistory.length > 0 && (
+        <>
+          <Separator />
+          <div className="my-6 flex flex-col gap-3" data-testid="session-xp-section">
+            <h2 className="font-heading text-xl">{t("xpEarned")}</h2>
+            <div className="flex flex-col gap-2">
+              {xpHistory.map((xh) => {
+                const char = entryCharacterMap[xh.character_id];
+                return (
+                  <div
+                    key={xh.id}
+                    className="flex items-center justify-between rounded-md border border-border px-4 py-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{char?.name ?? "?"}</span>
+                      {xh.note && (
+                        <span className="text-sm text-muted-foreground">— {xh.note}</span>
+                      )}
+                    </div>
+                    <span className="font-mono text-sm text-green-400">
+                      +{xh.xp_amount.toLocaleString()} XP
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
 
       <Separator />
 
       {/* Summary */}
       <div className="my-6 flex flex-col gap-3" data-testid="session-summary-section">
         <div className="flex items-center justify-between">
-          <h2 className="font-heading text-xl">Zusammenfassung</h2>
+          <h2 className="font-heading text-xl">{t("summary")}</h2>
           <div className="flex gap-2">
             {entries.length > 0 && (
               <Button
@@ -204,7 +318,7 @@ export function SessionDetail({
                 disabled={generatingSummary}
                 data-testid="generate-summary-button"
               >
-                {generatingSummary ? "Generiere..." : "KI-Zusammenfassung"}
+                {generatingSummary ? t("generating") : t("generateSummary")}
               </Button>
             )}
             {summaryDirty && (
@@ -214,7 +328,7 @@ export function SessionDetail({
                 disabled={savingSummary}
                 data-testid="save-summary-button"
               >
-                {savingSummary ? "Speichere..." : "Speichern"}
+                {savingSummary ? tc("saving") : tc("save")}
               </Button>
             )}
           </div>
@@ -223,7 +337,7 @@ export function SessionDetail({
         {isCreator ? (
           <div className="flex flex-col gap-2">
             <Label htmlFor="summary-editor" className="sr-only">
-              Zusammenfassung
+              {t("summary")}
             </Label>
             <textarea
               id="summary-editor"
@@ -233,12 +347,12 @@ export function SessionDetail({
                 setSummaryDirty(true);
               }}
               className="min-h-[150px] w-full rounded-md border border-input bg-input p-3 text-sm"
-              placeholder="Zusammenfassung der Session (Markdown)..."
+              placeholder={t("summaryPlaceholder")}
               data-testid="summary-editor"
             />
             {summary && (
               <div className="rounded-md border border-border p-4">
-                <p className="mb-2 text-xs text-muted-foreground">Vorschau:</p>
+                <p className="mb-2 text-xs text-muted-foreground">{t("preview")}</p>
                 <div className="prose prose-sm prose-invert max-w-none">
                   <ReactMarkdown>{summary}</ReactMarkdown>
                 </div>
@@ -250,14 +364,14 @@ export function SessionDetail({
             <ReactMarkdown>{summary}</ReactMarkdown>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Noch keine Zusammenfassung vorhanden.</p>
+          <p className="text-sm text-muted-foreground">{t("noSummary")}</p>
         )}
       </div>
 
       <ConfirmDialog
         open={showDeleteConfirm}
-        title="Session löschen"
-        message={`Möchtest du "${session.title}" wirklich unwiderruflich löschen? Alle Beiträge gehen verloren.`}
+        title={t("deleteTitle")}
+        message={t("deleteMessage", { title: session.title })}
         onConfirm={handleDeleteSession}
         onCancel={() => setShowDeleteConfirm(false)}
       />

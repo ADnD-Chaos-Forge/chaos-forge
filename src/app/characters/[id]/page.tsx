@@ -17,6 +17,8 @@ import type {
   NonweaponProficiencyRow,
   CharacterLanguageRow,
   CharacterFightingStyleRow,
+  SessionRow,
+  XpHistoryRow,
 } from "@/lib/supabase/types";
 
 interface CharacterPageProps {
@@ -121,6 +123,22 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
     .eq("character_id", character.id)
     .returns<CharacterFightingStyleRow[]>();
 
+  // Fetch sessions (for XP assignment dropdown)
+  const { data: sessionsData } = await supabase
+    .from("sessions")
+    .select("id, title, session_date")
+    .order("session_date", { ascending: false })
+    .limit(20)
+    .returns<Pick<SessionRow, "id" | "title" | "session_date">[]>();
+
+  // Fetch XP history
+  const { data: xpHistoryData } = await supabase
+    .from("xp_history")
+    .select("*")
+    .eq("character_id", id)
+    .order("created_at", { ascending: false })
+    .returns<XpHistoryRow[]>();
+
   return (
     <CharacterSheet
       character={character}
@@ -138,6 +156,8 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
       allNonweaponProficiencies={allNWPs ?? []}
       languages={languages ?? []}
       fightingStyles={fightingStyles ?? []}
+      sessions={sessionsData ?? []}
+      xpHistory={xpHistoryData ?? []}
     />
   );
 }

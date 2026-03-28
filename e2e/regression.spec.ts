@@ -78,7 +78,12 @@ test.describe("Character Sheet — Read-Only", () => {
     await loginAsTestUser(page);
     const sheet = new CharacterSheetPage(page);
 
-    // Find Elara (owned by gmail user, NOT the test user)
+    // Elara is owned by another user, so she's in the "Other Characters" section
+    const otherSection = page.getByTestId("other-characters-section");
+    if (await otherSection.isVisible()) {
+      await otherSection.locator("summary").click();
+    }
+
     const elara = page.locator("a", { hasText: "Elara" });
     await expect(elara).toBeVisible({ timeout: 10000 });
     await elara.click();
@@ -104,7 +109,12 @@ test.describe("Spellbook", () => {
     await loginAsTestUser(page);
     const sheet = new CharacterSheetPage(page);
 
-    // Navigate to Elara (wizard with spells)
+    // Elara is owned by another user, so she's in the "Other Characters" section
+    const otherSection = page.getByTestId("other-characters-section");
+    if (await otherSection.isVisible()) {
+      await otherSection.locator("summary").click();
+    }
+
     const elara = page.locator("a", { hasText: "Elara" });
     await expect(elara).toBeVisible({ timeout: 10000 });
     await elara.click();

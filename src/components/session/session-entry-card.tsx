@@ -116,7 +116,27 @@ export function SessionEntryCard({
               </div>
               {entry.audio_url && (
                 <div className="mt-2" data-testid="voice-note-player">
-                  <audio controls src={entry.audio_url} className="h-8 w-full" />
+                  <audio
+                    controls
+                    src={entry.audio_url}
+                    className="h-8 w-full"
+                    aria-label={`${t("voiceNote")} — ${characterName}`}
+                  />
+                  {entry.audio_transcription ? (
+                    <p
+                      className="mt-2 text-sm italic text-muted-foreground"
+                      data-testid="voice-transcription"
+                    >
+                      {entry.audio_transcription}
+                    </p>
+                  ) : (
+                    <p
+                      className="mt-1 text-xs text-muted-foreground"
+                      data-testid="transcription-pending"
+                    >
+                      {t("transcribing")}
+                    </p>
+                  )}
                 </div>
               )}
             </>

@@ -213,6 +213,7 @@ export interface SessionEntryRow {
   user_id: string;
   content: string;
   audio_url: string | null;
+  audio_transcription: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -267,6 +268,15 @@ export interface CharacterShareRow {
   id: string;
   character_id: string;
   shared_with_user_id: string;
+  created_at: string;
+}
+
+export interface XpHistoryRow {
+  id: string;
+  character_id: string;
+  session_id: string | null;
+  xp_amount: number;
+  note: string;
   created_at: string;
 }
 

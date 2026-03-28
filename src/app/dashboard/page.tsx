@@ -16,6 +16,7 @@ export default async function DashboardPage() {
   const { data: characters } = await supabase
     .from("characters")
     .select("*")
+    .eq("is_active", true)
     .order("name")
     .returns<CharacterRow[]>();
 
@@ -118,7 +119,7 @@ export default async function DashboardPage() {
                 <div className="font-heading text-lg">{latestSession[0].title}</div>
               </div>
               <div className="text-sm text-muted-foreground">
-                {new Date(latestSession[0].session_date).toLocaleDateString("de-DE")}
+                {new Date(latestSession[0].session_date).toLocaleDateString(locale)}
               </div>
             </div>
           </GlassCard>
