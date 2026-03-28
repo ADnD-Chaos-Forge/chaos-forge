@@ -375,7 +375,11 @@ export function TabProficiencies({
       <div data-testid="weapon-proficiencies-section">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-heading text-lg">{t("weaponProf")}</h3>
-          <Badge variant="outline" data-testid="weapon-slots-counter">
+          <Badge
+            variant="outline"
+            className={usedWeaponSlots > weaponSlots ? "border-red-500 text-red-400" : ""}
+            data-testid="weapon-slots-counter"
+          >
             {t("slotsUsed", { used: usedWeaponSlots, total: weaponSlots })}
           </Badge>
         </div>
@@ -430,7 +434,7 @@ export function TabProficiencies({
         )}
 
         {/* Add weapon */}
-        {!readOnly && usedWeaponSlots < weaponSlots && (
+        {!readOnly && (
           <div className="flex items-center gap-2" data-testid="add-weapon-proficiency">
             <div className="relative flex-1">
               <Input
@@ -548,7 +552,7 @@ export function TabProficiencies({
                   </div>
                   {!readOnly && (
                     <div className="flex items-center gap-2">
-                      {canUpgrade && usedWeaponSlots < weaponSlots && (
+                      {canUpgrade && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -577,34 +581,35 @@ export function TabProficiencies({
         )}
 
         {/* Add fighting style */}
-        {!readOnly &&
-          canAddMore &&
-          usedWeaponSlots < weaponSlots &&
-          availableFightingStyles.length > 0 && (
-            <div data-testid="add-fighting-style">
-              <div className="flex flex-wrap gap-2">
-                {availableFightingStyles.map((style) => (
-                  <Button
-                    key={style.id}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addFightingStyle(style.id)}
-                    disabled={loading}
-                    data-testid={`fighting-style-add-${style.id}`}
-                  >
-                    + {localized(style.name, style.name_en, locale)}
-                  </Button>
-                ))}
-              </div>
+        {!readOnly && availableFightingStyles.length > 0 && (
+          <div data-testid="add-fighting-style">
+            <div className="flex flex-wrap gap-2">
+              {availableFightingStyles.map((style) => (
+                <Button
+                  key={style.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addFightingStyle(style.id)}
+                  disabled={loading}
+                  data-testid={`fighting-style-add-${style.id}`}
+                >
+                  + {localized(style.name, style.name_en, locale)}
+                </Button>
+              ))}
             </div>
-          )}
+          </div>
+        )}
       </div>
 
       {/* Non-Weapon Proficiencies */}
       <div data-testid="nwp-section">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-heading text-lg">{t("nonweaponProf")}</h3>
-          <Badge variant="outline" data-testid="nwp-slots-counter">
+          <Badge
+            variant="outline"
+            className={usedNwpSlots > nwpSlots ? "border-red-500 text-red-400" : ""}
+            data-testid="nwp-slots-counter"
+          >
             {t("slotsUsed", { used: usedNwpSlots, total: nwpSlots })}
           </Badge>
         </div>
@@ -655,7 +660,7 @@ export function TabProficiencies({
         )}
 
         {/* Add NWP - searchable list */}
-        {!readOnly && usedNwpSlots < nwpSlots && (
+        {!readOnly && (
           <div data-testid="add-nwp">
             {/* Search input */}
             <input
