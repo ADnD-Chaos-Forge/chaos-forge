@@ -48,6 +48,7 @@ export default async function SessionPage({ params }: SessionPageProps) {
     .from("characters")
     .select("id, name, avatar_url")
     .eq("user_id", user.id)
+    .eq("is_active", true)
     .returns<Pick<CharacterRow, "id" | "name" | "avatar_url">[]>();
 
   // Fetch tags
