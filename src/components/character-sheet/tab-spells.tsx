@@ -179,14 +179,21 @@ export function TabSpells({
     return counts;
   }, [spellsByLevel, maxSpellLevel]);
 
-  // Learnable spells filtered by canLearnSpell
+  // Learnable spells — show all, never block (house rule: only warn)
   const learnableSpells = useMemo(() => {
     const knownIds = new Set(spells.map((s) => s.spell_id));
     return allSpells.filter((spell) => {
       if (knownIds.has(spell.id)) return false;
-      // Filter by spell type matching class group
       if (isWizard && spell.spell_type !== "wizard") return false;
       if (isPriest && spell.spell_type !== "priest") return false;
+      return true;
+    });
+  }, [allSpells, spells, isWizard, isPriest]);
+
+  // Check which spells have restrictions (for warning display)
+  const spellWarnings = useMemo(() => {
+    const warnings = new Map<string, string>();
+    for (const spell of learnableSpells) {
       const result = canLearnSpell(
         classId as ClassId,
         (spell.school as MagicSchool) ?? undefined,
@@ -194,9 +201,12 @@ export function TabSpells({
         spell.level,
         intScore
       );
-      return result.allowed;
-    });
-  }, [allSpells, spells, classId, isWizard, isPriest, intScore]);
+      if (!result.allowed && result.reason) {
+        warnings.set(spell.id, result.reason);
+      }
+    }
+    return warnings;
+  }, [learnableSpells, classId, intScore]);
 
   // Filtered learnable spells by search, level, and school/sphere
   const filteredLearnableSpells = useMemo(() => {

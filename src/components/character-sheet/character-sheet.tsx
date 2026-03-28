@@ -1067,7 +1067,7 @@ export function CharacterSheet({
 
           <div>
             <h3 className="mb-3 font-heading text-lg">{t("gold")}</h3>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {[
                 { key: "gold_pp" as const, label: t("currencyPP") },
                 { key: "gold_gp" as const, label: t("currencyGP") },

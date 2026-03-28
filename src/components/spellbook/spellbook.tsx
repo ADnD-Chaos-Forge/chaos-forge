@@ -143,23 +143,16 @@ export function Spellbook({
     });
   }, [spells, levelFilter, preparedFilter, searchQuery, spellName]);
 
-  // Learnable spells
+  // Learnable spells — show all, never block (house rule: only warn)
   const learnableSpells = useMemo(() => {
     const knownIds = new Set(spells.map((s) => s.spell_id));
     return allSpells.filter((spell) => {
       if (knownIds.has(spell.id)) return false;
       if (isWizard && spell.spell_type !== "wizard") return false;
       if (isPriest && spell.spell_type !== "priest") return false;
-      const result = canLearnSpell(
-        classId as ClassId,
-        (spell.school as Parameters<typeof canLearnSpell>[1]) ?? undefined,
-        (spell.sphere as Parameters<typeof canLearnSpell>[2]) ?? undefined,
-        spell.level,
-        character.int
-      );
-      return result.allowed;
+      return true;
     });
-  }, [allSpells, spells, classId, isWizard, isPriest, character.int]);
+  }, [allSpells, spells, isWizard, isPriest]);
 
   const filteredLearnableSpells = useMemo(() => {
     return learnableSpells.filter((s) => {

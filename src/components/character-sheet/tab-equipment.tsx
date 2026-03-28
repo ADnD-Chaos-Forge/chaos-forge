@@ -756,7 +756,7 @@ export function TabEquipment({
                             data-testid="custom-weapon-damage-l"
                           />
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                           <input
                             type="number"
                             placeholder={t("speed")}
@@ -881,7 +881,7 @@ export function TabEquipment({
                           className="rounded-md border border-border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                           data-testid="custom-armor-name"
                         />
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                           <input
                             type="number"
                             placeholder={t("acValue")}
@@ -1100,7 +1100,9 @@ export function TabEquipment({
               .filter((e) => e.weapon)
               .map((item) => {
                 const weapon = item.weapon!;
-                const thac0s = getWeaponThac0(weapon);
+                const hitBonus = item.hit_bonus ?? 0;
+                const dmgBonus = item.damage_bonus ?? 0;
+                const thac0s = getWeaponThac0(weapon, hitBonus);
                 const isProficient = weaponProficiencies.some(
                   (wp) => wp.weapon_name.toLowerCase() === weapon.name.toLowerCase()
                 );
@@ -1110,7 +1112,7 @@ export function TabEquipment({
                     className="rounded-md border border-border p-3"
                     data-testid={`weapon-card-${item.id}`}
                   >
-                    <div className="mb-2 flex items-center justify-between">
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
                       <span className="font-medium" data-testid={`weapon-card-name-${item.id}`}>
                         {localized(weapon.name, weapon.name_en, locale)}
                         {weapon.source_book && (
@@ -1132,6 +1134,39 @@ export function TabEquipment({
                         )}
                       </div>
                     </div>
+                    {/* Modifier inputs */}
+                    <div className="mb-2 flex gap-3">
+                      <div className="flex items-center gap-1 text-xs">
+                        <span className="text-muted-foreground">{t("hitMod")}:</span>
+                        <input
+                          type="number"
+                          value={hitBonus}
+                          onChange={(e) =>
+                            updateEquipmentBonus(
+                              item.id,
+                              "hit_bonus",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          className="w-10 rounded border border-input bg-input text-center text-xs"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1 text-xs">
+                        <span className="text-muted-foreground">{t("dmgMod")}:</span>
+                        <input
+                          type="number"
+                          value={dmgBonus}
+                          onChange={(e) =>
+                            updateEquipmentBonus(
+                              item.id,
+                              "damage_bonus",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          className="w-10 rounded border border-input bg-input text-center text-xs"
+                        />
+                      </div>
+                    </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                       <div data-testid={`weapon-card-thac0-melee-${item.id}`}>
                         <span className="text-xs text-muted-foreground">{t("thac0Melee")}:</span>{" "}
@@ -1148,7 +1183,7 @@ export function TabEquipment({
                           {t("damageSMWithStr")}:
                         </span>{" "}
                         <span className="font-mono">
-                          {formatDamageWithBonus(weapon.damage_sm, strDmgAdj)}
+                          {formatDamageWithBonus(weapon.damage_sm, strDmgAdj + dmgBonus)}
                         </span>
                       </div>
                       <div data-testid={`weapon-card-damage-l-${item.id}`}>
@@ -1156,7 +1191,7 @@ export function TabEquipment({
                           {t("damageLWithStr")}:
                         </span>{" "}
                         <span className="font-mono">
-                          {formatDamageWithBonus(weapon.damage_l, strDmgAdj)}
+                          {formatDamageWithBonus(weapon.damage_l, strDmgAdj + dmgBonus)}
                         </span>
                       </div>
                       <div data-testid={`weapon-card-speed-${item.id}`}>
