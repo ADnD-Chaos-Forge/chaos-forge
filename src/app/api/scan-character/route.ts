@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     const message = await client.messages.create({
       model: preciseMode ? "claude-sonnet-4-20250514" : "claude-haiku-4-5-20251001",
-      max_tokens: 2000,
+      max_tokens: 4096,
       messages: [
         {
           role: "user",
@@ -173,6 +173,14 @@ Hinweise:
 
     const responseText = message.content[0].type === "text" ? message.content[0].text : "";
 
+    // Check if response was truncated
+    if (message.stop_reason === "max_tokens") {
+      return NextResponse.json(
+        { error: "Antwort wurde abgeschnitten — bitte erneut versuchen." },
+        { status: 422 }
+      );
+    }
+
     // Extract JSON from response (handle potential markdown code blocks)
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
@@ -182,7 +190,15 @@ Hinweise:
       );
     }
 
-    const extracted = JSON.parse(jsonMatch[0]);
+    let extracted;
+    try {
+      extracted = JSON.parse(jsonMatch[0]);
+    } catch {
+      return NextResponse.json(
+        { error: "Ungültiges JSON vom Scanner — bitte erneut versuchen." },
+        { status: 422 }
+      );
+    }
 
     return NextResponse.json({ character: extracted });
   } catch (err) {
