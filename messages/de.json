@@ -334,7 +334,12 @@
     "noMatchingNwp": "Keine passenden Fertigkeiten gefunden.",
     "createAndAdd": "Erstellen & Hinzufügen",
     "nwpNamePlaceholder": "Name der Fertigkeit",
-    "addLanguageError": "Sprache konnte nicht hinzugefügt werden. Du hast keine Berechtigung, diesen Charakter zu bearbeiten."
+    "addLanguageError": "Sprache konnte nicht hinzugefügt werden. Du hast keine Berechtigung, diesen Charakter zu bearbeiten.",
+    "fightingStyles": "Kampfstile",
+    "addFightingStyle": "Kampfstil hinzufügen",
+    "upgradeSlot": "Slot aufwerten",
+    "slotsInvested": "{slots} Slot(s)",
+    "confirmRemoveStyle": "Möchtest du diesen Kampfstil wirklich entfernen?"
   },
   "sessions": {
     "title": "Die Chronik des Chaos",
@@ -497,6 +502,7 @@
     "equippedStatus": "Angelegt",
     "inventoryStatus": "Inventar",
     "specialization": "Spezialisierung",
+    "fightingStyles": "Kampfstile",
     "stamina": "Ausdauer",
     "muscle": "Muskelkraft",
     "aim": "Zielen",

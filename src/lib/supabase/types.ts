@@ -189,6 +189,13 @@ export interface CharacterNWPWithDetails extends CharacterNonweaponProficiencyRo
   proficiency: NonweaponProficiencyRow;
 }
 
+export interface CharacterFightingStyleRow {
+  id: string;
+  character_id: string;
+  style_id: string;
+  slots_invested: number;
+}
+
 export interface SessionRow {
   id: string;
   title: string;

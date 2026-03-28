@@ -35,7 +35,9 @@ import type {
   CharacterWeaponProficiencyRow,
   CharacterNWPWithDetails,
   CharacterLanguageRow,
+  CharacterFightingStyleRow,
 } from "@/lib/supabase/types";
+import { getFightingStyle } from "@/lib/rules/fighting-styles";
 
 interface PrintSheetProps {
   character: CharacterRow;
@@ -45,6 +47,7 @@ interface PrintSheetProps {
   weaponProficiencies: CharacterWeaponProficiencyRow[];
   nonweaponProficiencies: CharacterNWPWithDetails[];
   languages: CharacterLanguageRow[];
+  fightingStyles: CharacterFightingStyleRow[];
 }
 
 export function PrintSheet({
@@ -55,6 +58,7 @@ export function PrintSheet({
   weaponProficiencies,
   nonweaponProficiencies,
   languages,
+  fightingStyles,
 }: PrintSheetProps) {
   const t = useTranslations("print");
   const locale = useLocale();
@@ -823,7 +827,9 @@ export function PrintSheet({
         )}
 
         {/* ── Proficiencies ───────────────────────────────────────── */}
-        {(weaponProficiencies.length > 0 || nonweaponProficiencies.length > 0) && (
+        {(weaponProficiencies.length > 0 ||
+          nonweaponProficiencies.length > 0 ||
+          fightingStyles.length > 0) && (
           <section className="mb-4" data-testid="print-section-proficiencies">
             <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
               {t("proficiencies")}
@@ -839,6 +845,25 @@ export function PrintSheet({
                         {wp.specialization && ` (${t("specialization")})`}
                       </li>
                     ))}
+                  </ul>
+                </div>
+              )}
+              {fightingStyles.length > 0 && (
+                <div>
+                  <h3 className="font-semibold">{t("fightingStyles")}</h3>
+                  <ul className="mt-1 list-inside list-disc text-xs">
+                    {fightingStyles.map((fs) => {
+                      const style = getFightingStyle(fs.style_id);
+                      if (!style) return null;
+                      const benefit = style.benefits.find((b) => b.slots === fs.slots_invested);
+                      return (
+                        <li key={fs.id}>
+                          {localized(style.name, style.name_en, locale)}
+                          {benefit &&
+                            ` — ${localized(benefit.description, benefit.description_en, locale)}`}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}

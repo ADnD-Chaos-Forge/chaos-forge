@@ -235,9 +235,40 @@ export default function ImportCharacterPage() {
         });
       }
 
+      // Separate fighting styles from weapon proficiencies
+      const fightingStyleEntries =
+        scanned.weaponProficiencies?.filter((wp) =>
+          wp.name.toLowerCase().startsWith("fighting style")
+        ) ?? [];
+      const actualWeaponProfs =
+        scanned.weaponProficiencies?.filter(
+          (wp) => !wp.name.toLowerCase().startsWith("fighting style")
+        ) ?? [];
+
+      // Insert fighting styles
+      for (const fs of fightingStyleEntries) {
+        const styleId = fs.name.toLowerCase().includes("two weapon")
+          ? "two_weapon"
+          : fs.name.toLowerCase().includes("two-hander") ||
+              fs.name.toLowerCase().includes("two handed")
+            ? "two_hander"
+            : fs.name.toLowerCase().includes("shield")
+              ? "weapon_and_shield"
+              : fs.name.toLowerCase().includes("single")
+                ? "single_weapon"
+                : null;
+        if (styleId) {
+          await supabase.from("character_fighting_styles").insert({
+            character_id: data.id,
+            style_id: styleId,
+            slots_invested: 1,
+          });
+        }
+      }
+
       // Insert weapon proficiencies
-      if (scanned.weaponProficiencies?.length > 0) {
-        const wpRows = scanned.weaponProficiencies.map((wp) => ({
+      if (actualWeaponProfs.length > 0) {
+        const wpRows = actualWeaponProfs.map((wp) => ({
           character_id: data.id,
           weapon_name: wp.name,
           specialization: wp.specialized,

@@ -16,6 +16,7 @@ import type {
   CharacterNWPWithDetails,
   NonweaponProficiencyRow,
   CharacterLanguageRow,
+  CharacterFightingStyleRow,
 } from "@/lib/supabase/types";
 
 interface CharacterPageProps {
@@ -113,6 +114,13 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
     .eq("character_id", id)
     .returns<CharacterLanguageRow[]>();
 
+  // Fetch fighting styles
+  const { data: fightingStyles } = await supabase
+    .from("character_fighting_styles")
+    .select("*")
+    .eq("character_id", character.id)
+    .returns<CharacterFightingStyleRow[]>();
+
   return (
     <CharacterSheet
       character={character}
@@ -129,6 +137,7 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
       allGeneralItems={allGeneralItems ?? []}
       allNonweaponProficiencies={allNWPs ?? []}
       languages={languages ?? []}
+      fightingStyles={fightingStyles ?? []}
     />
   );
 }
