@@ -129,8 +129,12 @@ export function TabProficiencies({
   const [newLanguage, setNewLanguage] = useState("");
 
   const group = classGroup as ClassGroup;
-  const weaponSlots = getWeaponProficiencySlots(group, level);
-  const nwpSlots = getNonweaponProficiencySlots(group, level, intScore);
+  const baseWeaponSlots = getWeaponProficiencySlots(group, level);
+  const baseNwpSlots = getNonweaponProficiencySlots(group, level, intScore);
+  const [weaponSlotsAdj, setWeaponSlotsAdj] = useState(0);
+  const [nwpSlotsAdj, setNwpSlotsAdj] = useState(0);
+  const weaponSlots = baseWeaponSlots + weaponSlotsAdj;
+  const nwpSlots = baseNwpSlots + nwpSlotsAdj;
   const penalty = getNonproficiencyPenalty(group);
   const showSpecialization = canSpecialize(classId as ClassId);
 
@@ -318,6 +322,17 @@ export function TabProficiencies({
     router.refresh();
   }
 
+  async function downgradeFightingStyle(fs: CharacterFightingStyleRow) {
+    setLoading(true);
+    const supabase = createClient();
+    await supabase
+      .from("character_fighting_styles")
+      .update({ slots_invested: Math.max(1, fs.slots_invested - 1) })
+      .eq("id", fs.id);
+    setLoading(false);
+    router.refresh();
+  }
+
   const raceData = RACES[raceId as keyof typeof RACES];
   const defaultLanguages = raceData?.defaultLanguages ?? [];
   const maxLanguages = getIntelligenceModifiers(intScore).numberOfLanguages;
@@ -375,13 +390,32 @@ export function TabProficiencies({
       <div data-testid="weapon-proficiencies-section">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-heading text-lg">{t("weaponProf")}</h3>
-          <Badge
-            variant="outline"
-            className={usedWeaponSlots > weaponSlots ? "border-red-500 text-red-400" : ""}
-            data-testid="weapon-slots-counter"
-          >
-            {t("slotsUsed", { used: usedWeaponSlots, total: weaponSlots })}
-          </Badge>
+          <div className="flex items-center gap-1" data-testid="weapon-slots-counter">
+            {!readOnly && (
+              <button
+                className="rounded px-1.5 text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => setWeaponSlotsAdj((a) => a - 1)}
+                aria-label="Slot entfernen"
+              >
+                −
+              </button>
+            )}
+            <Badge
+              variant="outline"
+              className={usedWeaponSlots > weaponSlots ? "border-red-500 text-red-400" : ""}
+            >
+              {t("slotsUsed", { used: usedWeaponSlots, total: weaponSlots })}
+            </Badge>
+            {!readOnly && (
+              <button
+                className="rounded px-1.5 text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => setWeaponSlotsAdj((a) => a + 1)}
+                aria-label="Slot hinzufügen"
+              >
+                +
+              </button>
+            )}
+          </div>
         </div>
 
         <p className="mb-3 text-sm text-muted-foreground" data-testid="nonproficiency-penalty">
@@ -552,6 +586,17 @@ export function TabProficiencies({
                   </div>
                   {!readOnly && (
                     <div className="flex items-center gap-2">
+                      {fs.slots_invested > 1 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downgradeFightingStyle(fs)}
+                          disabled={loading}
+                          data-testid={`fighting-style-downgrade-${fs.id}`}
+                        >
+                          −
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
@@ -559,7 +604,7 @@ export function TabProficiencies({
                         disabled={loading}
                         data-testid={`fighting-style-upgrade-${fs.id}`}
                       >
-                        {t("upgradeSlot")}
+                        +
                       </Button>
                       <Button
                         variant="ghost"
@@ -603,13 +648,32 @@ export function TabProficiencies({
       <div data-testid="nwp-section">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-heading text-lg">{t("nonweaponProf")}</h3>
-          <Badge
-            variant="outline"
-            className={usedNwpSlots > nwpSlots ? "border-red-500 text-red-400" : ""}
-            data-testid="nwp-slots-counter"
-          >
-            {t("slotsUsed", { used: usedNwpSlots, total: nwpSlots })}
-          </Badge>
+          <div className="flex items-center gap-1" data-testid="nwp-slots-counter">
+            {!readOnly && (
+              <button
+                className="rounded px-1.5 text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => setNwpSlotsAdj((a) => a - 1)}
+                aria-label="Slot entfernen"
+              >
+                −
+              </button>
+            )}
+            <Badge
+              variant="outline"
+              className={usedNwpSlots > nwpSlots ? "border-red-500 text-red-400" : ""}
+            >
+              {t("slotsUsed", { used: usedNwpSlots, total: nwpSlots })}
+            </Badge>
+            {!readOnly && (
+              <button
+                className="rounded px-1.5 text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => setNwpSlotsAdj((a) => a + 1)}
+                aria-label="Slot hinzufügen"
+              >
+                +
+              </button>
+            )}
+          </div>
         </div>
 
         {/* NWP list */}
