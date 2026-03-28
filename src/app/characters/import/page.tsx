@@ -245,6 +245,35 @@ export default function ImportCharacterPage() {
         await supabase.from("character_weapon_proficiencies").insert(wpRows);
       }
 
+      // Try to match and insert NWPs
+      if (scanned.nwps?.length > 0) {
+        const { data: allNwps } = await supabase
+          .from("nonweapon_proficiencies")
+          .select("id, name, name_en");
+        if (allNwps) {
+          for (const nwpName of scanned.nwps) {
+            const nwpLower = nwpName
+              .toLowerCase()
+              .replace(/^native languages?:\s*/i, "")
+              .trim();
+            if (nwpLower.startsWith("common") || nwpLower.startsWith("native")) continue;
+            const match = allNwps.find(
+              (n) =>
+                n.name.toLowerCase() === nwpLower ||
+                n.name_en?.toLowerCase() === nwpLower ||
+                n.name.toLowerCase().includes(nwpLower) ||
+                (n.name_en && n.name_en.toLowerCase().includes(nwpLower))
+            );
+            if (match) {
+              await supabase.from("character_nonweapon_proficiencies").insert({
+                character_id: data.id,
+                proficiency_id: match.id,
+              });
+            }
+          }
+        }
+      }
+
       // Try to match and insert equipment (weapons + armor)
       if (scanned.equipment?.length > 0) {
         // Fetch all weapons and armor from DB to match by name
