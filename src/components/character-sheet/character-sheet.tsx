@@ -1274,6 +1274,7 @@ export function CharacterSheet({
               wisScore={character.wis}
               spells={spells}
               allSpells={allSpells}
+              spellSlotsAdj={character.spell_slots_adj ?? {}}
               readOnly={!isOwner}
             />
           </TabsContent>

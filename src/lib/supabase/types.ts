@@ -61,6 +61,7 @@ export interface CharacterRow {
   weapon_slots_adj: number;
   nwp_slots_adj: number;
   language_slots_adj: number;
+  spell_slots_adj: Record<string, number>;
   created_at: string;
   updated_at: string;
 }

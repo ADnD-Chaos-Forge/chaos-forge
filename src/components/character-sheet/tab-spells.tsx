@@ -83,6 +83,7 @@ interface TabSpellsProps {
   wisScore: number;
   spells: CharacterSpellWithDetails[];
   allSpells: SpellRow[];
+  spellSlotsAdj: Record<string, number>;
   readOnly?: boolean;
 }
 
@@ -96,6 +97,7 @@ export function TabSpells({
   wisScore,
   spells,
   allSpells,
+  spellSlotsAdj: initialAdj,
   readOnly = false,
 }: TabSpellsProps) {
   const router = useRouter();
@@ -103,6 +105,16 @@ export function TabSpells({
   const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [slotsAdj, setSlotsAdj] = useState<Record<string, number>>(initialAdj ?? {});
+
+  async function updateSlotAdj(spellLevel: number, delta: number) {
+    const key = String(spellLevel);
+    const newVal = (slotsAdj[key] ?? 0) + delta;
+    const newAdj = { ...slotsAdj, [key]: newVal };
+    setSlotsAdj(newAdj);
+    const supabase = createClient();
+    await supabase.from("characters").update({ spell_slots_adj: newAdj }).eq("id", characterId);
+  }
 
   const spellName = useCallback(
     (spell: SpellRow) => (locale === "en" && spell.name_en ? spell.name_en : spell.name),
@@ -138,8 +150,8 @@ export function TabSpells({
   }, [isPriest, wisScore, maxSpellLevel]);
 
   const totalSlots = useMemo(
-    () => baseSlots.map((base, i) => base + (bonusSlots[i] ?? 0)),
-    [baseSlots, bonusSlots]
+    () => baseSlots.map((base, i) => base + (bonusSlots[i] ?? 0) + (slotsAdj[String(i + 1)] ?? 0)),
+    [baseSlots, bonusSlots, slotsAdj]
   );
 
   // Group spells by level
@@ -383,6 +395,22 @@ export function TabSpells({
                     <span className="text-muted-foreground"> / </span>
                     <span data-testid={`spell-slot-available-${spellLevel}`}>{available}</span>
                   </div>
+                  {!readOnly && (
+                    <div className="mt-1 flex justify-center gap-1">
+                      <button
+                        className="rounded px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => updateSlotAdj(spellLevel, -1)}
+                      >
+                        −
+                      </button>
+                      <button
+                        className="rounded px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => updateSlotAdj(spellLevel, 1)}
+                      >
+                        +
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
