@@ -552,7 +552,7 @@ export default function ImportCharacterPage() {
                   type="number"
                   min={1}
                   max={20}
-                  value={scanned.level}
+                  value={scanned.level ?? scanned.classes?.[0]?.level ?? 1}
                   onChange={(e) => updateField("level", parseInt(e.target.value) || 1)}
                   data-testid="import-level"
                 />
@@ -586,7 +586,7 @@ export default function ImportCharacterPage() {
                   id="import-xp"
                   type="number"
                   min={0}
-                  value={scanned.xp ?? 0}
+                  value={scanned.xp ?? scanned.classes?.[0]?.xp ?? 0}
                   onChange={(e) => updateField("xp", parseInt(e.target.value) || 0)}
                   data-testid="import-xp"
                 />
