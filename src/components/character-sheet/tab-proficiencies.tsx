@@ -552,17 +552,15 @@ export function TabProficiencies({
                   </div>
                   {!readOnly && (
                     <div className="flex items-center gap-2">
-                      {canUpgrade && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => upgradeFightingStyle(fs)}
-                          disabled={loading}
-                          data-testid={`fighting-style-upgrade-${fs.id}`}
-                        >
-                          {t("upgradeSlot")}
-                        </Button>
-                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => upgradeFightingStyle(fs)}
+                        disabled={loading}
+                        data-testid={`fighting-style-upgrade-${fs.id}`}
+                      >
+                        {t("upgradeSlot")}
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
