@@ -291,6 +291,7 @@ export interface XpHistoryRow {
 export interface AppUser {
   id: string;
   email: string;
+  display_name: string;
 }
 
 export interface ChronicleNpcRow {

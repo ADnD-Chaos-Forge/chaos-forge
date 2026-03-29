@@ -665,8 +665,7 @@
     "badgePublic": "Öffentlich",
     "badgeShared": "Geteilt",
     "sharedBy": "Geteilt von {player}",
-    "noUsers": "Keine anderen Spieler registriert.",
-    "serviceKeyMissing": "Teilen ist nicht verfügbar — Service-Key nicht konfiguriert. Kontaktiere den Admin."
+    "noUsers": "Keine anderen Spieler registriert."
   },
   "spellbook": {
     "title": "Zauberbuch",

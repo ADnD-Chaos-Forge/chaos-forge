@@ -17,6 +17,13 @@ interface ShareDialogProps {
   onVisibilityChange: (isPublic: boolean) => void;
 }
 
+function displayName(user: AppUser): string {
+  if (user.display_name && user.display_name !== "Abenteurer") {
+    return user.display_name;
+  }
+  return user.email;
+}
+
 export function ShareDialog({
   open,
   characterId,
@@ -33,7 +40,6 @@ export function ShareDialog({
   const [selectedUserId, setSelectedUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [configError, setConfigError] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -54,22 +60,19 @@ export function ShareDialog({
 
     setShares(sharesData ?? []);
 
-    // Fetch all users via API route
-    try {
-      const res = await fetch("/api/users");
-      if (res.ok) {
-        const json = await res.json();
-        setUsers(json.users ?? []);
-        setConfigError(false);
-      } else {
-        const json = await res.json().catch(() => ({}));
-        if (json.error === "not_configured") {
-          setConfigError(true);
-        }
-      }
-    } catch {
-      // ignore fetch errors
-    }
+    // Fetch all profiles directly (no admin API needed)
+    // Filter out @chaos-forge.de test users
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("id, display_name, email")
+      .not("email", "like", "%@chaos-forge.de");
+
+    const mappedUsers: AppUser[] = (profilesData ?? []).map((p) => ({
+      id: p.id,
+      email: p.email ?? "",
+      display_name: p.display_name ?? "",
+    }));
+    setUsers(mappedUsers);
 
     setLoading(false);
   }
@@ -170,7 +173,9 @@ export function ShareDialog({
                     className="flex items-center justify-between rounded-md border border-border px-3 py-2"
                     data-testid={`share-item-${share.id}`}
                   >
-                    <span className="text-sm">{user?.email ?? share.shared_with_user_id}</span>
+                    <span className="text-sm">
+                      {user ? displayName(user) : share.shared_with_user_id}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -187,12 +192,7 @@ export function ShareDialog({
         </div>
 
         {/* Add share */}
-        {!loading && configError && (
-          <p className="text-sm text-yellow-500" data-testid="share-config-error">
-            {t("serviceKeyMissing")}
-          </p>
-        )}
-        {!loading && !configError && users.length === 0 && (
+        {!loading && availableUsers.length === 0 && shares.length === 0 && (
           <p className="text-sm text-muted-foreground" data-testid="share-no-users">
             {t("noUsers")}
           </p>
@@ -208,7 +208,7 @@ export function ShareDialog({
               <option value="">{t("selectUser")}</option>
               {availableUsers.map((u) => (
                 <option key={u.id} value={u.id}>
-                  {u.email}
+                  {displayName(u)}
                 </option>
               ))}
             </select>
