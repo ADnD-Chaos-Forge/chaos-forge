@@ -160,7 +160,7 @@ export function PlayHpBar({
 
         {/* Manage Link */}
         <Link
-          href={`/characters/${characterId}`}
+          href={`/characters/${characterId}/manage`}
           className="shrink-0 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           data-testid="play-manage-link"
         >

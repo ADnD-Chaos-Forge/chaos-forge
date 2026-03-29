@@ -13,7 +13,6 @@ export class CharacterSheetPage {
   readonly avatarUploadModal: Locator;
   readonly avatarFileInput: Locator;
   readonly shareButton: Locator;
-  readonly playButton: Locator;
   readonly printButton: Locator;
   readonly saveButton: Locator;
   readonly deleteButton: Locator;
@@ -60,7 +59,6 @@ export class CharacterSheetPage {
     this.avatarUploadModal = page.getByTestId("avatar-upload-modal");
     this.avatarFileInput = page.getByTestId("avatar-file-input");
     this.shareButton = page.getByTestId("sheet-share-button");
-    this.playButton = page.getByTestId("sheet-play-button");
     this.printButton = page.getByTestId("sheet-print-button");
     this.saveButton = page.getByTestId("sheet-save-button");
     this.deleteButton = page.getByTestId("sheet-delete-button");
@@ -96,7 +94,7 @@ export class CharacterSheetPage {
   }
 
   async goto(characterId: string) {
-    await this.page.goto(`/characters/${characterId}`);
+    await this.page.goto(`/characters/${characterId}/manage`);
     await this.container.waitFor({ timeout: 15000 });
   }
 

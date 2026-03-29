@@ -1,25 +1,12 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/supabase/auth";
-import { CharacterSheet } from "@/components/character-sheet/character-sheet";
-import type {
-  CharacterRow,
-  CharacterClassRow,
-  CharacterEquipmentWithDetails,
-  CharacterSpellWithDetails,
-  CharacterInventoryWithDetails,
-  GeneralItemRow,
-  WeaponRow,
-  ArmorRow,
-  SpellRow,
-  CharacterWeaponProficiencyRow,
-  CharacterNWPWithDetails,
-  NonweaponProficiencyRow,
-  CharacterLanguageRow,
-  CharacterFightingStyleRow,
-  SessionRow,
-  XpHistoryRow,
-} from "@/lib/supabase/types";
+import { GlassCard } from "@/components/glass-card";
+import { PenLine, Swords } from "lucide-react";
+import type { CharacterRow } from "@/lib/supabase/types";
 
 interface CharacterPageProps {
   params: Promise<{ id: string }>;
@@ -27,137 +14,63 @@ interface CharacterPageProps {
 
 export default async function CharacterPage({ params }: CharacterPageProps) {
   const { id } = await params;
-  const user = await requireAuth();
+  await requireAuth();
   const supabase = await createClient();
+  const t = await getTranslations("characters");
 
   const { data: character } = await supabase
     .from("characters")
-    .select("*")
+    .select("id, name, avatar_url")
     .eq("id", id)
-    .single<CharacterRow>();
+    .single<Pick<CharacterRow, "id" | "name" | "avatar_url">>();
 
   if (!character) {
     notFound();
   }
 
-  // Fetch equipment with joined weapon/armor data
-  const { data: equipment } = await supabase
-    .from("character_equipment")
-    .select("*, weapon:weapons(*), armor:armor(*)")
-    .eq("character_id", id);
-
-  // Fetch spells with joined spell data
-  const { data: spells } = await supabase
-    .from("character_spells")
-    .select("*, spell:spells(*)")
-    .eq("character_id", id);
-
-  // Fetch all reference data for add dialogs
-  const { data: allWeapons } = await supabase
-    .from("weapons")
-    .select("*")
-    .order("name")
-    .returns<WeaponRow[]>();
-
-  const { data: allArmor } = await supabase
-    .from("armor")
-    .select("*")
-    .order("ac", { ascending: false })
-    .returns<ArmorRow[]>();
-
-  const { data: allSpells } = await supabase
-    .from("spells")
-    .select("*")
-    .order("level")
-    .order("name")
-    .returns<SpellRow[]>();
-
-  // Fetch proficiencies
-  const { data: weaponProfs } = await supabase
-    .from("character_weapon_proficiencies")
-    .select("*")
-    .eq("character_id", id)
-    .returns<CharacterWeaponProficiencyRow[]>();
-
-  const { data: nwProfs } = await supabase
-    .from("character_nonweapon_proficiencies")
-    .select("*, proficiency:nonweapon_proficiencies(*)")
-    .eq("character_id", id);
-
-  const { data: allNWPs } = await supabase
-    .from("nonweapon_proficiencies")
-    .select("*")
-    .order("name")
-    .returns<NonweaponProficiencyRow[]>();
-
-  // Fetch character classes (multiclass support)
-  const { data: characterClasses } = await supabase
-    .from("character_classes")
-    .select("*")
-    .eq("character_id", id)
-    .returns<CharacterClassRow[]>();
-
-  // Fetch inventory
-  const { data: inventoryData } = await supabase
-    .from("character_inventory")
-    .select("*, item:general_items(*)")
-    .eq("character_id", id);
-
-  const { data: allGeneralItems } = await supabase
-    .from("general_items")
-    .select("*")
-    .order("name")
-    .returns<GeneralItemRow[]>();
-
-  // Fetch languages
-  const { data: languages } = await supabase
-    .from("character_languages")
-    .select("*")
-    .eq("character_id", id)
-    .returns<CharacterLanguageRow[]>();
-
-  // Fetch fighting styles
-  const { data: fightingStyles } = await supabase
-    .from("character_fighting_styles")
-    .select("*")
-    .eq("character_id", character.id)
-    .returns<CharacterFightingStyleRow[]>();
-
-  // Fetch sessions (for XP assignment dropdown)
-  const { data: sessionsData } = await supabase
-    .from("sessions")
-    .select("id, title, session_date")
-    .order("session_date", { ascending: false })
-    .limit(20)
-    .returns<Pick<SessionRow, "id" | "title" | "session_date">[]>();
-
-  // Fetch XP history
-  const { data: xpHistoryData } = await supabase
-    .from("xp_history")
-    .select("*")
-    .eq("character_id", id)
-    .order("created_at", { ascending: false })
-    .returns<XpHistoryRow[]>();
-
   return (
-    <CharacterSheet
-      character={character}
-      characterClasses={characterClasses ?? []}
-      userId={user.id}
-      equipment={(equipment as CharacterEquipmentWithDetails[]) ?? []}
-      spells={(spells as CharacterSpellWithDetails[]) ?? []}
-      allWeapons={allWeapons ?? []}
-      allArmor={allArmor ?? []}
-      allSpells={allSpells ?? []}
-      weaponProficiencies={weaponProfs ?? []}
-      nonweaponProficiencies={(nwProfs as CharacterNWPWithDetails[]) ?? []}
-      inventory={(inventoryData as CharacterInventoryWithDetails[]) ?? []}
-      allGeneralItems={allGeneralItems ?? []}
-      allNonweaponProficiencies={allNWPs ?? []}
-      languages={languages ?? []}
-      fightingStyles={fightingStyles ?? []}
-      sessions={sessionsData ?? []}
-      xpHistory={xpHistoryData ?? []}
-    />
+    <div
+      className="flex flex-1 flex-col items-center justify-center gap-6 p-6"
+      data-testid="character-choice-page"
+    >
+      {/* Character avatar + name */}
+      <div className="flex flex-col items-center gap-3">
+        {character.avatar_url ? (
+          <div className="h-20 w-20 overflow-hidden rounded-full border-2 border-primary/30">
+            <Image
+              src={character.avatar_url}
+              alt={character.name}
+              width={80}
+              height={80}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-primary/30 bg-muted font-heading text-2xl">
+            {character.name.charAt(0)}
+          </div>
+        )}
+        <h1 className="font-heading text-2xl text-primary sm:text-3xl">{character.name}</h1>
+        <p className="text-center text-muted-foreground">{t("characterChoice")}</p>
+      </div>
+
+      <div className="grid w-full max-w-lg gap-4 sm:grid-cols-2">
+        <Link href={`/characters/${id}/manage`} data-testid="character-manage-link">
+          <GlassCard glow="neutral" className="flex flex-col items-center gap-3 p-6 text-center">
+            <PenLine className="h-10 w-10 text-primary" />
+            <h2 className="font-heading text-lg">{t("manageCharacter")}</h2>
+            <p className="text-sm text-muted-foreground">{t("manageCharacterDesc")}</p>
+          </GlassCard>
+        </Link>
+
+        <Link href={`/characters/${id}/play`} data-testid="character-play-link">
+          <GlassCard glow="neutral" className="flex flex-col items-center gap-3 p-6 text-center">
+            <Swords className="h-10 w-10 text-primary" />
+            <h2 className="font-heading text-lg">{t("playCharacter")}</h2>
+            <p className="text-sm text-muted-foreground">{t("playCharacterDesc")}</p>
+          </GlassCard>
+        </Link>
+      </div>
+    </div>
   );
 }

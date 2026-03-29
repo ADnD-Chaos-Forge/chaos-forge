@@ -25,10 +25,12 @@ test.describe("Character Sheet — Owner", () => {
     await loginAsTestUser(page);
     const sheet = new CharacterSheetPage(page);
 
-    // Navigate to Gor (owned by test user)
+    // Navigate to Gor (owned by test user) → choice page → manage
     const firstCard = page.locator("a", { hasText: "Gor" });
     await expect(firstCard).toBeVisible({ timeout: 10000 });
     await firstCard.click();
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
+    await page.getByTestId("character-manage-link").click();
     await sheet.container.waitFor({ timeout: 30000 });
 
     // Character name visible
@@ -86,6 +88,8 @@ test.describe("Character Sheet — Read-Only", () => {
     const elara = page.locator("a", { hasText: "Elara" });
     await expect(elara).toBeVisible({ timeout: 10000 });
     await elara.click();
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
+    await page.getByTestId("character-manage-link").click();
     await sheet.container.waitFor({ timeout: 30000 });
 
     // Delete button should NOT be visible for non-owner
@@ -102,25 +106,32 @@ test.describe("Loading & Navigation", () => {
   });
 });
 
-test.describe("Play Mode", () => {
-  test("play mode button visible and page loads", async ({ page }) => {
+test.describe("Character Choice Page", () => {
+  test("shows manage and play options, both navigate correctly", async ({ page }) => {
     test.setTimeout(60000);
     await loginAsTestUser(page);
-    const sheet = new CharacterSheetPage(page);
 
     // Navigate to Gor (fighter)
     const gor = page.locator("a", { hasText: "Gor" });
     await expect(gor).toBeVisible({ timeout: 10000 });
     await gor.click();
-    await sheet.container.waitFor({ timeout: 30000 });
 
-    // Play mode button should be visible
-    await expect(sheet.playButton).toBeVisible({ timeout: 5000 });
-    await sheet.playButton.click();
+    // Choice page loads with both options
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId("character-manage-link")).toBeVisible();
+    await expect(page.getByTestId("character-play-link")).toBeVisible();
 
-    // Play mode page loads
+    // Click play → play mode loads
+    await page.getByTestId("character-play-link").click();
     await expect(page.getByTestId("play-mode")).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId("play-hp-bar")).toBeVisible();
+
+    // Go back and click manage → character sheet loads
+    await page.goBack();
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 10000 });
+    await page.getByTestId("character-manage-link").click();
+    const sheet = new CharacterSheetPage(page);
+    await sheet.container.waitFor({ timeout: 30000 });
   });
 });
 
@@ -133,6 +144,8 @@ test.describe("Print View", () => {
     const gor = page.locator("a", { hasText: "Gor" });
     await expect(gor).toBeVisible({ timeout: 10000 });
     await gor.click();
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
+    await page.getByTestId("character-manage-link").click();
     await sheet.container.waitFor({ timeout: 30000 });
 
     await sheet.printButton.click();
