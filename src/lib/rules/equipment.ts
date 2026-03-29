@@ -1,6 +1,6 @@
 export type EncumbranceLevel = "unencumbered" | "light" | "moderate" | "heavy" | "severe";
 
-type ClassGroup = "warrior" | "wizard" | "priest" | "rogue";
+import type { ClassGroup } from "./types";
 
 export interface ACCalculationInput {
   /** Equipped armor's AC value (null = no armor, base 10) */

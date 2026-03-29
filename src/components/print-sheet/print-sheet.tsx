@@ -16,7 +16,7 @@ import {
 import { getNonproficiencyPenalty } from "@/lib/rules/proficiencies";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import { getKit, getEffectiveHitDie } from "@/lib/rules/kits";
-import { calculateAC } from "@/lib/rules/equipment";
+import { calculateAC, calculateEncumbrance } from "@/lib/rules/equipment";
 import { feetToMeters } from "@/lib/utils/units";
 import {
   getStrengthModifiers,
@@ -106,11 +106,17 @@ export function PrintSheet({
       (e.armor.name.toLowerCase() === "schild" || e.armor.name.toLowerCase() === "shield")
   );
   const classGroups = activeClasses.map((cc) => getClassGroup(cc.class_id as ClassId));
+  const totalWeight = equipment.reduce(
+    (sum, e) => sum + (e.weapon?.weight ?? e.armor?.weight ?? 0),
+    0
+  );
+  const encumbranceLevel = calculateEncumbrance(totalWeight, strMods.weightAllow);
   const effectiveAC = calculateAC({
     equippedArmorAC: equippedArmorForAC?.armor?.ac ?? null,
     shieldEquipped: hasShieldForAC,
     dexDefenseAdj: dexMods.defensiveAdj,
     classGroups,
+    encumbrance: encumbranceLevel,
     ignoreEncumbrance: character.ignore_encumbrance,
   });
 
@@ -597,6 +603,7 @@ export function PrintSheet({
               shieldEquipped,
               dexDefenseAdj: dexMods.defensiveAdj,
               classGroups,
+              encumbrance: encumbranceLevel,
               ignoreEncumbrance: character.ignore_encumbrance,
             });
             return (

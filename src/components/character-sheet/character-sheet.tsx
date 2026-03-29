@@ -31,7 +31,7 @@ import {
   getCharismaModifiers,
 } from "@/lib/rules/abilities";
 import { getAttacksPerRound } from "@/lib/rules/combat";
-import { calculateAC } from "@/lib/rules/equipment";
+import { calculateAC, calculateEncumbrance } from "@/lib/rules/equipment";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import { getKit, getEffectiveHitDie, getKitsForClass } from "@/lib/rules/kits";
 import { getAllClasses } from "@/lib/rules/classes";
@@ -203,11 +203,17 @@ export function CharacterSheet({
   const hasShield = equipment.some(
     (e) => e.equipped && e.armor && e.armor.name.toLowerCase().includes("shield")
   );
+  const totalWeight = equipment.reduce(
+    (sum, e) => sum + (e.weapon?.weight ?? e.armor?.weight ?? 0),
+    0
+  );
+  const encumbranceLevel = calculateEncumbrance(totalWeight, strMods.weightAllow);
   const effectiveAC = calculateAC({
     equippedArmorAC: equippedArmor?.armor?.ac ?? null,
     shieldEquipped: hasShield,
     dexDefenseAdj: dexMods.defensiveAdj,
     classGroups,
+    encumbrance: encumbranceLevel,
     ignoreEncumbrance: character.ignore_encumbrance,
   });
 

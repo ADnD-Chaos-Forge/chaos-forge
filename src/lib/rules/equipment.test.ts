@@ -79,6 +79,23 @@ describe("EQUIP-001: AC Calculation", () => {
     ); // No bonus when encumbered
   });
 
+  it("should NOT apply unarmored bonus when lightly encumbered", () => {
+    expect(calculateAC({ dexDefenseAdj: 0, classGroups: ["warrior"], encumbrance: "light" })).toBe(
+      10
+    );
+  });
+
+  it("should apply unarmored bonus with shield (shield is not armor)", () => {
+    expect(
+      calculateAC({
+        shieldEquipped: true,
+        dexDefenseAdj: 0,
+        classGroups: ["warrior"],
+        encumbrance: "unencumbered",
+      })
+    ).toBe(7); // 10 - 1 shield - 2 unarmored
+  });
+
   it("should apply unarmored bonus regardless of encumbrance when ignoreEncumbrance=true", () => {
     expect(
       calculateAC({
