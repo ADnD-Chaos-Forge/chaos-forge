@@ -748,6 +748,7 @@
     "noWeapons": "Keine Waffen ausgerüstet",
     "noSpells": "Keine Zauber vorbereitet",
     "noProficiencies": "Keine Fertigkeiten",
-    "noItems": "Kein Inventar"
+    "noItems": "Kein Inventar",
+    "wisMagicalDefense": "WIS Magische Abwehr"
   }
 }

@@ -42,33 +42,40 @@ export function PlayChecksPanel({
   nonweaponProficiencies,
 }: PlayChecksPanelProps) {
   const t = useTranslations("playMode");
+  const ts = useTranslations("sheet");
   const locale = useLocale();
 
-  // Ability scores with names
+  // Ability scores with names (using existing sheet i18n keys)
   const abilities = useMemo(
     () => [
       {
         name: "STR",
         score: character.str,
         subScores: [
-          character.str_muscle != null ? { name: "Muscle", score: character.str_muscle } : null,
-          character.str_stamina != null ? { name: "Stamina", score: character.str_stamina } : null,
+          character.str_muscle != null ? { name: ts("muscle"), score: character.str_muscle } : null,
+          character.str_stamina != null
+            ? { name: ts("stamina"), score: character.str_stamina }
+            : null,
         ].filter(Boolean),
       },
       {
         name: "DEX",
         score: character.dex,
         subScores: [
-          character.dex_aim != null ? { name: "Aim", score: character.dex_aim } : null,
-          character.dex_balance != null ? { name: "Balance", score: character.dex_balance } : null,
+          character.dex_aim != null ? { name: ts("aim"), score: character.dex_aim } : null,
+          character.dex_balance != null
+            ? { name: ts("balance"), score: character.dex_balance }
+            : null,
         ].filter(Boolean),
       },
       {
         name: "CON",
         score: character.con,
         subScores: [
-          character.con_health != null ? { name: "Health", score: character.con_health } : null,
-          character.con_fitness != null ? { name: "Fitness", score: character.con_fitness } : null,
+          character.con_health != null ? { name: ts("health"), score: character.con_health } : null,
+          character.con_fitness != null
+            ? { name: ts("fitness"), score: character.con_fitness }
+            : null,
         ].filter(Boolean),
       },
       {
@@ -76,9 +83,9 @@ export function PlayChecksPanel({
         score: character.int,
         subScores: [
           character.int_knowledge != null
-            ? { name: "Knowledge", score: character.int_knowledge }
+            ? { name: ts("knowledge"), score: character.int_knowledge }
             : null,
-          character.int_reason != null ? { name: "Reason", score: character.int_reason } : null,
+          character.int_reason != null ? { name: ts("reason"), score: character.int_reason } : null,
         ].filter(Boolean),
       },
       {
@@ -86,10 +93,10 @@ export function PlayChecksPanel({
         score: character.wis,
         subScores: [
           character.wis_intuition != null
-            ? { name: "Intuition", score: character.wis_intuition }
+            ? { name: ts("intuition"), score: character.wis_intuition }
             : null,
           character.wis_willpower != null
-            ? { name: "Willpower", score: character.wis_willpower }
+            ? { name: ts("willpower"), score: character.wis_willpower }
             : null,
         ].filter(Boolean),
       },
@@ -98,30 +105,30 @@ export function PlayChecksPanel({
         score: character.cha,
         subScores: [
           character.cha_leadership != null
-            ? { name: "Leadership", score: character.cha_leadership }
+            ? { name: ts("leadership"), score: character.cha_leadership }
             : null,
           character.cha_appearance != null
-            ? { name: "Appearance", score: character.cha_appearance }
+            ? { name: ts("appearance"), score: character.cha_appearance }
             : null,
         ].filter(Boolean),
       },
     ],
-    [character]
+    [character, ts]
   );
 
-  // Thief skills
+  // Thief skills (using existing sheet i18n keys)
   const thiefSkills = useMemo(() => {
     if (!showThiefSkills) return [];
     return [
-      { name: "Pick Locks", value: character.thief_pick_locks },
-      { name: "Find Traps", value: character.thief_find_traps },
-      { name: "Move Silently", value: character.thief_move_silently },
-      { name: "Hide in Shadows", value: character.thief_hide_shadows },
-      { name: "Climb Walls", value: character.thief_climb_walls },
-      { name: "Detect Noise", value: character.thief_detect_noise },
-      { name: "Read Languages", value: character.thief_read_languages },
+      { name: ts("pickLocks"), value: character.thief_pick_locks },
+      { name: ts("findTraps"), value: character.thief_find_traps },
+      { name: ts("moveSilently"), value: character.thief_move_silently },
+      { name: ts("hideInShadows"), value: character.thief_hide_shadows },
+      { name: ts("climbWalls"), value: character.thief_climb_walls },
+      { name: ts("detectNoise"), value: character.thief_detect_noise },
+      { name: ts("readLanguages"), value: character.thief_read_languages },
     ];
-  }, [showThiefSkills, character]);
+  }, [showThiefSkills, character, ts]);
 
   // NWP checks with target numbers
   const nwpChecks = useMemo(() => {
@@ -176,7 +183,7 @@ export function PlayChecksPanel({
         </div>
         {wisMods.magicalDefenseAdj !== 0 && (
           <div className="mt-1 text-[10px] text-muted-foreground">
-            WIS Magical Defense: {wisMods.magicalDefenseAdj > 0 ? "+" : ""}
+            {t("wisMagicalDefense")}: {wisMods.magicalDefenseAdj > 0 ? "+" : ""}
             {wisMods.magicalDefenseAdj}
           </div>
         )}

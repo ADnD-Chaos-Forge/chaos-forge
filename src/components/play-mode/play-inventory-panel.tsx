@@ -148,6 +148,7 @@ export function PlayInventoryPanel({
                     size="sm"
                     className="h-6 w-6 p-0 text-xs"
                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    aria-label={`${itemName(item)} −1`}
                     data-testid={`play-inventory-minus-${item.id}`}
                   >
                     −
@@ -157,6 +158,7 @@ export function PlayInventoryPanel({
                     variant="ghost"
                     size="sm"
                     className="h-6 w-6 p-0 text-xs"
+                    aria-label={`${itemName(item)} +1`}
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     data-testid={`play-inventory-plus-${item.id}`}
                   >

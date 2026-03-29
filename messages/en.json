@@ -748,6 +748,7 @@
     "noWeapons": "No weapons equipped",
     "noSpells": "No spells prepared",
     "noProficiencies": "No proficiencies",
-    "noItems": "No inventory"
+    "noItems": "No inventory",
+    "wisMagicalDefense": "WIS Magical Defense"
   }
 }

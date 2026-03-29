@@ -17,7 +17,8 @@ import {
   getWizardBonusSpellPoints,
   getWizardSpellCost,
 } from "@/lib/rules/spellslots";
-import type { ClassGroup } from "@/lib/rules/types";
+import { getClassGroup } from "@/lib/rules/classes";
+import type { ClassGroup, ClassId } from "@/lib/rules/types";
 import type { CharacterRow, CharacterSpellWithDetails, SpellRow } from "@/lib/supabase/types";
 
 interface PlaySpellbookPanelProps {
@@ -51,11 +52,11 @@ export function PlaySpellbookPanel({
   const isPriest = classGroups.includes("priest");
   const casterLevel = useMemo(() => {
     for (const ce of classEntries) {
-      const group = classGroups.find((_, i) => classEntries[i] === ce);
+      const group = getClassGroup(ce.classId as ClassId);
       if (group === "wizard" || group === "priest") return ce.level;
     }
     return classEntries[0]?.level ?? 1;
-  }, [classEntries, classGroups]);
+  }, [classEntries]);
 
   const isPointsMode = character.spell_system === "points";
 
@@ -267,7 +268,15 @@ export function PlaySpellbookPanel({
                       >
                         <div
                           className="flex min-h-[40px] cursor-pointer items-center gap-2 px-2 py-1.5"
+                          role="button"
+                          tabIndex={0}
                           onClick={() => setExpandedSpell(isExpanded ? null : spell.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setExpandedSpell(isExpanded ? null : spell.id);
+                            }
+                          }}
                         >
                           <span
                             className={`min-w-0 flex-1 truncate text-sm ${isExpended ? "line-through" : ""}`}

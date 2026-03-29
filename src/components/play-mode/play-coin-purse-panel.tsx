@@ -116,6 +116,10 @@ export function PlayCoinPursePanel({
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
           onClick={() => setShowReceiveDialog(false)}
+          onKeyDown={(e) => e.key === "Escape" && setShowReceiveDialog(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t("receiveTitle")}
           data-testid="play-receive-dialog"
         >
           <div

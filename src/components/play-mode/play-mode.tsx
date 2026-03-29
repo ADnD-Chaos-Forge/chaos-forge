@@ -314,7 +314,8 @@ export function PlayMode({
     async (updates: Partial<CharacterRow>) => {
       setCharacter((prev) => ({ ...prev, ...updates }));
       const supabase = createClient();
-      await supabase.from("characters").update(updates).eq("id", character.id);
+      const { error } = await supabase.from("characters").update(updates).eq("id", character.id);
+      if (error) console.error("Failed to update character:", error);
     },
     [character.id]
   );
@@ -338,18 +339,27 @@ export function PlayMode({
       const newUsed = character.spell_points_used + pointsCost;
       updateCharacter({ spell_points_used: newUsed });
     } else {
-      // Slots mode: mark spell as expended
+      // Slots mode: mark first non-expended instance as expended
+      let marked = false;
       setSpells((prev) =>
-        prev.map((s) =>
-          s.spell_id === spellId && s.prepared && !s.expended ? { ...s, expended: true } : s
-        )
+        prev.map((s) => {
+          if (!marked && s.spell_id === spellId && s.prepared && !s.expended) {
+            marked = true;
+            return { ...s, expended: true };
+          }
+          return s;
+        })
       );
       const supabase = createClient();
-      await supabase
+      // Only mark one row — use prepared=true and expended=false filter with limit
+      const { error } = await supabase
         .from("character_spells")
         .update({ expended: true })
         .eq("character_id", character.id)
-        .eq("spell_id", spellId);
+        .eq("spell_id", spellId)
+        .eq("prepared", true)
+        .eq("expended", false);
+      if (error) console.error("Failed to mark spell as expended:", error);
     }
   }
 
@@ -357,12 +367,14 @@ export function PlayMode({
     if (character.spell_system === "points") {
       updateCharacter({ spell_points_used: 0 });
     } else {
-      setSpells((prev) => prev.map((s) => ({ ...s, expended: false })));
+      setSpells((prev) => prev.map((s) => (s.prepared ? { ...s, expended: false } : s)));
       const supabase = createClient();
-      await supabase
+      const { error } = await supabase
         .from("character_spells")
         .update({ expended: false })
-        .eq("character_id", character.id);
+        .eq("character_id", character.id)
+        .eq("prepared", true);
+      if (error) console.error("Failed to reset spell slots:", error);
     }
   }
 
@@ -385,11 +397,6 @@ export function PlayMode({
   ];
 
   const visiblePanels = panels.filter((p) => p.show);
-
-  // Ensure active panel is valid
-  if (!visiblePanels.find((p) => p.id === activePanel)) {
-    setActivePanel(visiblePanels[0]?.id ?? "combat");
-  }
 
   return (
     <div className="mx-auto w-full max-w-6xl" data-testid="play-mode">
