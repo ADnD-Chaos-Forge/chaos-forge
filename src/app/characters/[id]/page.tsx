@@ -4,7 +4,6 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/supabase/auth";
-import { GlassCard } from "@/components/glass-card";
 import { PenLine, Swords } from "lucide-react";
 import type { CharacterRow } from "@/lib/supabase/types";
 
@@ -14,15 +13,15 @@ interface CharacterPageProps {
 
 export default async function CharacterPage({ params }: CharacterPageProps) {
   const { id } = await params;
-  await requireAuth();
+  const user = await requireAuth();
   const supabase = await createClient();
   const t = await getTranslations("characters");
 
   const { data: character } = await supabase
     .from("characters")
-    .select("id, name, avatar_url")
+    .select("id, name, avatar_url, user_id")
     .eq("id", id)
-    .single<Pick<CharacterRow, "id" | "name" | "avatar_url">>();
+    .single<Pick<CharacterRow, "id" | "name" | "avatar_url" | "user_id">>();
 
   if (!character) {
     notFound();
@@ -54,37 +53,42 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
         <p className="text-center text-muted-foreground">{t("characterChoice")}</p>
       </div>
 
-      <div className="grid w-full max-w-lg auto-rows-fr gap-4 sm:grid-cols-2">
-        <Link
-          href={`/characters/${id}/manage`}
-          className="contents"
-          data-testid="character-manage-link"
-        >
-          <GlassCard
-            glow="neutral"
-            className="flex flex-col items-center justify-center gap-3 p-6 text-center"
-          >
-            <PenLine className="h-10 w-10 text-primary" />
-            <h2 className="font-heading text-lg">{t("manageCharacter")}</h2>
-            <p className="text-sm text-muted-foreground">{t("manageCharacterDesc")}</p>
-          </GlassCard>
-        </Link>
+      {(() => {
+        const isOwner = character.user_id === user.id;
+        return (
+          <div className="flex w-full max-w-lg flex-col gap-4 sm:flex-row">
+            <Link
+              href={`/characters/${id}/manage`}
+              className="glass glass-hover glow-neutral flex-1 rounded-xl p-6"
+              data-testid="character-manage-link"
+            >
+              <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+                <PenLine className="h-10 w-10 text-primary" />
+                <h2 className="font-heading text-lg">
+                  {isOwner ? t("manageCharacter") : t("viewCharacter")}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {isOwner ? t("manageCharacterDesc") : t("viewCharacterDesc")}
+                </p>
+              </div>
+            </Link>
 
-        <Link
-          href={`/characters/${id}/play`}
-          className="contents"
-          data-testid="character-play-link"
-        >
-          <GlassCard
-            glow="neutral"
-            className="flex flex-col items-center justify-center gap-3 p-6 text-center"
-          >
-            <Swords className="h-10 w-10 text-primary" />
-            <h2 className="font-heading text-lg">{t("playCharacter")}</h2>
-            <p className="text-sm text-muted-foreground">{t("playCharacterDesc")}</p>
-          </GlassCard>
-        </Link>
-      </div>
+            {isOwner && (
+              <Link
+                href={`/characters/${id}/play`}
+                className="glass glass-hover glow-neutral flex-1 rounded-xl p-6"
+                data-testid="character-play-link"
+              >
+                <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+                  <Swords className="h-10 w-10 text-primary" />
+                  <h2 className="font-heading text-lg">{t("playCharacter")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("playCharacterDesc")}</p>
+                </div>
+              </Link>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -70,6 +70,8 @@
     "characterChoice": "What would you like to do?",
     "manageCharacter": "Manage Character",
     "manageCharacterDesc": "Edit attributes, equipment, spells, and proficiencies.",
+    "viewCharacter": "View Character",
+    "viewCharacterDesc": "View attributes, equipment, spells, and proficiencies.",
     "playCharacter": "Play Character",
     "playCharacterDesc": "Session-optimized view for combat, spells, and checks.",
     "inactiveCharacters": "Inactive Characters",

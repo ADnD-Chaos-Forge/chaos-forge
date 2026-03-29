@@ -70,6 +70,8 @@
     "characterChoice": "Was möchtest du tun?",
     "manageCharacter": "Charakter verwalten",
     "manageCharacterDesc": "Attribute, Ausrüstung, Zauber und Fertigkeiten bearbeiten.",
+    "viewCharacter": "Charakter ansehen",
+    "viewCharacterDesc": "Attribute, Ausrüstung, Zauber und Fertigkeiten einsehen.",
     "playCharacter": "Charakter spielen",
     "playCharacterDesc": "Session-optimierte Ansicht für Kampf, Zauber und Prüfungen.",
     "inactiveCharacters": "Inaktive Charaktere",
