@@ -16,14 +16,17 @@ Chaos Forge ersetzt umständliche Offline-Editoren aus den 90er Jahren durch ein
 - **Zauberbuch** — Eigenständige Gameplay-Seite zum Verwalten, Vorbereiten und Lernen von Zaubern (Wizard Slots + Priest Spell Points)
 - **Druckansicht + Word-Export** — Optimiertes Print-Layout für den Spieltisch, exportierbar als .docx
 - **Glassmorphism UI** — Modernes "Epic Dark Mode" Design mit klassenbasierten Akzentfarben (Warrior=Rot, Priest=Gold, Rogue=Blau, Wizard=Teal)
-- **Character Cards** — Avatar-Breakout, leuchtende HP-Bar, hexagonales Level-Badge, dynamischer Glow
+- **App Shell** — Desktop Left-Sidebar (Icons + Tooltips) + Mobile Bottom-Nav mit FAB, 3D-Tilt-Cards, Stagger-Reveal-Animationen
+- **Character Cards** — Avatar-Breakout, leuchtende HP-Bar mit Pulse bei <25%, hexagonales Level-Badge, dynamischer Glow
 - **Aktive/Inaktive Charaktere** — Archivierung mit einklappbarer Sektion
 - **Character Import** — OCR/Vision-Import via Claude API (Foto oder PDF)
 - **Character Sharing** — Öffentliche/private Sichtbarkeit + gezieltes Teilen mit Mitspielern
 - **Session-Chronik** — Timeline mit Tags (NPCs, Orte, Items, Quests), KI-Zusammenfassungen, Sprachnotizen
-- **Source Book Tracking** — Jedes Item/Waffe/Zauber zeigt seine Quelle (PHB, AEG, etc.)
+- **Komplettes Zauber-Compendium** — 3.200+ Zauber aus allen AD&D 2e Quellenbüchern (Wizard Spell Compendium Vol 1-4, Priest Spell Compendium Vol 1-3, Tome of Magic, Player's Option)
+- **Source Book Tracking** — Jedes Item/Waffe/Zauber zeigt seine Quelle (PHB, WSC1-4, PSC1-3, ToM, etc.) mit Filter-Funktion
 - **i18n** — Vollständige Lokalisierung Deutsch/Englisch (Cookie-basiert via next-intl)
-- **Responsive Design** — Mobile Bottom-Nav mit More-Menu, 2-Zeilen-Tabs, Glassmorphism Cards
+- **Bilinguale Suche** — Zauber können in Deutsch und Englisch gefunden werden, unabhängig von Locale
+- **Responsive Design** — Desktop Left-Sidebar, Mobile Bottom-Nav mit More-Menu, FAB, Glassmorphism Cards
 - **Accessibility** — WCAG 2 AA geprüft via axe-core Playwright Tests
 - **Regelwerk-Engine** — Reine TypeScript-Funktionen für alle PHB-Regeln + Player's Option
 
@@ -33,7 +36,7 @@ Chaos Forge ersetzt umständliche Offline-Editoren aus den 90er Jahren durch ein
 - **Datenbank & Auth:** Supabase (PostgreSQL + Row Level Security)
 - **Styling:** Tailwind CSS v4 + shadcn/ui + Glassmorphism Design-System
 - **i18n:** next-intl (Cookie-basiert, DE/EN) + `localized()` Utility für DB-Daten
-- **Testing:** Vitest (609+ Unit-Tests), Playwright (43+ E2E inkl. Responsive + A11y)
+- **Testing:** Vitest (609+ Unit-Tests), Playwright (46+ E2E inkl. Responsive, A11y, Sidebar)
 - **Hosting:** Vercel (Free-Tier optimiert)
 - **AI:** Anthropic Claude API (Character Import, Session Summaries)
 - **Export:** `docx` Paket für Word-Export
@@ -150,7 +153,7 @@ e2e/                      # Playwright E2E-Tests (POM-Pattern)
   helpers/                # Auth-Helper
 messages/                 # i18n-Dateien (de.json, en.json)
 supabase/
-  migrations/             # 30 SQL-Migrationen (Schema + Seed-Daten)
+  migrations/             # 43 SQL-Migrationen (Schema + Seed-Daten + Spell Compendium)
 ressources/
   books/                  # OCR-Texte der AD&D 2e Regelbücher
 ```
