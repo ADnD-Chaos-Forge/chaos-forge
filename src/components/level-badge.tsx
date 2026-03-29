@@ -7,7 +7,7 @@ interface LevelBadgeProps {
 export function LevelBadge({ level, badgeClass }: LevelBadgeProps) {
   return (
     <div
-      className={`hex-badge flex h-10 w-10 items-center justify-center ${badgeClass}`}
+      className={`hex-badge flex h-10 w-10 items-center justify-center shadow-inner dark:drop-shadow-[0_0_6px_rgba(255,255,255,0.15)] ${badgeClass}`}
       data-testid="level-badge"
     >
       <div className="flex flex-col items-center leading-none">

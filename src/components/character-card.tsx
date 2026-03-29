@@ -87,7 +87,7 @@ export function CharacterCard({
   return (
     <Link href={`/characters/${character.id}`}>
       <div
-        className={`glass glass-hover relative overflow-hidden rounded-xl p-4 ${colors.glow}`}
+        className={`glass glass-hover tilt-card touch-press relative overflow-hidden rounded-xl p-4 ${colors.glow}`}
         data-testid={`character-card-${character.id}`}
       >
         {/* Level Badge — top right */}
@@ -141,9 +141,11 @@ export function CharacterCard({
 
             {/* Visibility badge */}
             {visibilityBadge && (
-              <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-                <visibilityBadge.icon className="h-3 w-3" />
-                <span>{visibilityBadge.label}</span>
+              <div className="mt-1.5">
+                <span className="inline-flex items-center gap-1 rounded-full bg-foreground/5 px-2 py-0.5 text-xs text-muted-foreground dark:bg-white/5">
+                  <visibilityBadge.icon className="h-3 w-3" />
+                  {visibilityBadge.label}
+                </span>
               </div>
             )}
 

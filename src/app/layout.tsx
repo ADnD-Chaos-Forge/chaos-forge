@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Cinzel, Crimson_Text, Geist_Mono } from "next/font/google";
+import { Cinzel, Crimson_Text, Geist, Geist_Mono, Marcellus } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -17,6 +18,19 @@ const crimsonText = Crimson_Text({
   variable: "--font-serif",
   subsets: ["latin"],
   weight: ["400", "600", "700"],
+  display: "swap",
+});
+
+const geistSans = Geist({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const marcellus = Marcellus({
+  variable: "--font-heading-alt",
+  subsets: ["latin"],
+  weight: "400",
   display: "swap",
 });
 
@@ -56,37 +70,28 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${cinzel.variable} ${crimsonText.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${cinzel.variable} ${marcellus.variable} ${crimsonText.variable} ${geistMono.variable} h-full antialiased dark`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
-            <header className="flex items-center justify-center border-b border-border px-4 py-2 sm:px-6 sm:py-4">
-              <Link href="/">
-                <Image
-                  src="/header-logo.webp"
-                  alt="Chaos Forge"
-                  width={280}
-                  height={120}
-                  priority
-                  className="h-[84px] w-auto sm:h-[168px]"
-                />
-              </Link>
-            </header>
+            <TooltipProvider>
+              <header className="flex items-center justify-center border-b border-border px-4 py-2 sm:px-6 sm:py-4">
+                <Link href="/">
+                  <Image
+                    src="/header-logo.webp"
+                    alt="Chaos Forge"
+                    width={280}
+                    height={120}
+                    priority
+                    className="h-[84px] w-auto sm:h-[168px]"
+                  />
+                </Link>
+              </header>
 
-            <main className="flex flex-1 flex-col pb-16 sm:pb-0">{children}</main>
-
-            <footer className="hidden flex-col items-center gap-2 border-t border-border px-6 py-6 sm:flex">
-              <Image
-                src="/footer-logo.webp"
-                alt="Chaos Forge — Est. 2nd Ed."
-                width={200}
-                height={100}
-                className="h-12 w-auto opacity-70"
-              />
-              <p className="text-xs text-muted-foreground">Chaos RPG — AD&D 2nd Edition</p>
-            </footer>
+              <main className="flex flex-1 flex-col pb-16 sm:pb-0">{children}</main>
+            </TooltipProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

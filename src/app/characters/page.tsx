@@ -96,7 +96,7 @@ export default async function CharactersPage() {
           {/* Own Active Characters */}
           {ownActive.length > 0 && (
             <div
-              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              className="stagger-reveal grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
               data-testid="active-characters-grid"
             >
               {ownActive.map(renderCard)}
@@ -121,7 +121,7 @@ export default async function CharactersPage() {
                     {t("inactiveCharacters")} ({ownInactive.length})
                   </h3>
                   <div
-                    className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                    className="stagger-reveal grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
                     data-testid="inactive-characters-grid"
                   >
                     {ownInactive.map(renderCard)}
@@ -136,7 +136,7 @@ export default async function CharactersPage() {
                     {t("sharedCharacters")} ({sharedChars.length})
                   </h3>
                   <div
-                    className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                    className="stagger-reveal grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
                     data-testid="shared-characters-grid"
                   >
                     {sharedChars.map(renderCard)}

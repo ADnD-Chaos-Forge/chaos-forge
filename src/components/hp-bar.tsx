@@ -12,7 +12,7 @@ export function HpBar({ current, max, barClass }: HpBarProps) {
     <div className="flex items-center gap-2" data-testid="hp-bar">
       <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-black/30 dark:bg-black/50">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${barClass}`}
+          className={`h-full rounded-full transition-all duration-500 ${barClass}${pct < 25 && pct > 0 ? " hp-bar-pulse" : ""}`}
           style={{ width: `${pct}%` }}
           data-testid="hp-bar-fill"
         />
