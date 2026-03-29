@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
@@ -27,6 +27,11 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
     notFound();
   }
 
+  // Non-owners skip the choice page and go directly to the character sheet
+  if (character.user_id !== user.id) {
+    redirect(`/characters/${id}/manage`);
+  }
+
   return (
     <div
       className="flex flex-1 flex-col items-center justify-center gap-6 p-6"
@@ -53,42 +58,31 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
         <p className="text-center text-muted-foreground">{t("characterChoice")}</p>
       </div>
 
-      {(() => {
-        const isOwner = character.user_id === user.id;
-        return (
-          <div className="flex w-full max-w-lg flex-col gap-4 sm:flex-row">
-            <Link
-              href={`/characters/${id}/manage`}
-              className="glass glass-hover glow-neutral flex-1 rounded-xl p-6"
-              data-testid="character-manage-link"
-            >
-              <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-                <PenLine className="h-10 w-10 text-primary" />
-                <h2 className="font-heading text-lg">
-                  {isOwner ? t("manageCharacter") : t("viewCharacter")}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {isOwner ? t("manageCharacterDesc") : t("viewCharacterDesc")}
-                </p>
-              </div>
-            </Link>
-
-            {isOwner && (
-              <Link
-                href={`/characters/${id}/play`}
-                className="glass glass-hover glow-neutral flex-1 rounded-xl p-6"
-                data-testid="character-play-link"
-              >
-                <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-                  <Swords className="h-10 w-10 text-primary" />
-                  <h2 className="font-heading text-lg">{t("playCharacter")}</h2>
-                  <p className="text-sm text-muted-foreground">{t("playCharacterDesc")}</p>
-                </div>
-              </Link>
-            )}
+      <div className="flex w-full max-w-lg flex-col gap-4 sm:flex-row">
+        <Link
+          href={`/characters/${id}/manage`}
+          className="glass glass-hover glow-neutral flex-1 rounded-xl p-6"
+          data-testid="character-manage-link"
+        >
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+            <PenLine className="h-10 w-10 text-primary" />
+            <h2 className="font-heading text-lg">{t("manageCharacter")}</h2>
+            <p className="text-sm text-muted-foreground">{t("manageCharacterDesc")}</p>
           </div>
-        );
-      })()}
+        </Link>
+
+        <Link
+          href={`/characters/${id}/play`}
+          className="glass glass-hover glow-neutral flex-1 rounded-xl p-6"
+          data-testid="character-play-link"
+        >
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+            <Swords className="h-10 w-10 text-primary" />
+            <h2 className="font-heading text-lg">{t("playCharacter")}</h2>
+            <p className="text-sm text-muted-foreground">{t("playCharacterDesc")}</p>
+          </div>
+        </Link>
+      </div>
     </div>
   );
 }

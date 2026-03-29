@@ -88,8 +88,7 @@ test.describe("Character Sheet — Read-Only", () => {
     const elara = page.locator("a", { hasText: "Elara" });
     await expect(elara).toBeVisible({ timeout: 10000 });
     await elara.click();
-    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
-    await page.getByTestId("character-manage-link").click();
+    // Non-owner is redirected directly to manage (no choice page)
     await sheet.container.waitFor({ timeout: 30000 });
 
     // Delete button should NOT be visible for non-owner
