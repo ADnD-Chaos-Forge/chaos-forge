@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,6 @@ interface NpcManagerProps {
 export function NpcManager({ npcs: initialNpcs }: NpcManagerProps) {
   const t = useTranslations("chronicle");
   const tcom = useTranslations("common");
-  const router = useRouter();
   const [npcs, setNpcs] = useState(initialNpcs);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -70,7 +68,6 @@ export function NpcManager({ npcs: initialNpcs }: NpcManagerProps) {
 
     resetForm();
     setSaving(false);
-    router.refresh();
   }
 
   async function handleDelete(id: string) {
@@ -78,7 +75,6 @@ export function NpcManager({ npcs: initialNpcs }: NpcManagerProps) {
     const { error } = await supabase.from("chronicle_npcs").delete().eq("id", id);
     if (!error) {
       setNpcs((prev) => prev.filter((npc) => npc.id !== id));
-      router.refresh();
     }
   }
 

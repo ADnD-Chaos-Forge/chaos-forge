@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { AudioRecorder } from "@/lib/utils/audio-recorder";
@@ -14,10 +13,22 @@ interface SessionEntryFormProps {
   sessionId: string;
   userId: string;
   userCharacters: Pick<CharacterRow, "id" | "name" | "avatar_url">[];
+  onEntryCreated?: (entry: {
+    id: string;
+    session_id: string;
+    character_id: string;
+    user_id: string;
+    content: string;
+    audio_url?: string;
+  }) => void;
 }
 
-export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionEntryFormProps) {
-  const router = useRouter();
+export function SessionEntryForm({
+  sessionId,
+  userId,
+  userCharacters,
+  onEntryCreated,
+}: SessionEntryFormProps) {
   const t = useTranslations("sessions");
   const tc = useTranslations("common");
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(
@@ -92,8 +103,19 @@ export function SessionEntryForm({ sessionId, userId, userCharacters }: SessionE
       });
     }
 
+    if (insertedEntry) {
+      onEntryCreated?.({
+        id: insertedEntry.id,
+        session_id: sessionId,
+        character_id: selectedCharacterId!,
+        user_id: userId,
+        content: content.trim(),
+        ...(audioUrl && { audio_url: audioUrl }),
+      });
+    }
+    setContent("");
+    setAudioBlob(null);
     setSaving(false);
-    router.refresh();
   }
 
   return (

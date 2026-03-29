@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +15,8 @@ interface SessionEntryCardProps {
   characterName: string;
   characterAvatarUrl: string | null;
   isOwner: boolean;
+  onEntryUpdate?: (entry: SessionEntryRow) => void;
+  onEntryDelete?: (entryId: string) => void;
 }
 
 export function SessionEntryCard({
@@ -23,8 +24,9 @@ export function SessionEntryCard({
   characterName,
   characterAvatarUrl,
   isOwner,
+  onEntryUpdate,
+  onEntryDelete,
 }: SessionEntryCardProps) {
-  const router = useRouter();
   const t = useTranslations("sessions");
   const tc = useTranslations("common");
   const [editing, setEditing] = useState(false);
@@ -36,15 +38,15 @@ export function SessionEntryCard({
     setSaving(true);
     const supabase = createClient();
     await supabase.from("session_entries").update({ content }).eq("id", entry.id);
+    onEntryUpdate?.({ ...entry, content });
     setSaving(false);
     setEditing(false);
-    router.refresh();
   }
 
   async function handleDelete() {
     const supabase = createClient();
     await supabase.from("session_entries").delete().eq("id", entry.id);
-    router.refresh();
+    onEntryDelete?.(entry.id);
   }
 
   return (
