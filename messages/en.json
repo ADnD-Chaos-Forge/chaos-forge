@@ -665,8 +665,7 @@
     "badgePublic": "Public",
     "badgeShared": "Shared",
     "sharedBy": "Shared by {player}",
-    "noUsers": "No other players registered.",
-    "serviceKeyMissing": "Sharing is not available — service key not configured. Contact admin."
+    "noUsers": "No other players registered."
   },
   "spellbook": {
     "title": "Spellbook",

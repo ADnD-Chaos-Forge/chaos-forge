@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Page, APIRequestContext } from "@playwright/test";
 
 const TEST_EMAIL = "christoph@chaos-forge.de";
 const SUPABASE_PROJECT_REF = "ptozyrwvbngascgydjjt";
@@ -8,9 +8,17 @@ const SUPABASE_PROJECT_REF = "ptozyrwvbngascgydjjt";
  * Supabase SSR stores auth tokens in cookies (not localStorage).
  */
 export async function loginAsTestUser(page: Page) {
+  return loginAsUser(page, TEST_EMAIL);
+}
+
+/**
+ * Login as any @chaos-forge.de test user.
+ * Creates the user if it doesn't exist yet.
+ */
+export async function loginAsUser(page: Page, email: string) {
   // Step 1: Get tokens from test-login API
   const resp = await page.request.post("/api/test-login", {
-    data: { email: TEST_EMAIL },
+    data: { email },
   });
 
   if (!resp.ok()) {
@@ -63,5 +71,36 @@ export async function loginAsTestUser(page: Page) {
 
   if (page.url().includes("/login")) {
     throw new Error("Login failed — cookies did not establish session");
+  }
+}
+
+/**
+ * Create a test user via the test-login API (also logs them in to verify).
+ * Returns the user_id.
+ */
+export async function createTestUser(request: APIRequestContext, email: string): Promise<string> {
+  const resp = await request.post("/api/test-login", {
+    data: { email },
+  });
+
+  if (!resp.ok()) {
+    throw new Error(`Failed to create test user ${email}: ${resp.status()}`);
+  }
+
+  const { user_id } = await resp.json();
+  return user_id;
+}
+
+/**
+ * Delete a test user via the test-cleanup API.
+ * Only works for @chaos-forge.de emails (safety guard).
+ */
+export async function deleteTestUser(request: APIRequestContext, email: string): Promise<void> {
+  const resp = await request.post("/api/test-cleanup", {
+    data: { email },
+  });
+
+  if (!resp.ok()) {
+    console.warn(`Failed to clean up test user ${email}: ${resp.status()}`);
   }
 }

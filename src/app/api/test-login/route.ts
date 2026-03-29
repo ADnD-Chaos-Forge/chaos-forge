@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const TEST_EMAIL = process.env.TEST_USER_EMAIL;
 const TEST_PASSWORD = "test-chaos-forge-2026!";
+const TEST_DOMAIN = "@chaos-forge.de";
 
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -13,7 +14,10 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  if (body.email?.toLowerCase() !== TEST_EMAIL.toLowerCase()) {
+  const email = body.email?.toLowerCase();
+
+  // Allow any @chaos-forge.de email for E2E tests
+  if (!email?.endsWith(TEST_DOMAIN)) {
     return NextResponse.json({ error: "not_test_user" }, { status: 404 });
   }
 
@@ -23,15 +27,15 @@ export async function POST(request: Request) {
 
   // Find the test user
   const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-  const testUser = existingUsers?.users?.find((u) => u.email === TEST_EMAIL);
+  const testUser = existingUsers?.users?.find((u) => u.email === email);
 
   if (!testUser) {
     // Create with password for programmatic login
     const { error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email: TEST_EMAIL,
+      email,
       password: TEST_PASSWORD,
       email_confirm: true,
-      user_metadata: { display_name: "Testaccount" },
+      user_metadata: { display_name: email.split("@")[0] },
     });
     if (createError) {
       return NextResponse.json({ error: createError.message }, { status: 500 });
@@ -50,7 +54,7 @@ export async function POST(request: Request) {
   });
 
   const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: TEST_EMAIL,
+    email,
     password: TEST_PASSWORD,
   });
 
@@ -61,5 +65,6 @@ export async function POST(request: Request) {
   return NextResponse.json({
     access_token: data.session?.access_token,
     refresh_token: data.session?.refresh_token,
+    user_id: data.user?.id,
   });
 }
