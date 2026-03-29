@@ -31,7 +31,7 @@ import {
   getCharismaModifiers,
 } from "@/lib/rules/abilities";
 import { getAttacksPerRound } from "@/lib/rules/combat";
-import { calculateAC } from "@/lib/rules/equipment";
+import { calculateAC, calculateEncumbrance } from "@/lib/rules/equipment";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import { getKit, getEffectiveHitDie, getKitsForClass } from "@/lib/rules/kits";
 import { getAllClasses } from "@/lib/rules/classes";
@@ -198,16 +198,24 @@ export function CharacterSheet({
     character.cha_leadership,
     character.cha_appearance
   );
-  // AC calculation using equipped armor + shield + DEX
+  // AC calculation using equipped armor + shield + DEX + class bonuses
   const equippedArmor = equipment.find((e) => e.equipped && e.armor && e.armor.name !== "Shield");
   const hasShield = equipment.some(
     (e) => e.equipped && e.armor && e.armor.name.toLowerCase().includes("shield")
   );
-  const effectiveAC = calculateAC(
-    equippedArmor?.armor?.ac ?? null,
-    hasShield,
-    dexMods.defensiveAdj
+  const totalWeight = equipment.reduce(
+    (sum, e) => sum + (e.weapon?.weight ?? e.armor?.weight ?? 0),
+    0
   );
+  const encumbranceLevel = calculateEncumbrance(totalWeight, strMods.weightAllow);
+  const effectiveAC = calculateAC({
+    equippedArmorAC: equippedArmor?.armor?.ac ?? null,
+    shieldEquipped: hasShield,
+    dexDefenseAdj: dexMods.defensiveAdj,
+    classGroups,
+    encumbrance: encumbranceLevel,
+    ignoreEncumbrance: character.ignore_encumbrance,
+  });
 
   function update(field: keyof CharacterRow, value: string | number | null) {
     if (!isOwner) return;
@@ -1008,6 +1016,7 @@ export function CharacterSheet({
                   value={addClassId}
                   onChange={(e) => setAddClassId(e.target.value)}
                   className="rounded-md border border-input bg-input px-3 py-1.5 text-sm"
+                  aria-label={t("addClass")}
                   data-testid="add-class-select"
                 >
                   <option value="">{t("addClass")}</option>
@@ -1322,6 +1331,7 @@ export function CharacterSheet({
             characterDex={character.dex}
             characterClasses={charClasses}
             weaponProficiencies={weaponProficiencies}
+            ignoreEncumbrance={character.ignore_encumbrance}
           />
         </TabsContent>
 

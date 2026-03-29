@@ -10,31 +10,151 @@ import {
 
 describe("EQUIP-001: AC Calculation", () => {
   it("should return base AC 10 with no armor and DEX 10 (adj 0)", () => {
-    expect(calculateAC(null, false, 0)).toBe(10);
+    expect(calculateAC({ dexDefenseAdj: 0 })).toBe(10);
   });
 
   it("should return armor AC with no DEX modifier", () => {
-    expect(calculateAC(5, false, 0)).toBe(5); // Chainmail
+    expect(calculateAC({ equippedArmorAC: 5, dexDefenseAdj: 0 })).toBe(5);
   });
 
   it("should apply DEX defensive adjustment to armor AC", () => {
-    expect(calculateAC(5, false, -2)).toBe(3); // Chainmail + DEX 16
+    expect(calculateAC({ equippedArmorAC: 5, dexDefenseAdj: -2 })).toBe(3);
   });
 
   it("should subtract 1 for shield", () => {
-    expect(calculateAC(5, true, 0)).toBe(4); // Chainmail + Shield
+    expect(calculateAC({ equippedArmorAC: 5, shieldEquipped: true, dexDefenseAdj: 0 })).toBe(4);
   });
 
   it("should apply both shield and DEX", () => {
-    expect(calculateAC(5, true, -2)).toBe(2); // Chainmail + Shield + DEX 16
+    expect(calculateAC({ equippedArmorAC: 5, shieldEquipped: true, dexDefenseAdj: -2 })).toBe(2);
   });
 
   it("should handle no armor with shield", () => {
-    expect(calculateAC(null, true, 0)).toBe(9); // No armor + Shield
+    expect(calculateAC({ shieldEquipped: true, dexDefenseAdj: 0 })).toBe(9);
   });
 
   it("should handle full plate", () => {
-    expect(calculateAC(1, true, -4)).toBe(-4); // Full plate + Shield + DEX 18
+    expect(calculateAC({ equippedArmorAC: 1, shieldEquipped: true, dexDefenseAdj: -4 })).toBe(-4);
+  });
+
+  // ─── Unarmored Defense Bonus (Player's Option: Skills & Powers) ────────
+  it("should apply -2 unarmored bonus for warrior class group (unencumbered)", () => {
+    expect(
+      calculateAC({ dexDefenseAdj: 0, classGroups: ["warrior"], encumbrance: "unencumbered" })
+    ).toBe(8); // 10 - 2
+  });
+
+  it("should apply -2 unarmored bonus for rogue class group", () => {
+    expect(
+      calculateAC({ dexDefenseAdj: 0, classGroups: ["rogue"], encumbrance: "unencumbered" })
+    ).toBe(8);
+  });
+
+  it("should NOT apply unarmored bonus for wizard class group", () => {
+    expect(
+      calculateAC({ dexDefenseAdj: 0, classGroups: ["wizard"], encumbrance: "unencumbered" })
+    ).toBe(10);
+  });
+
+  it("should NOT apply unarmored bonus for priest class group", () => {
+    expect(
+      calculateAC({ dexDefenseAdj: 0, classGroups: ["priest"], encumbrance: "unencumbered" })
+    ).toBe(10);
+  });
+
+  it("should NOT apply unarmored bonus when armor is equipped", () => {
+    expect(
+      calculateAC({
+        equippedArmorAC: 5,
+        dexDefenseAdj: 0,
+        classGroups: ["warrior"],
+        encumbrance: "unencumbered",
+      })
+    ).toBe(5);
+  });
+
+  it("should NOT apply unarmored bonus when encumbered (encumbrance relevant)", () => {
+    expect(calculateAC({ dexDefenseAdj: 0, classGroups: ["warrior"], encumbrance: "heavy" })).toBe(
+      10
+    ); // No bonus when encumbered
+  });
+
+  it("should NOT apply unarmored bonus when lightly encumbered", () => {
+    expect(calculateAC({ dexDefenseAdj: 0, classGroups: ["warrior"], encumbrance: "light" })).toBe(
+      10
+    );
+  });
+
+  it("should apply unarmored bonus with shield (shield is not armor)", () => {
+    expect(
+      calculateAC({
+        shieldEquipped: true,
+        dexDefenseAdj: 0,
+        classGroups: ["warrior"],
+        encumbrance: "unencumbered",
+      })
+    ).toBe(7); // 10 - 1 shield - 2 unarmored
+  });
+
+  it("should apply unarmored bonus regardless of encumbrance when ignoreEncumbrance=true", () => {
+    expect(
+      calculateAC({
+        dexDefenseAdj: 0,
+        classGroups: ["warrior"],
+        encumbrance: "heavy",
+        ignoreEncumbrance: true,
+      })
+    ).toBe(8); // Bonus applies because encumbrance is ignored
+  });
+
+  it("should apply unarmored bonus for multiclass with at least one warrior/rogue class", () => {
+    expect(
+      calculateAC({
+        dexDefenseAdj: -4,
+        classGroups: ["wizard", "rogue"],
+        encumbrance: "unencumbered",
+      })
+    ).toBe(4); // 10 - 4 DEX - 2 rogue bonus
+  });
+
+  // ─── Additive Magic Items (House Rule) ─────────────────────────────────
+  it("should apply magic item modifiers additively", () => {
+    // Bracers of Defense +4 = -4 AC modifier
+    expect(calculateAC({ dexDefenseAdj: 0, magicACModifier: -4 })).toBe(6); // 10 - 4
+  });
+
+  it("should stack magic items with DEX", () => {
+    // Bracers +4 + DEX 18 (-4)
+    expect(calculateAC({ dexDefenseAdj: -4, magicACModifier: -4 })).toBe(2); // 10 - 4 - 4
+  });
+
+  it("should stack magic items with unarmored bonus", () => {
+    // Bracers +4 + DEX 18 (-4) + Rogue unarmored bonus (-2)
+    expect(
+      calculateAC({
+        dexDefenseAdj: -4,
+        magicACModifier: -4,
+        classGroups: ["rogue"],
+        encumbrance: "unencumbered",
+      })
+    ).toBe(0); // 10 - 4 DEX - 4 bracers - 2 rogue
+  });
+
+  // ─── Full Test Case from Requirements ──────────────────────────────────
+  it("Illusionist 8 / Thief 7: Balance 18 + Bracers +4 + ignoreEncumbrance = AC 0", () => {
+    // Balance 18 → defensiveAdj = -4
+    // Bracers of Defense +4 → magicACModifier = -4
+    // Thief is rogue group → unarmored bonus -2
+    // ignoreEncumbrance = true
+    expect(
+      calculateAC({
+        dexDefenseAdj: -4,
+        magicACModifier: -4,
+        classGroups: ["wizard", "rogue"],
+        encumbrance: "heavy",
+        ignoreEncumbrance: true,
+      })
+    ).toBe(0); // 10 - 4 - 4 - 2 = 0
   });
 });
 

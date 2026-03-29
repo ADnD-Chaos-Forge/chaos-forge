@@ -250,6 +250,7 @@
     "unequip": "Unequip",
     "totalWeight": "Total Weight",
     "encumbrance": "Encumbrance",
+    "ignoreEncumbrance": "Ignore encumbrance",
     "movement": "Movement Rate",
     "createCustomWeapon": "Create Custom Weapon",
     "createCustomArmor": "Create Custom Armor",

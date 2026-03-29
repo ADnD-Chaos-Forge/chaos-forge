@@ -7,16 +7,7 @@ test.describe("Layout & Branding", () => {
     await expect(headerLogo).toBeVisible();
   });
 
-  test("should display footer logo", async ({ page }) => {
-    await page.goto("/");
-    const footerLogo = page.locator('footer img[alt="Chaos Forge — Est. 2nd Ed."]');
-    await expect(footerLogo).toBeVisible();
-  });
-
-  test("should display footer text", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.locator("footer")).toContainText("Chaos RPG");
-  });
+  // Footer was removed in UI-Redesign (replaced by sidebar/bottom-nav)
 
   test("should have correct page title", async ({ page }) => {
     await page.goto("/");

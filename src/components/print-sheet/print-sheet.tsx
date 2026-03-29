@@ -3,7 +3,7 @@
 import { useTranslations, useLocale } from "next-intl";
 import { localized } from "@/lib/utils/localize";
 import { RACES } from "@/lib/rules/races";
-import { CLASSES } from "@/lib/rules/classes";
+import { CLASSES, getClassGroup } from "@/lib/rules/classes";
 import { getAlignmentLabel } from "@/lib/rules/alignment";
 import { getXpForNextLevel } from "@/lib/rules/experience";
 import type { ClassId } from "@/lib/rules/types";
@@ -16,7 +16,7 @@ import {
 import { getNonproficiencyPenalty } from "@/lib/rules/proficiencies";
 import { hasThiefSkills, getBackstabMultiplier } from "@/lib/rules/thief";
 import { getKit, getEffectiveHitDie } from "@/lib/rules/kits";
-import { calculateAC } from "@/lib/rules/equipment";
+import { calculateAC, calculateEncumbrance } from "@/lib/rules/equipment";
 import { feetToMeters } from "@/lib/utils/units";
 import {
   getStrengthModifiers,
@@ -105,11 +105,20 @@ export function PrintSheet({
       e.equipped &&
       (e.armor.name.toLowerCase() === "schild" || e.armor.name.toLowerCase() === "shield")
   );
-  const effectiveAC = calculateAC(
-    equippedArmorForAC?.armor?.ac ?? null,
-    hasShieldForAC,
-    dexMods.defensiveAdj
+  const classGroups = activeClasses.map((cc) => getClassGroup(cc.class_id as ClassId));
+  const totalWeight = equipment.reduce(
+    (sum, e) => sum + (e.weapon?.weight ?? e.armor?.weight ?? 0),
+    0
   );
+  const encumbranceLevel = calculateEncumbrance(totalWeight, strMods.weightAllow);
+  const effectiveAC = calculateAC({
+    equippedArmorAC: equippedArmorForAC?.armor?.ac ?? null,
+    shieldEquipped: hasShieldForAC,
+    dexDefenseAdj: dexMods.defensiveAdj,
+    classGroups,
+    encumbrance: encumbranceLevel,
+    ignoreEncumbrance: character.ignore_encumbrance,
+  });
 
   const strDisplay =
     character.str === 18 && character.str_exceptional
@@ -589,11 +598,14 @@ export function PrintSheet({
                 e.equipped &&
                 (e.armor.name.toLowerCase() === "schild" || e.armor.name.toLowerCase() === "shield")
             );
-            const finalAC = calculateAC(
-              equippedArmorItem?.armor?.ac ?? null,
+            const finalAC = calculateAC({
+              equippedArmorAC: equippedArmorItem?.armor?.ac ?? null,
               shieldEquipped,
-              dexMods.defensiveAdj
-            );
+              dexDefenseAdj: dexMods.defensiveAdj,
+              classGroups,
+              encumbrance: encumbranceLevel,
+              ignoreEncumbrance: character.ignore_encumbrance,
+            });
             return (
               <div
                 className="grid grid-cols-5 gap-2 text-center text-sm"

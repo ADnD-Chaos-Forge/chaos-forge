@@ -1,17 +1,57 @@
 export type EncumbranceLevel = "unencumbered" | "light" | "moderate" | "heavy" | "severe";
 
+import type { ClassGroup } from "./types";
+
+export interface ACCalculationInput {
+  /** Equipped armor's AC value (null = no armor, base 10) */
+  equippedArmorAC?: number | null;
+  /** Whether a shield is equipped */
+  shieldEquipped?: boolean;
+  /** DEX (or Balance sub-stat) defensive adjustment */
+  dexDefenseAdj: number;
+  /** Additive magic item AC modifier (house rule: Bracers +4 → -4) */
+  magicACModifier?: number;
+  /** Class groups for unarmored defense bonus check */
+  classGroups?: ClassGroup[];
+  /** Current encumbrance level */
+  encumbrance?: EncumbranceLevel;
+  /** If true, encumbrance is ignored for unarmored bonus (per-character setting) */
+  ignoreEncumbrance?: boolean;
+}
+
 /**
  * Calculate AC in AD&D 2e.
- * Armor REPLACES base AC 10 (not subtractive). Shield gives -1. DEX adjustment applied.
+ *
+ * - Armor REPLACES base AC 10 (not subtractive). Shield gives -1. DEX adjustment applied.
+ * - Player's Option: Unarmored warriors/rogues get -2 AC when unencumbered.
+ * - House Rule: Magic items (Bracers, Cloak, Ring of Protection) stack additively.
  */
-export function calculateAC(
-  equippedArmorAC: number | null,
-  shieldEquipped: boolean,
-  dexDefenseAdj: number
-): number {
+export function calculateAC(input: ACCalculationInput): number {
+  const {
+    equippedArmorAC = null,
+    shieldEquipped = false,
+    dexDefenseAdj,
+    magicACModifier = 0,
+    classGroups = [],
+    encumbrance = "unencumbered",
+    ignoreEncumbrance = false,
+  } = input;
+
+  const isUnarmored = equippedArmorAC == null;
   const baseAC = equippedArmorAC ?? 10;
   const shieldBonus = shieldEquipped ? -1 : 0;
-  return baseAC + shieldBonus + dexDefenseAdj;
+
+  // Player's Option: Skills & Powers — unarmored warrior/rogue bonus (-2)
+  let unarmoredBonus = 0;
+  if (isUnarmored) {
+    const hasWarriorOrRogue = classGroups.some((g) => g === "warrior" || g === "rogue");
+    const isEffectivelyUnencumbered = ignoreEncumbrance || encumbrance === "unencumbered";
+    if (hasWarriorOrRogue && isEffectivelyUnencumbered) {
+      unarmoredBonus = -2;
+    }
+  }
+
+  return baseAC + shieldBonus + dexDefenseAdj + magicACModifier + unarmoredBonus;
 }
 
 /**
