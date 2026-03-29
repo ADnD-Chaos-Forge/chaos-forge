@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { calculateAC, calculateEncumbrance, getMovementRate, getStartingGold } from "./equipment";
+import {
+  calculateAC,
+  calculateEncumbrance,
+  getMovementRate,
+  getStartingGold,
+  calculatePayment,
+  purseTotalInCP,
+} from "./equipment";
 
 describe("EQUIP-001: AC Calculation", () => {
   it("should return base AC 10 with no armor and DEX 10 (adj 0)", () => {
@@ -103,5 +110,56 @@ describe("EQUIP-004: getStartingGold", () => {
     expect(g.diceCount).toBe(3);
     expect(g.diceSides).toBe(6);
     expect(g.multiplier).toBe(10);
+  });
+});
+
+describe("Payment System", () => {
+  it("purseTotalInCP converts correctly", () => {
+    expect(purseTotalInCP({ pp: 1, gp: 1, ep: 1, sp: 1, cp: 1 })).toBe(661);
+  });
+
+  it("exact GP payment", () => {
+    const purse = { pp: 0, gp: 10, ep: 0, sp: 0, cp: 0 };
+    const result = calculatePayment(purse, 500); // 5 GP
+    expect(result.success).toBe(true);
+    expect(result.remaining.gp).toBe(5);
+  });
+
+  it("payment with PP when no GP", () => {
+    const purse = { pp: 2, gp: 0, ep: 0, sp: 0, cp: 0 };
+    const result = calculatePayment(purse, 300); // 3 GP
+    expect(result.success).toBe(true);
+    expect(result.remaining.pp).toBe(1);
+    // 1 PP broken = 5 GP, spent 3 GP worth, change = 2 GP
+    expect(result.remaining.gp).toBe(2);
+  });
+
+  it("insufficient funds", () => {
+    const purse = { pp: 0, gp: 1, ep: 0, sp: 0, cp: 0 };
+    const result = calculatePayment(purse, 500); // 5 GP
+    expect(result.success).toBe(false);
+    expect(result.shortfall).toBe(400);
+  });
+
+  it("mixed coins payment", () => {
+    const purse = { pp: 0, gp: 2, ep: 3, sp: 5, cp: 10 };
+    const result = calculatePayment(purse, 100); // 1 GP
+    expect(result.success).toBe(true);
+    expect(result.remaining.gp).toBe(1); // spent 1 GP
+  });
+
+  it("zero cost returns purse unchanged", () => {
+    const purse = { pp: 1, gp: 2, ep: 0, sp: 0, cp: 0 };
+    const result = calculatePayment(purse, 0);
+    expect(result.success).toBe(true);
+    expect(result.remaining).toEqual(purse);
+  });
+
+  it("making change from SP", () => {
+    const purse = { pp: 0, gp: 0, ep: 0, sp: 3, cp: 0 };
+    const result = calculatePayment(purse, 5); // 0.5 SP = 5 CP
+    expect(result.success).toBe(true);
+    expect(result.remaining.sp).toBe(2);
+    expect(result.remaining.cp).toBe(5);
   });
 });

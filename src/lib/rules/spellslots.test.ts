@@ -9,6 +9,11 @@ import {
   canLearnSpell,
   getRangerSpellSlots,
   getPaladinSpellSlots,
+  getSpecialistBonusSlots,
+  getWizardSpellPoints,
+  getWizardSpecialistBonusPoints,
+  getWizardBonusSpellPoints,
+  getWizardSpellCost,
 } from "./spellslots";
 
 describe("MAGIC-007: Wizard Spell Slots", () => {
@@ -165,5 +170,76 @@ describe("CLASS-008: getPaladinSpellSlots", () => {
     expect(slots[1]).toBeGreaterThan(0);
     expect(slots[2]).toBeGreaterThan(0);
     expect(slots[3]).toBeGreaterThan(0);
+  });
+});
+
+describe("Specialist Bonus Slots", () => {
+  it("illusionist level 5 gets +1 at levels 1-3 (where base > 0)", () => {
+    const bonus = getSpecialistBonusSlots("illusionist", 5);
+    expect(bonus[0]).toBe(1); // base = 4
+    expect(bonus[1]).toBe(1); // base = 2
+    expect(bonus[2]).toBe(1); // base = 1
+    expect(bonus[3]).toBe(0); // base = 0
+  });
+
+  it("illusionist level 1 gets +1 only at level 1", () => {
+    const bonus = getSpecialistBonusSlots("illusionist", 1);
+    expect(bonus[0]).toBe(1);
+    expect(bonus[1]).toBe(0);
+    expect(bonus.slice(2).every((b) => b === 0)).toBe(true);
+  });
+
+  it("mage (non-specialist) gets no bonus", () => {
+    const bonus = getSpecialistBonusSlots("mage", 10);
+    expect(bonus.every((b) => b === 0)).toBe(true);
+  });
+
+  it("fighter (non-caster) gets no bonus", () => {
+    const bonus = getSpecialistBonusSlots("fighter", 10);
+    expect(bonus.every((b) => b === 0)).toBe(true);
+  });
+
+  it("necromancer level 12 gets +1 at levels 1-6", () => {
+    const bonus = getSpecialistBonusSlots("necromancer", 12);
+    expect(bonus.slice(0, 6).every((b) => b === 1)).toBe(true);
+    expect(bonus[6]).toBe(0);
+  });
+});
+
+describe("Wizard Spell Points (Player's Option)", () => {
+  it("level 1 wizard has 15 spell points", () => {
+    expect(getWizardSpellPoints(1)).toBe(15);
+  });
+
+  it("level 7 wizard has 80 spell points", () => {
+    expect(getWizardSpellPoints(7)).toBe(80);
+  });
+
+  it("level 20 wizard has 422 spell points", () => {
+    expect(getWizardSpellPoints(20)).toBe(422);
+  });
+
+  it("specialist bonus at level 1 is 10", () => {
+    expect(getWizardSpecialistBonusPoints(1)).toBe(10);
+  });
+
+  it("INT 18 gives +11 bonus spell points", () => {
+    expect(getWizardBonusSpellPoints(18)).toBe(11);
+  });
+
+  it("INT 10 gives no bonus spell points", () => {
+    expect(getWizardBonusSpellPoints(10)).toBe(0);
+  });
+
+  it("level 1 fixed spell costs 3 points", () => {
+    expect(getWizardSpellCost(1, false)).toBe(3);
+  });
+
+  it("level 1 free magick costs 5 points", () => {
+    expect(getWizardSpellCost(1, true)).toBe(5);
+  });
+
+  it("level 5 fixed spell costs 21 points", () => {
+    expect(getWizardSpellCost(5, false)).toBe(21);
   });
 });

@@ -51,6 +51,7 @@ import { TabSpells } from "./tab-spells";
 import { TabThiefSkills } from "./tab-thief-skills";
 import { TabProficiencies } from "./tab-proficiencies";
 import { XpAddDialog } from "./xp-add-dialog";
+import { PayDialog } from "./pay-dialog";
 import type {
   CharacterEquipmentWithDetails,
   CharacterSpellWithDetails,
@@ -118,6 +119,7 @@ export function CharacterSheet({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [xpDialogOpen, setXpDialogOpen] = useState(false);
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [addClassId, setAddClassId] = useState("");
 
   const isOwner = character.user_id === userId;
@@ -374,7 +376,7 @@ export function CharacterSheet({
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {isOwner && (
             <Button
               variant="outline"
@@ -387,13 +389,18 @@ export function CharacterSheet({
           )}
           {showSpells && (
             <Link href={`/characters/${character.id}/spellbook`}>
-              <Button variant="outline" size="sm" data-testid="sheet-spellbook-button">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                data-testid="sheet-spellbook-button"
+              >
                 {tc("spellbook")}
               </Button>
             </Link>
           )}
           <Link href={`/characters/${character.id}/print`}>
-            <Button variant="outline" size="sm" data-testid="sheet-print-button">
+            <Button variant="outline" size="sm" className="w-full" data-testid="sheet-print-button">
               {tc("printView")}
             </Button>
           </Link>
@@ -1066,11 +1073,24 @@ export function CharacterSheet({
           <Separator />
 
           <div>
-            <h3 className="mb-3 font-heading text-lg">{t("gold")}</h3>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-heading text-lg">{t("gold")}</h3>
+              {isOwner && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPayDialogOpen(true)}
+                  data-testid="sheet-pay-button"
+                >
+                  {t("pay")}
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
               {[
                 { key: "gold_pp" as const, label: t("currencyPP") },
                 { key: "gold_gp" as const, label: t("currencyGP") },
+                { key: "gold_ep" as const, label: t("currencyEP") },
                 { key: "gold_sp" as const, label: t("currencySP") },
                 { key: "gold_cp" as const, label: t("currencyCP") },
               ].map(({ key, label }) => (
@@ -1094,6 +1114,28 @@ export function CharacterSheet({
               ))}
             </div>
           </div>
+
+          {/* Pay Dialog */}
+          {payDialogOpen && (
+            <PayDialog
+              purse={{
+                pp: character.gold_pp,
+                gp: character.gold_gp,
+                ep: character.gold_ep,
+                sp: character.gold_sp,
+                cp: character.gold_cp,
+              }}
+              onPay={(remaining) => {
+                update("gold_pp", remaining.pp);
+                update("gold_gp", remaining.gp);
+                update("gold_ep", remaining.ep);
+                update("gold_sp", remaining.sp);
+                update("gold_cp", remaining.cp);
+                setPayDialogOpen(false);
+              }}
+              onClose={() => setPayDialogOpen(false)}
+            />
+          )}
 
           <Separator />
 
@@ -1296,6 +1338,7 @@ export function CharacterSheet({
               spells={spells}
               allSpells={allSpells}
               spellSlotsAdj={character.spell_slots_adj ?? {}}
+              spellSystem={character.spell_system ?? "slots"}
               readOnly={!isOwner}
             />
           </TabsContent>

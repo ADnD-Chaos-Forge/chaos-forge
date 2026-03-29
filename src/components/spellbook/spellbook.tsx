@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   getWizardSpellSlots,
+  getSpecialistBonusSlots,
   getPriestSpellSlots,
   getPriestBonusSlots,
   canLearnSpell,
@@ -113,10 +114,19 @@ export function Spellbook({
     return new Array(maxSpellLevel).fill(0);
   }, [isPriest, character.wis, maxSpellLevel]);
 
+  const specialistBonus = useMemo(() => {
+    if (isWizard) return getSpecialistBonusSlots(classId as ClassId, casterLevel);
+    return new Array(maxSpellLevel).fill(0);
+  }, [isWizard, classId, casterLevel, maxSpellLevel]);
+
   const slotsAdj = (character.spell_slots_adj ?? {}) as Record<string, number>;
   const totalSlots = useMemo(
-    () => baseSlots.map((base, i) => base + (bonusSlots[i] ?? 0) + (slotsAdj[String(i + 1)] ?? 0)),
-    [baseSlots, bonusSlots, slotsAdj]
+    () =>
+      baseSlots.map(
+        (base, i) =>
+          base + (bonusSlots[i] ?? 0) + (specialistBonus[i] ?? 0) + (slotsAdj[String(i + 1)] ?? 0)
+      ),
+    [baseSlots, bonusSlots, specialistBonus, slotsAdj]
   );
 
   const preparedCountByLevel = useMemo(() => {

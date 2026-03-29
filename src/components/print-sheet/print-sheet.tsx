@@ -691,12 +691,15 @@ export function PrintSheet({
                             ? (CLASSES[activeClasses[0].class_id as ClassId]?.group ?? "warrior")
                             : "warrior"
                         );
+                    const hitBonus = e.hit_bonus ?? 0;
+                    const dmgBonus = e.damage_bonus ?? 0;
                     const weaponThac0 = getAdjustedWeaponThac0(
                       thac0,
                       strMods.hitAdj,
                       dexMods.missileAdj,
                       weapon.weapon_type,
-                      penalty
+                      penalty,
+                      hitBonus
                     );
                     return (
                       <tr
@@ -706,6 +709,9 @@ export function PrintSheet({
                       >
                         <td className="py-1" data-testid={`print-weapon-name-${e.id}`}>
                           {localized(weapon.name, weapon.name_en, locale)}
+                          {hitBonus > 0 && (
+                            <span className="text-xs text-gray-500"> +{hitBonus}</span>
+                          )}
                           {!isProficient && <span className="text-xs text-gray-400"> *</span>}
                         </td>
                         <td
@@ -724,13 +730,13 @@ export function PrintSheet({
                           className="py-1 text-center font-mono"
                           data-testid={`print-weapon-damage-sm-${e.id}`}
                         >
-                          {formatDamageWithBonus(weapon.damage_sm, strMods.dmgAdj)}
+                          {formatDamageWithBonus(weapon.damage_sm, strMods.dmgAdj, dmgBonus)}
                         </td>
                         <td
                           className="py-1 text-center font-mono"
                           data-testid={`print-weapon-damage-l-${e.id}`}
                         >
-                          {formatDamageWithBonus(weapon.damage_l, strMods.dmgAdj)}
+                          {formatDamageWithBonus(weapon.damage_l, strMods.dmgAdj, dmgBonus)}
                         </td>
                         <td
                           className="py-1 text-center font-mono"
@@ -806,25 +812,87 @@ export function PrintSheet({
           </section>
         )}
 
-        {/* ── Spellbook ───────────────────────────────────────────── */}
-        {spells.length > 0 && (
-          <section className="mb-4" data-testid="print-section-spells">
-            <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
-              {t("spellbook")}
-            </h2>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-              {spells.map((cs) => (
-                <div key={cs.spell.id} className="flex items-center gap-1">
-                  <span className={cs.prepared ? "font-semibold" : ""}>
-                    {localized(cs.spell.name, cs.spell.name_en, locale)}
-                  </span>
-                  <span className="text-xs text-gray-500">(L{cs.spell.level})</span>
-                  {cs.prepared && <span className="text-xs text-gray-500">★</span>}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* ── Spells Known (Table by level) ──────────────────────── */}
+        {spells.length > 0 &&
+          (() => {
+            const spellsByLevel: Record<number, typeof spells> = {};
+            for (const cs of spells) {
+              const lvl = cs.spell.level;
+              if (!spellsByLevel[lvl]) spellsByLevel[lvl] = [];
+              spellsByLevel[lvl].push(cs);
+            }
+            const sortedLevels = Object.keys(spellsByLevel)
+              .map(Number)
+              .sort((a, b) => a - b);
+            const preparedSpells = spells.filter((cs) => cs.prepared);
+            return (
+              <>
+                <section className="mb-4" data-testid="print-section-spells">
+                  <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+                    {t("spellsKnown")}
+                  </h2>
+                  {sortedLevels.map((lvl) => (
+                    <div key={lvl} className="mb-3">
+                      <h3 className="mb-1 text-sm font-bold">{t("spellLevel", { level: lvl })}</h3>
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-gray-300 text-left">
+                            <th className="py-0.5">{t("spellName")}</th>
+                            <th className="py-0.5 text-center">{t("castTime")}</th>
+                            <th className="py-0.5 text-center">{t("range")}</th>
+                            <th className="py-0.5 text-center">{t("areaOfEffect")}</th>
+                            <th className="py-0.5 text-center">{t("components")}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {spellsByLevel[lvl].map((cs) => (
+                            <tr key={cs.spell.id} className="border-b border-gray-200">
+                              <td className={`py-0.5 ${cs.prepared ? "font-semibold" : ""}`}>
+                                {localized(cs.spell.name, cs.spell.name_en, locale)}
+                                {cs.prepared && <span className="ml-1 text-gray-500">★</span>}
+                              </td>
+                              <td className="py-0.5 text-center">{cs.spell.casting_time || "—"}</td>
+                              <td className="py-0.5 text-center">{cs.spell.range || "—"}</td>
+                              <td className="py-0.5 text-center">
+                                {cs.spell.area_of_effect || "—"}
+                              </td>
+                              <td className="py-0.5 text-center">
+                                {(cs.spell.components ?? []).join(", ")}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </section>
+
+                {preparedSpells.length > 0 && (
+                  <section className="mb-4" data-testid="print-section-spells-memorized">
+                    <h2 className="mb-2 border-b border-gray-400 font-serif text-lg font-bold">
+                      {t("spellsMemorized")}
+                    </h2>
+                    {sortedLevels
+                      .filter((lvl) => spellsByLevel[lvl].some((cs) => cs.prepared))
+                      .map((lvl) => (
+                        <div key={lvl} className="mb-2">
+                          <h3 className="text-sm font-bold">{t("spellLevel", { level: lvl })}</h3>
+                          <ul className="ml-4 list-disc text-sm">
+                            {spellsByLevel[lvl]
+                              .filter((cs) => cs.prepared)
+                              .map((cs) => (
+                                <li key={cs.spell.id}>
+                                  {localized(cs.spell.name, cs.spell.name_en, locale)}
+                                </li>
+                              ))}
+                          </ul>
+                        </div>
+                      ))}
+                  </section>
+                )}
+              </>
+            );
+          })()}
 
         {/* ── Proficiencies ───────────────────────────────────────── */}
         {(weaponProficiencies.length > 0 ||

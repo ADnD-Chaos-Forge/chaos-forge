@@ -85,3 +85,82 @@ export function getStartingGold(classId: ClassId): StartingGold {
   const group = getClassGroup(classId);
   return STARTING_GOLD[group];
 }
+
+// ─── PAYMENT SYSTEM ────────────────────────────────────────────────────────
+// AD&D 2e exchange rates: 1 PP = 5 GP, 1 GP = 2 EP = 10 SP = 100 CP
+
+export interface CoinPurse {
+  pp: number;
+  gp: number;
+  ep: number;
+  sp: number;
+  cp: number;
+}
+
+export interface PaymentResult {
+  success: boolean;
+  remaining: CoinPurse;
+  shortfall: number; // in CP, 0 if success
+}
+
+const COIN_VALUES_IN_CP = { pp: 500, gp: 100, ep: 50, sp: 10, cp: 1 };
+
+/**
+ * Convert a coin purse to its total value in copper pieces.
+ */
+export function purseTotalInCP(purse: CoinPurse): number {
+  return (
+    purse.pp * COIN_VALUES_IN_CP.pp +
+    purse.gp * COIN_VALUES_IN_CP.gp +
+    purse.ep * COIN_VALUES_IN_CP.ep +
+    purse.sp * COIN_VALUES_IN_CP.sp +
+    purse.cp * COIN_VALUES_IN_CP.cp
+  );
+}
+
+/**
+ * Calculate payment: deduct costInCP from the purse, spending largest coins first.
+ * Returns remaining coins and whether the payment succeeded.
+ */
+export function calculatePayment(purse: CoinPurse, costInCP: number): PaymentResult {
+  const totalAvailable = purseTotalInCP(purse);
+  if (costInCP <= 0) {
+    return { success: true, remaining: { ...purse }, shortfall: 0 };
+  }
+  if (totalAvailable < costInCP) {
+    return { success: false, remaining: { ...purse }, shortfall: costInCP - totalAvailable };
+  }
+
+  let remaining = costInCP;
+  const result: CoinPurse = { ...purse };
+
+  // Deduct from largest denomination first
+  for (const coin of ["pp", "gp", "ep", "sp", "cp"] as const) {
+    if (remaining <= 0) break;
+    const coinValue = COIN_VALUES_IN_CP[coin];
+    const coinsNeeded = Math.min(result[coin], Math.floor(remaining / coinValue));
+    result[coin] -= coinsNeeded;
+    remaining -= coinsNeeded * coinValue;
+  }
+
+  // If there's remaining cost (fractional coin), break a larger coin
+  if (remaining > 0) {
+    for (const coin of ["cp", "sp", "ep", "gp", "pp"] as const) {
+      if (result[coin] > 0 && COIN_VALUES_IN_CP[coin] >= remaining) {
+        result[coin] -= 1;
+        let change = COIN_VALUES_IN_CP[coin] - remaining;
+        remaining = 0;
+        // Distribute change to smaller denominations
+        for (const changeCoin of ["gp", "ep", "sp", "cp"] as const) {
+          if (COIN_VALUES_IN_CP[changeCoin] >= COIN_VALUES_IN_CP[coin]) continue;
+          const changeCoins = Math.floor(change / COIN_VALUES_IN_CP[changeCoin]);
+          result[changeCoin] += changeCoins;
+          change -= changeCoins * COIN_VALUES_IN_CP[changeCoin];
+        }
+        break;
+      }
+    }
+  }
+
+  return { success: true, remaining: result, shortfall: 0 };
+}

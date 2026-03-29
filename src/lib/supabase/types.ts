@@ -62,6 +62,7 @@ export interface CharacterRow {
   nwp_slots_adj: number;
   language_slots_adj: number;
   spell_slots_adj: Record<string, number>;
+  spell_system: "slots" | "points";
   created_at: string;
   updated_at: string;
 }
@@ -290,4 +291,30 @@ export interface XpHistoryRow {
 export interface AppUser {
   id: string;
   email: string;
+}
+
+export interface ChronicleNpcRow {
+  id: string;
+  name: string;
+  location: string;
+  description: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChronicleQuoteRow {
+  id: string;
+  content: string;
+  attributed_to: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface QuoteReactionRow {
+  id: string;
+  quote_id: string;
+  user_id: string;
+  emoji: string;
+  created_at: string;
 }
