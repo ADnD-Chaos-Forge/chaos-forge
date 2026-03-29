@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { localized } from "@/lib/utils/localize";
 import { RACES } from "@/lib/rules/races";
 import { CLASSES } from "@/lib/rules/classes";
@@ -20,6 +20,7 @@ interface StepSummaryProps {
 
 export function StepSummary({ state }: StepSummaryProps) {
   const locale = useLocale();
+  const t = useTranslations("wizard");
   const race = state.raceId ? RACES[state.raceId] : null;
   const classEntries = state.classIds.map((id) => ({ classId: id, level: state.level }));
   const thac0 = classEntries.length > 0 ? getMulticlassThac0(classEntries) : 20;
@@ -33,12 +34,12 @@ export function StepSummary({ state }: StepSummaryProps) {
 
   return (
     <div className="flex flex-col gap-4" data-testid="wizard-step-summary">
-      <h2 className="font-heading text-2xl text-primary">{state.name || "Unbenannt"}</h2>
+      <h2 className="font-heading text-2xl text-primary">{state.name || t("unnamed")}</h2>
 
       <div className="flex flex-wrap gap-2">
         {race && <Badge>{localized(race.name, race.name_en, locale)}</Badge>}
         {classNames && <Badge>{classNames}</Badge>}
-        <Badge variant="outline">Stufe {state.level}</Badge>
+        <Badge variant="outline">{t("levelBadge", { level: state.level })}</Badge>
       </div>
 
       <Separator />
@@ -72,11 +73,11 @@ export function StepSummary({ state }: StepSummaryProps) {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-md border border-border p-2 text-center">
-          <div className="text-xs text-muted-foreground">ETW0</div>
+          <div className="text-xs text-muted-foreground">{t("thac0Short")}</div>
           <div className="font-mono text-lg">{thac0}</div>
         </div>
         <div className="rounded-md border border-border p-2 text-center">
-          <div className="text-xs text-muted-foreground">RK</div>
+          <div className="text-xs text-muted-foreground">{t("acShort")}</div>
           <div className="font-mono text-lg">{10 + dexMods.defensiveAdj}</div>
         </div>
         <div className="rounded-md border border-border p-2 text-center">
@@ -84,7 +85,7 @@ export function StepSummary({ state }: StepSummaryProps) {
           <div className="font-mono text-lg">{state.hpMax}</div>
         </div>
         <div className="rounded-md border border-border p-2 text-center">
-          <div className="text-xs text-muted-foreground">Treffer/Schaden</div>
+          <div className="text-xs text-muted-foreground">{t("hitDamage")}</div>
           <div className="font-mono text-lg">
             {strMods.hitAdj >= 0 ? "+" : ""}
             {strMods.hitAdj}/{strMods.dmgAdj >= 0 ? "+" : ""}
@@ -94,8 +95,7 @@ export function StepSummary({ state }: StepSummaryProps) {
       </div>
 
       <div className="text-sm text-muted-foreground">
-        HP-Mod (CON): {conMods.hpAdj >= 0 ? "+" : ""}
-        {conMods.hpAdj}/Stufe
+        {t("hpModPerLevel", { mod: `${conMods.hpAdj >= 0 ? "+" : ""}${conMods.hpAdj}` })}
       </div>
     </div>
   );

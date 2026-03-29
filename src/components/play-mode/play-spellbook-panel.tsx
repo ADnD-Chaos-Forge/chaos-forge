@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import ReactMarkdown from "react-markdown";
+import { localized } from "@/lib/utils/localize";
 import { GlassCard } from "@/components/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -156,9 +157,8 @@ export function PlaySpellbookPanel({
     onRest();
   }
 
-  const spellName = (s: SpellRow) => (locale === "en" && s.name_en ? s.name_en : s.name);
-  const spellDesc = (s: SpellRow) =>
-    locale === "en" && s.description_en ? s.description_en : s.description;
+  const spellName = (s: SpellRow) => localized(s.name, s.name_en, locale);
+  const spellDesc = (s: SpellRow) => localized(s.description, s.description_en, locale);
 
   return (
     <GlassCard hover={false} data-testid="play-spellbook-panel">

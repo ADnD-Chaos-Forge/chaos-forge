@@ -17,7 +17,8 @@
     "all": "All",
     "yes": "Yes",
     "no": "No",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "notLoggedIn": "Not logged in."
   },
   "landing": {
     "tagline": "Forge your legend",
@@ -124,7 +125,13 @@
     "kitDescription": "Optionally choose a kit for your character. Kits modify abilities and hit dice.",
     "noKit": "No Kit",
     "noKitDesc": "Standard class without kit modifications.",
-    "noKitsAvailable": "No kits available for the selected classes."
+    "noKitsAvailable": "No kits available for the selected classes.",
+    "unnamed": "Unnamed",
+    "levelBadge": "Level {level}",
+    "thac0Short": "THAC0",
+    "acShort": "AC",
+    "hitDamage": "Hit/Damage",
+    "hpModPerLevel": "HP Mod (CON): {mod}/Level"
   },
   "sheet": {
     "stats": "Stats",

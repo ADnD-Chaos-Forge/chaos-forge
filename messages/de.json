@@ -17,7 +17,8 @@
     "all": "Alle",
     "yes": "Ja",
     "no": "Nein",
-    "unknown": "Unbekannt"
+    "unknown": "Unbekannt",
+    "notLoggedIn": "Nicht eingeloggt."
   },
   "landing": {
     "tagline": "Schmiede deine Legende",
@@ -124,7 +125,13 @@
     "kitDescription": "Wähle optional ein Kit für deinen Charakter. Kits modifizieren Fähigkeiten und Trefferwürfel.",
     "noKit": "Kein Kit",
     "noKitDesc": "Standard-Klasse ohne Kit-Modifikationen.",
-    "noKitsAvailable": "Für die gewählten Klassen sind keine Kits verfügbar."
+    "noKitsAvailable": "Für die gewählten Klassen sind keine Kits verfügbar.",
+    "unnamed": "Unbenannt",
+    "levelBadge": "Stufe {level}",
+    "thac0Short": "ETW0",
+    "acShort": "RK",
+    "hitDamage": "Treffer/Schaden",
+    "hpModPerLevel": "HP-Mod (CON): {mod}/Stufe"
   },
   "sheet": {
     "stats": "Werte",
