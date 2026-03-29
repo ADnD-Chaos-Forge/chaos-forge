@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { localized } from "@/lib/utils/localize";
@@ -114,6 +114,13 @@ export function CharacterSheet({
   const ts = useTranslations("sharing");
   const [character, setCharacter] = useState(initial);
   const [charClasses, setCharClasses] = useState(initialClasses);
+  const [equipmentState, setEquipment] = useState(equipment);
+  const [spellsState, setSpells] = useState(spells);
+  const [weaponProfsState, setWeaponProfs] = useState(weaponProficiencies);
+  const [nwProfsState, setNwProfs] = useState(nonweaponProficiencies);
+  const [inventoryState, setInventory] = useState(inventory);
+  const [languagesState, setLanguages] = useState(languages);
+  const [fightingStylesState, setFightingStyles] = useState(fightingStyles);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -198,12 +205,14 @@ export function CharacterSheet({
     character.cha_leadership,
     character.cha_appearance
   );
-  // AC calculation using equipped armor + shield + DEX + class bonuses
-  const equippedArmor = equipment.find((e) => e.equipped && e.armor && e.armor.name !== "Shield");
-  const hasShield = equipment.some(
+  // AC calculation using equipped armor + shield + DEX + class bonuses (reactive to equipmentState)
+  const equippedArmor = equipmentState.find(
+    (e) => e.equipped && e.armor && e.armor.name !== "Shield"
+  );
+  const hasShield = equipmentState.some(
     (e) => e.equipped && e.armor && e.armor.name.toLowerCase().includes("shield")
   );
-  const totalWeight = equipment.reduce(
+  const totalWeight = equipmentState.reduce(
     (sum, e) => sum + (e.weapon?.weight ?? e.armor?.weight ?? 0),
     0
   );
@@ -217,6 +226,18 @@ export function CharacterSheet({
     ignoreEncumbrance: character.ignore_encumbrance,
     isMagicalProtection: equippedArmor?.armor?.is_magical_protection ?? false,
   });
+
+  const handleIgnoreEncumbranceChange = useCallback(
+    async (value: boolean) => {
+      setCharacter((prev) => ({ ...prev, ignore_encumbrance: value }));
+      const supabase = createClient();
+      await supabase
+        .from("characters")
+        .update({ ignore_encumbrance: value })
+        .eq("id", character.id);
+    },
+    [character.id]
+  );
 
   function update(field: keyof CharacterRow, value: string | number | null) {
     if (!isOwner) return;
@@ -241,7 +262,6 @@ export function CharacterSheet({
     if (!error && data) {
       setCharClasses((prev) => [...prev, data]);
       setAddClassId("");
-      router.refresh();
     }
   }
 
@@ -249,7 +269,6 @@ export function CharacterSheet({
     const supabase = createClient();
     await supabase.from("character_classes").delete().eq("id", ccId);
     setCharClasses((prev) => prev.filter((cc) => cc.id !== ccId));
-    router.refresh();
   }
 
   function updateClassField(classId: string, field: "level" | "xp_current", value: number) {
@@ -438,7 +457,6 @@ export function CharacterSheet({
                   .update({ is_active: !character.is_active })
                   .eq("id", character.id);
                 setCharacter((prev) => ({ ...prev, is_active: !prev.is_active }));
-                router.refresh();
               }}
               data-testid="sheet-toggle-active-button"
             >
@@ -1075,6 +1093,7 @@ export function CharacterSheet({
             characterClasses={charClasses}
             sessions={sessions}
             onClose={() => setXpDialogOpen(false)}
+            onClassesChange={setCharClasses}
           />
 
           <Separator />
@@ -1315,12 +1334,12 @@ export function CharacterSheet({
           <TabEquipment
             characterId={character.id}
             userId={userId}
-            equipment={equipment}
+            equipment={equipmentState}
             allWeapons={allWeapons}
             allArmor={allArmor}
             strWeightAllow={strMods.weightAllow}
             dexDefenseAdj={dexMods.defensiveAdj}
-            inventory={inventory}
+            inventory={inventoryState}
             allGeneralItems={allGeneralItems}
             baseMovement={race?.baseMovement ?? 12}
             readOnly={!isOwner}
@@ -1328,8 +1347,11 @@ export function CharacterSheet({
             characterStrExceptional={character.str_exceptional}
             characterDex={character.dex}
             characterClasses={charClasses}
-            weaponProficiencies={weaponProficiencies}
+            weaponProficiencies={weaponProfsState}
             ignoreEncumbrance={character.ignore_encumbrance}
+            onEquipmentChange={setEquipment}
+            onInventoryChange={setInventory}
+            onIgnoreEncumbranceChange={handleIgnoreEncumbranceChange}
           />
         </TabsContent>
 
@@ -1343,11 +1365,18 @@ export function CharacterSheet({
               level={casterLevel}
               intScore={character.int}
               wisScore={character.wis}
-              spells={spells}
+              spells={spellsState}
               allSpells={allSpells}
               spellSlotsAdj={character.spell_slots_adj ?? {}}
               spellSystem={character.spell_system ?? "slots"}
               readOnly={!isOwner}
+              onSpellsChange={setSpells}
+              onSpellSlotsAdjChange={(adj) =>
+                setCharacter((prev) => ({ ...prev, spell_slots_adj: adj }))
+              }
+              onSpellSystemChange={(sys) =>
+                setCharacter((prev) => ({ ...prev, spell_system: sys as "slots" | "points" }))
+              }
             />
           </TabsContent>
         )}
@@ -1373,16 +1402,20 @@ export function CharacterSheet({
             raceId={character.race_id ?? "human"}
             level={primaryLevel}
             intScore={character.int}
-            weaponProficiencies={weaponProficiencies}
-            nonweaponProficiencies={nonweaponProficiencies}
+            weaponProficiencies={weaponProfsState}
+            nonweaponProficiencies={nwProfsState}
             allNonweaponProficiencies={allNonweaponProficiencies}
             allWeapons={allWeapons}
-            languages={languages}
-            fightingStyles={fightingStyles}
+            languages={languagesState}
+            fightingStyles={fightingStylesState}
             weaponSlotsAdj={character.weapon_slots_adj ?? 0}
             nwpSlotsAdj={character.nwp_slots_adj ?? 0}
             languageSlotsAdj={character.language_slots_adj ?? 0}
             readOnly={!isOwner}
+            onWeaponProfsChange={setWeaponProfs}
+            onNwProfsChange={setNwProfs}
+            onLanguagesChange={setLanguages}
+            onFightingStylesChange={setFightingStyles}
           />
         </TabsContent>
       </Tabs>

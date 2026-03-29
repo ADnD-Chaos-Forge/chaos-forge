@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { localized } from "@/lib/utils/localize";
 import { createClient } from "@/lib/supabase/client";
@@ -23,6 +22,7 @@ interface XpAddDialogProps {
   characterClasses: CharacterClassRow[];
   sessions: Pick<SessionRow, "id" | "title" | "session_date">[];
   onClose: () => void;
+  onClassesChange: (classes: CharacterClassRow[]) => void;
 }
 
 interface ChangeItem {
@@ -47,8 +47,8 @@ export function XpAddDialog({
   characterClasses,
   sessions,
   onClose,
+  onClassesChange,
 }: XpAddDialogProps) {
-  const router = useRouter();
   const t = useTranslations("sheet");
   const tc = useTranslations("common");
   const locale = useLocale();
@@ -221,12 +221,19 @@ export function XpAddDialog({
       note: note.trim(),
     });
 
+    // Optimistic update: compute new XP/level for each class
+    const updatedClasses = characterClasses.map((cc) => {
+      if (!cc.is_active) return cc;
+      const preview = previewXpGain(cc.class_id as ClassId, cc.level, cc.xp_current, xpPerClass);
+      return { ...cc, xp_current: preview.newXp, level: preview.newLevel };
+    });
+    onClassesChange(updatedClasses);
+
     setSaving(false);
     setXpAmount("");
     setNote("");
     setSelectedSessionId("");
     onClose();
-    router.refresh();
   }
 
   if (!open) return null;
