@@ -61,17 +61,18 @@ export function ShareDialog({
     setShares(sharesData ?? []);
 
     // Fetch all profiles directly (no admin API needed)
-    // Filter out @chaos-forge.de test users
     const { data: profilesData } = await supabase
       .from("profiles")
-      .select("id, display_name, email")
-      .not("email", "like", "%@chaos-forge.de");
+      .select("id, display_name, email");
 
-    const mappedUsers: AppUser[] = (profilesData ?? []).map((p) => ({
-      id: p.id,
-      email: p.email ?? "",
-      display_name: p.display_name ?? "",
-    }));
+    // Filter out @chaos-forge.de test users (client-side to avoid NULL email exclusion)
+    const mappedUsers: AppUser[] = (profilesData ?? [])
+      .filter((p) => !p.email?.endsWith("@chaos-forge.de"))
+      .map((p) => ({
+        id: p.id,
+        email: p.email ?? "",
+        display_name: p.display_name ?? "",
+      }));
     setUsers(mappedUsers);
 
     setLoading(false);
