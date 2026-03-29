@@ -265,6 +265,7 @@
     "ranged": "Ranged",
     "both": "Both",
     "createAndAdd": "Create & Add",
+    "magicalProtection": "Magical protection (Bracers, Ring — doesn't count as armor)",
     "noItems": "No equipment available.",
     "acBreakdown": "AC Breakdown",
     "baseMovement": "Base Movement",
