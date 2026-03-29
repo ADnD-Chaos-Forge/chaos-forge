@@ -140,6 +140,98 @@ export function PlayCombatPanel({
   const [showAcBreakdown, setShowAcBreakdown] = useState(false);
   const router = useRouter();
 
+  // Attacks per round from first warrior class
+  const warriorEntry = classEntries.find(
+    (ce) => getClassGroup(ce.classId as ClassId) === "warrior"
+  );
+
+  function renderWeaponCard(eq: CharacterEquipmentWithDetails, isEquipped: boolean) {
+    const weapon = eq.weapon!;
+    const weaponName = localized(weapon.name, weapon.name_en, locale);
+    const prof = profMap.get(weapon.name.toLowerCase());
+    const isProficient = prof?.proficient ?? false;
+    const isSpecialized = prof?.specialized ?? false;
+    const firstGroup = classGroups[0] ?? "warrior";
+    const profPenalty = isProficient ? 0 : getNonproficiencyPenalty(firstGroup);
+
+    const adjusted = getAdjustedWeaponThac0(
+      thac0,
+      strMods.hitAdj,
+      dexMods.missileAdj,
+      weapon.weapon_type,
+      profPenalty,
+      eq.hit_bonus
+    );
+
+    const damageSM = formatDamageWithBonus(weapon.damage_sm, strMods.dmgAdj, eq.damage_bonus);
+    const damageL = formatDamageWithBonus(weapon.damage_l, strMods.dmgAdj, eq.damage_bonus);
+
+    const apr = warriorEntry
+      ? getAttacksPerRound("warrior", warriorEntry.level, isSpecialized)
+      : "1";
+
+    return (
+      <div
+        key={eq.id}
+        className={`rounded-lg border p-3 ${isEquipped ? "border-border bg-card/50" : "border-dashed border-border/50 bg-card/20"}`}
+        data-testid={`play-weapon-${eq.id}`}
+      >
+        <div className="mb-1.5 flex items-center gap-2">
+          <span className="font-medium">{weaponName}</span>
+          <Badge variant="outline" className="text-[10px]">
+            {weapon.weapon_type === "melee"
+              ? t("melee")
+              : weapon.weapon_type === "ranged"
+                ? t("ranged")
+                : `${t("melee")}/${t("ranged")}`}
+          </Badge>
+          {isSpecialized && <Badge className="bg-primary/20 text-[10px] text-primary">★</Badge>}
+        </div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
+          <div>
+            <span className="text-xs text-muted-foreground">THAC0 {t("melee")}: </span>
+            <span className="font-mono font-bold">{adjusted.melee}</span>
+          </div>
+          {adjusted.ranged !== null && (
+            <div>
+              <span className="text-xs text-muted-foreground">THAC0 {t("ranged")}: </span>
+              <span className="font-mono font-bold">{adjusted.ranged}</span>
+            </div>
+          )}
+          <div>
+            <span className="text-xs text-muted-foreground">{t("damage")}: </span>
+            <span className="font-mono">{damageSM}</span>
+            <span className="text-muted-foreground"> / {damageL}</span>
+          </div>
+          <div>
+            <span className="text-xs text-muted-foreground">{t("weaponSpeed")}: </span>
+            <span className="font-mono">{weapon.speed}</span>
+          </div>
+          <div>
+            <span className="text-xs text-muted-foreground">{t("attacksPerRound")}: </span>
+            <span className="font-mono">{apr}</span>
+          </div>
+        </div>
+        <div className="mt-1.5 flex items-center gap-2">
+          {eq.hit_bonus > 0 && (
+            <span className="text-xs text-muted-foreground">
+              +{eq.hit_bonus} {t("magicBonus")}
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto h-6 text-xs text-muted-foreground"
+            onClick={() => toggleEquip(eq.id, isEquipped)}
+            data-testid={`play-${isEquipped ? "unequip" : "equip"}-${eq.id}`}
+          >
+            {isEquipped ? t("unequip") : t("equip")}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   async function toggleEquip(equipmentId: string, currentlyEquipped: boolean) {
     const supabase = createClient();
     await supabase
@@ -219,128 +311,17 @@ export function PlayCombatPanel({
       {equippedWeapons.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("noWeapons")}</p>
       ) : (
-        <div className="space-y-2">
-          {equippedWeapons.map((eq) => {
-            const weapon = eq.weapon!;
-            const weaponName = localized(weapon.name, weapon.name_en, locale);
-            const prof = profMap.get(weapon.name.toLowerCase());
-            const isProficient = prof?.proficient ?? false;
-            const isSpecialized = prof?.specialized ?? false;
-
-            // Calculate proficiency penalty
-            const firstGroup = classGroups[0] ?? "warrior";
-            const profPenalty = isProficient ? 0 : getNonproficiencyPenalty(firstGroup);
-
-            const adjusted = getAdjustedWeaponThac0(
-              thac0,
-              strMods.hitAdj,
-              dexMods.missileAdj,
-              weapon.weapon_type,
-              profPenalty,
-              eq.hit_bonus
-            );
-
-            const damageSM = formatDamageWithBonus(
-              weapon.damage_sm,
-              strMods.dmgAdj,
-              eq.damage_bonus
-            );
-            const damageL = formatDamageWithBonus(weapon.damage_l, strMods.dmgAdj, eq.damage_bonus);
-
-            // Attacks per round from first warrior class
-            const warriorEntry = classEntries.find(
-              (ce) => getClassGroup(ce.classId as ClassId) === "warrior"
-            );
-            const apr = warriorEntry
-              ? getAttacksPerRound("warrior", warriorEntry.level, isSpecialized)
-              : "1";
-
-            return (
-              <div
-                key={eq.id}
-                className="rounded-lg border border-border bg-card/50 p-3"
-                data-testid={`play-weapon-${eq.id}`}
-              >
-                <div className="mb-1.5 flex items-center gap-2">
-                  <span className="font-medium">{weaponName}</span>
-                  <Badge variant="outline" className="text-[10px]">
-                    {weapon.weapon_type === "melee"
-                      ? t("melee")
-                      : weapon.weapon_type === "ranged"
-                        ? t("ranged")
-                        : `${t("melee")}/${t("ranged")}`}
-                  </Badge>
-                  {isSpecialized && (
-                    <Badge className="bg-primary/20 text-primary text-[10px]">★</Badge>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
-                  <div>
-                    <span className="text-xs text-muted-foreground">THAC0 {t("melee")}: </span>
-                    <span className="font-mono font-bold">{adjusted.melee}</span>
-                  </div>
-                  {adjusted.ranged !== null && (
-                    <div>
-                      <span className="text-xs text-muted-foreground">THAC0 {t("ranged")}: </span>
-                      <span className="font-mono font-bold">{adjusted.ranged}</span>
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-xs text-muted-foreground">{t("damage")}: </span>
-                    <span className="font-mono">{damageSM}</span>
-                    <span className="text-muted-foreground"> / {damageL}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">{t("weaponSpeed")}: </span>
-                    <span className="font-mono">{weapon.speed}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">{t("attacksPerRound")}: </span>
-                    <span className="font-mono">{apr}</span>
-                  </div>
-                </div>
-                <div className="mt-1.5 flex items-center gap-2">
-                  {eq.hit_bonus > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      +{eq.hit_bonus} {t("magicBonus")}
-                    </span>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-auto h-6 text-xs text-muted-foreground"
-                    onClick={() => toggleEquip(eq.id, true)}
-                    data-testid={`play-unequip-${eq.id}`}
-                  >
-                    {t("unequip")}
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <div className="space-y-2">{equippedWeapons.map((eq) => renderWeaponCard(eq, true))}</div>
       )}
 
-      {/* Unequipped weapons — available to equip */}
+      {/* Unequipped weapons — same card layout with Equip button */}
       {unequippedWeapons.length > 0 && (
-        <div className="mt-2" data-testid="play-unequipped-weapons">
-          <div className="mb-1 text-xs text-muted-foreground">{t("availableWeapons")}</div>
-          <div className="flex flex-wrap gap-1">
-            {unequippedWeapons.map((eq) => {
-              const weapon = eq.weapon!;
-              return (
-                <Button
-                  key={eq.id}
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => toggleEquip(eq.id, false)}
-                  data-testid={`play-equip-${eq.id}`}
-                >
-                  {localized(weapon.name, weapon.name_en, locale)}
-                </Button>
-              );
-            })}
+        <div className="mt-3" data-testid="play-unequipped-weapons">
+          <div className="mb-1.5 text-xs font-medium text-muted-foreground">
+            {t("availableWeapons")}
+          </div>
+          <div className="space-y-2">
+            {unequippedWeapons.map((eq) => renderWeaponCard(eq, false))}
           </div>
         </div>
       )}
