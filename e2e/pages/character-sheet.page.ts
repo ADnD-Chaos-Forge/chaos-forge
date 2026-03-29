@@ -13,7 +13,7 @@ export class CharacterSheetPage {
   readonly avatarUploadModal: Locator;
   readonly avatarFileInput: Locator;
   readonly shareButton: Locator;
-  readonly spellbookButton: Locator;
+  readonly playButton: Locator;
   readonly printButton: Locator;
   readonly saveButton: Locator;
   readonly deleteButton: Locator;
@@ -60,7 +60,7 @@ export class CharacterSheetPage {
     this.avatarUploadModal = page.getByTestId("avatar-upload-modal");
     this.avatarFileInput = page.getByTestId("avatar-file-input");
     this.shareButton = page.getByTestId("sheet-share-button");
-    this.spellbookButton = page.getByTestId("sheet-spellbook-button");
+    this.playButton = page.getByTestId("sheet-play-button");
     this.printButton = page.getByTestId("sheet-print-button");
     this.saveButton = page.getByTestId("sheet-save-button");
     this.deleteButton = page.getByTestId("sheet-delete-button");

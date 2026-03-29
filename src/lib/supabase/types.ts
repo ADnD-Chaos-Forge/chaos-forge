@@ -63,6 +63,7 @@ export interface CharacterRow {
   language_slots_adj: number;
   spell_slots_adj: Record<string, number>;
   spell_system: "slots" | "points";
+  spell_points_used: number;
   ignore_encumbrance: boolean;
   created_at: string;
   updated_at: string;
@@ -100,6 +101,7 @@ export interface CharacterSpellRow {
   character_id: string;
   spell_id: string;
   prepared: boolean;
+  expended: boolean;
 }
 
 export interface WeaponRow {
