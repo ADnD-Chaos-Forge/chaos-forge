@@ -48,7 +48,9 @@
     "sessions": "Chronik",
     "import": "Import",
     "logout": "Abmelden",
-    "more": "Mehr"
+    "more": "Mehr",
+    "settings": "Einstellungen",
+    "newCharacter": "Neuer Charakter"
   },
   "notFound": {
     "title": "404",

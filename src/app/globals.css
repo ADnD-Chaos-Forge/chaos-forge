@@ -10,6 +10,7 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-heading);
+  --font-heading-alt: var(--font-heading-alt);
   --font-serif: var(--font-serif);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -42,6 +43,10 @@
   --color-card: var(--card);
   --color-gold: var(--gold);
   --color-gold-dark: var(--gold-dark);
+  --color-warrior: var(--warrior);
+  --color-priest: var(--priest);
+  --color-rogue: var(--rogue);
+  --color-wizard: var(--wizard);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -49,59 +54,65 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-fade-in-up: fade-in-up 0.4s ease forwards;
 }
 
 /*
  * Chaos Forge Theme: Dark fantasy RPG aesthetic
  * Inspired by Daggerheart — deep purples, vibrant teal, warm gold.
- * Fonts: Cinzel (headings) + Crimson Text (body) — AD&D identity preserved.
+ * Fonts: Cinzel (headings) + Geist Sans (body) — modern meets fantasy.
  */
 
 /* Light mode — warm parchment with jewel accents */
 :root {
-  --background: oklch(0.95 0.015 80);
+  --background: oklch(0.96 0.012 80);
   --foreground: oklch(0.18 0.03 285);
-  --card: oklch(0.93 0.01 80);
+  --card: oklch(0.94 0.01 80);
   --card-foreground: oklch(0.18 0.03 285);
-  --popover: oklch(0.93 0.01 80);
+  --popover: oklch(0.94 0.01 80);
   --popover-foreground: oklch(0.18 0.03 285);
-  --primary: oklch(0.55 0.15 80);
+  --primary: oklch(0.5 0.18 80);
   --primary-foreground: oklch(0.98 0.005 80);
   --secondary: oklch(0.88 0.02 280);
   --secondary-foreground: oklch(0.22 0.04 285);
   --muted: oklch(0.91 0.01 280);
   --muted-foreground: oklch(0.45 0.03 285);
-  --accent: oklch(0.65 0.12 185);
+  --accent: oklch(0.6 0.15 185);
   --accent-foreground: oklch(0.15 0.02 185);
   --destructive: oklch(0.55 0.22 25);
-  --border: oklch(0.83 0.02 280);
+  --border: oklch(0.8 0.025 280);
   --input: oklch(0.9 0.01 280);
-  --ring: oklch(0.55 0.15 80);
-  --gold: oklch(0.55 0.15 80);
+  --ring: oklch(0.5 0.18 80);
+  --gold: oklch(0.5 0.18 80);
   --gold-dark: oklch(0.42 0.12 75);
+  --warrior: oklch(0.5 0.22 25);
+  --priest: oklch(0.55 0.15 80);
+  --rogue: oklch(0.45 0.18 260);
+  --wizard: oklch(0.55 0.14 185);
   --chart-1: oklch(0.55 0.15 80);
   --chart-2: oklch(0.55 0.18 25);
   --chart-3: oklch(0.6 0.12 185);
   --chart-4: oklch(0.5 0.12 285);
   --chart-5: oklch(0.55 0.15 310);
   --radius: 0.5rem;
-  --sidebar: oklch(0.93 0.01 280);
+  --sidebar: oklch(0.94 0.01 280);
   --sidebar-foreground: oklch(0.18 0.03 285);
-  --sidebar-primary: oklch(0.55 0.15 80);
+  --sidebar-primary: oklch(0.5 0.18 80);
   --sidebar-primary-foreground: oklch(0.98 0.005 80);
   --sidebar-accent: oklch(0.88 0.02 280);
   --sidebar-accent-foreground: oklch(0.18 0.03 285);
-  --sidebar-border: oklch(0.83 0.02 280);
-  --sidebar-ring: oklch(0.55 0.15 80);
+  --sidebar-border: oklch(0.8 0.025 280);
+  --sidebar-ring: oklch(0.5 0.18 80);
 }
 
 /* Dark mode — deep purple dungeon with gold + teal */
 .dark {
-  --background: oklch(0.14 0.025 285);
+  --background: oklch(0.12 0.02 285);
   --foreground: oklch(0.93 0.015 80);
-  --card: oklch(0.18 0.03 285);
+  --card: oklch(0.16 0.025 285);
   --card-foreground: oklch(0.93 0.015 80);
-  --popover: oklch(0.18 0.03 285);
+  --popover: oklch(0.16 0.025 285);
   --popover-foreground: oklch(0.93 0.015 80);
   --primary: oklch(0.82 0.14 80);
   --primary-foreground: oklch(0.14 0.025 285);
@@ -117,12 +128,16 @@
   --ring: oklch(0.82 0.14 80);
   --gold: oklch(0.82 0.14 80);
   --gold-dark: oklch(0.65 0.12 78);
+  --warrior: oklch(0.6 0.22 25);
+  --priest: oklch(0.75 0.15 80);
+  --rogue: oklch(0.6 0.18 260);
+  --wizard: oklch(0.7 0.14 185);
   --chart-1: oklch(0.82 0.14 80);
   --chart-2: oklch(0.55 0.18 25);
   --chart-3: oklch(0.75 0.12 185);
   --chart-4: oklch(0.55 0.1 285);
   --chart-5: oklch(0.6 0.14 310);
-  --sidebar: oklch(0.12 0.025 285);
+  --sidebar: oklch(0.1 0.02 285);
   --sidebar-foreground: oklch(0.93 0.015 80);
   --sidebar-primary: oklch(0.82 0.14 80);
   --sidebar-primary-foreground: oklch(0.14 0.025 285);
@@ -140,7 +155,7 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-serif;
+    @apply font-sans;
   }
   h1,
   h2,
@@ -172,13 +187,19 @@
 .glass {
   backdrop-filter: blur(16px) saturate(1.4);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  border: 1px solid oklch(0.5 0 0 / 0.12);
-  background: oklch(0.95 0.01 80 / 0.6);
+  border: 1px solid oklch(0.75 0.02 80 / 0.3);
+  background: oklch(0.97 0.005 80 / 0.75);
+  box-shadow:
+    0 4px 20px oklch(0.2 0.02 285 / 0.1),
+    0 1px 3px oklch(0.2 0.02 285 / 0.06);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .dark .glass {
-  background: oklch(0.18 0.03 285 / 0.55);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  background: oklch(0.16 0.025 285 / 0.6);
   border-color: oklch(0.5 0 0 / 0.15);
+  box-shadow: none;
 }
 
 /* Glass hover lift */
@@ -186,53 +207,55 @@
   transform: translateY(-2px);
 }
 
-/* Class group glow variants */
+/* ─── Class Group Glow Variants ──────────────────────────────────────────── */
+
 .glow-warrior {
-  border-color: oklch(0.6 0.22 25 / 0.4);
+  border-color: var(--warrior, oklch(0.6 0.22 25)) / 0.4;
+  border-color: oklch(from var(--warrior) l c h / 0.4);
   box-shadow:
-    0 0 20px oklch(0.6 0.22 25 / 0.15),
-    inset 0 0 20px oklch(0.6 0.22 25 / 0.03);
+    0 0 20px oklch(from var(--warrior) l c h / 0.15),
+    inset 0 0 20px oklch(from var(--warrior) l c h / 0.03);
 }
 .glow-warrior:hover {
   box-shadow:
-    0 0 30px oklch(0.6 0.22 25 / 0.25),
-    inset 0 0 30px oklch(0.6 0.22 25 / 0.05);
+    0 0 30px oklch(from var(--warrior) l c h / 0.25),
+    inset 0 0 30px oklch(from var(--warrior) l c h / 0.05);
 }
 
 .glow-priest {
-  border-color: oklch(0.75 0.15 80 / 0.4);
+  border-color: oklch(from var(--priest) l c h / 0.4);
   box-shadow:
-    0 0 20px oklch(0.75 0.15 80 / 0.15),
-    inset 0 0 20px oklch(0.75 0.15 80 / 0.03);
+    0 0 20px oklch(from var(--priest) l c h / 0.15),
+    inset 0 0 20px oklch(from var(--priest) l c h / 0.03);
 }
 .glow-priest:hover {
   box-shadow:
-    0 0 30px oklch(0.75 0.15 80 / 0.25),
-    inset 0 0 30px oklch(0.75 0.15 80 / 0.05);
+    0 0 30px oklch(from var(--priest) l c h / 0.25),
+    inset 0 0 30px oklch(from var(--priest) l c h / 0.05);
 }
 
 .glow-rogue {
-  border-color: oklch(0.6 0.18 260 / 0.4);
+  border-color: oklch(from var(--rogue) l c h / 0.4);
   box-shadow:
-    0 0 20px oklch(0.6 0.18 260 / 0.15),
-    inset 0 0 20px oklch(0.6 0.18 260 / 0.03);
+    0 0 20px oklch(from var(--rogue) l c h / 0.15),
+    inset 0 0 20px oklch(from var(--rogue) l c h / 0.03);
 }
 .glow-rogue:hover {
   box-shadow:
-    0 0 30px oklch(0.6 0.18 260 / 0.25),
-    inset 0 0 30px oklch(0.6 0.18 260 / 0.05);
+    0 0 30px oklch(from var(--rogue) l c h / 0.25),
+    inset 0 0 30px oklch(from var(--rogue) l c h / 0.05);
 }
 
 .glow-wizard {
-  border-color: oklch(0.7 0.14 185 / 0.4);
+  border-color: oklch(from var(--wizard) l c h / 0.4);
   box-shadow:
-    0 0 20px oklch(0.7 0.14 185 / 0.15),
-    inset 0 0 20px oklch(0.7 0.14 185 / 0.03);
+    0 0 20px oklch(from var(--wizard) l c h / 0.15),
+    inset 0 0 20px oklch(from var(--wizard) l c h / 0.03);
 }
 .glow-wizard:hover {
   box-shadow:
-    0 0 30px oklch(0.7 0.14 185 / 0.25),
-    inset 0 0 30px oklch(0.7 0.14 185 / 0.05);
+    0 0 30px oklch(from var(--wizard) l c h / 0.25),
+    inset 0 0 30px oklch(from var(--wizard) l c h / 0.05);
 }
 
 /* Neutral glow (for non-character cards) */
@@ -244,12 +267,56 @@
   box-shadow: 0 0 24px oklch(0.82 0.14 80 / 0.2);
 }
 
-/* Hexagonal level badge */
+/* Dark mode enhanced glow intensity */
+.dark .glow-warrior {
+  box-shadow:
+    0 0 24px oklch(from var(--warrior) l c h / 0.2),
+    inset 0 0 24px oklch(from var(--warrior) l c h / 0.04);
+}
+.dark .glow-warrior:hover {
+  box-shadow:
+    0 0 36px oklch(from var(--warrior) l c h / 0.3),
+    inset 0 0 36px oklch(from var(--warrior) l c h / 0.06);
+}
+.dark .glow-priest {
+  box-shadow:
+    0 0 24px oklch(from var(--priest) l c h / 0.2),
+    inset 0 0 24px oklch(from var(--priest) l c h / 0.04);
+}
+.dark .glow-priest:hover {
+  box-shadow:
+    0 0 36px oklch(from var(--priest) l c h / 0.3),
+    inset 0 0 36px oklch(from var(--priest) l c h / 0.06);
+}
+.dark .glow-rogue {
+  box-shadow:
+    0 0 24px oklch(from var(--rogue) l c h / 0.2),
+    inset 0 0 24px oklch(from var(--rogue) l c h / 0.04);
+}
+.dark .glow-rogue:hover {
+  box-shadow:
+    0 0 36px oklch(from var(--rogue) l c h / 0.3),
+    inset 0 0 36px oklch(from var(--rogue) l c h / 0.06);
+}
+.dark .glow-wizard {
+  box-shadow:
+    0 0 24px oklch(from var(--wizard) l c h / 0.2),
+    inset 0 0 24px oklch(from var(--wizard) l c h / 0.04);
+}
+.dark .glow-wizard:hover {
+  box-shadow:
+    0 0 36px oklch(from var(--wizard) l c h / 0.3),
+    inset 0 0 36px oklch(from var(--wizard) l c h / 0.06);
+}
+
+/* ─── Hexagonal Level Badge ──────────────────────────────────────────────── */
+
 .hex-badge {
   clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
 }
 
-/* HP bar glow */
+/* ─── HP Bar Glow ────────────────────────────────────────────────────────── */
+
 .hp-bar-warrior {
   background: linear-gradient(90deg, oklch(0.55 0.22 25), oklch(0.65 0.2 25));
   box-shadow: 0 0 8px oklch(0.6 0.22 25 / 0.5);
@@ -266,6 +333,86 @@
   background: linear-gradient(90deg, oklch(0.6 0.14 185), oklch(0.72 0.12 185));
   box-shadow: 0 0 8px oklch(0.7 0.14 185 / 0.5);
 }
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+
+/* Pulse glow for low HP (<25%) */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.7;
+    filter: brightness(1.4);
+  }
+}
+.hp-bar-pulse {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* 3D tilt hover for desktop cards */
+.tilt-card {
+  transform-style: preserve-3d;
+  perspective: 800px;
+}
+@media (hover: hover) {
+  .tilt-card:hover {
+    transform: rotateY(2deg) rotateX(-1deg) translateY(-4px);
+  }
+}
+
+/* Stagger reveal animation */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.stagger-reveal > * {
+  opacity: 0;
+  animation: fade-in-up 0.4s ease forwards;
+}
+.stagger-reveal > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger-reveal > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+.stagger-reveal > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+.stagger-reveal > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+.stagger-reveal > *:nth-child(5) {
+  animation-delay: 240ms;
+}
+.stagger-reveal > *:nth-child(6) {
+  animation-delay: 300ms;
+}
+.stagger-reveal > *:nth-child(7) {
+  animation-delay: 360ms;
+}
+.stagger-reveal > *:nth-child(8) {
+  animation-delay: 420ms;
+}
+.stagger-reveal > *:nth-child(9) {
+  animation-delay: 480ms;
+}
+
+/* Active press feedback for touch */
+.touch-press:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* ─── Utilities ──────────────────────────────────────────────────────────── */
 
 /* Hide scrollbar but keep scroll functionality */
 .no-scrollbar {

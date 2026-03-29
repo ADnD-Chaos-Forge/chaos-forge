@@ -79,7 +79,7 @@ export default async function DashboardPage() {
       <h1 className="font-heading text-3xl text-primary">{t("title")}</h1>
 
       {/* Stats row */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="stagger-reveal grid gap-4 sm:grid-cols-3">
         <GlassCard glow="neutral" data-testid="stat-card-adventurers">
           <div className="text-center">
             <div className="text-xs text-muted-foreground">{t("adventurers")}</div>
@@ -131,7 +131,7 @@ export default async function DashboardPage() {
       {!characters || characters.length === 0 ? (
         <p className="text-muted-foreground">{t("noCharacters")}</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="stagger-reveal grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {characters.map((character) => (
             <CharacterCard
               key={character.id}
