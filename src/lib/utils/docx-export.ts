@@ -238,11 +238,12 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
       e.equipped &&
       (e.armor.name.toLowerCase() === "schild" || e.armor.name.toLowerCase() === "shield")
   );
-  const effectiveAC = calculateAC(
-    equippedArmorForAC?.armor?.ac ?? null,
-    hasShieldForAC,
-    dexMods.defensiveAdj
-  );
+  const effectiveAC = calculateAC({
+    equippedArmorAC: equippedArmorForAC?.armor?.ac ?? null,
+    shieldEquipped: hasShieldForAC,
+    dexDefenseAdj: dexMods.defensiveAdj,
+    ignoreEncumbrance: character.ignore_encumbrance,
+  });
 
   const strDisplay =
     character.str === 18 && character.str_exceptional

@@ -250,6 +250,7 @@
     "unequip": "Ablegen",
     "totalWeight": "Gesamtgewicht",
     "encumbrance": "Belastung",
+    "ignoreEncumbrance": "Belastung ignorieren",
     "movement": "Bewegungsrate",
     "createCustomWeapon": "Eigene Waffe erstellen",
     "createCustomArmor": "Eigene Rüstung erstellen",

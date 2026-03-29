@@ -63,6 +63,7 @@ export interface CharacterRow {
   language_slots_adj: number;
   spell_slots_adj: Record<string, number>;
   spell_system: "slots" | "points";
+  ignore_encumbrance: boolean;
   created_at: string;
   updated_at: string;
 }

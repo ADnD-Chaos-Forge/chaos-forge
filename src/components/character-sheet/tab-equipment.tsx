@@ -18,7 +18,7 @@ import {
 } from "@/lib/rules/combat";
 import { getMulticlassThac0 } from "@/lib/rules/multiclass";
 import { getNonproficiencyPenalty } from "@/lib/rules/proficiencies";
-import { CLASSES } from "@/lib/rules/classes";
+import { CLASSES, getClassGroup } from "@/lib/rules/classes";
 import { getBookAbbreviation } from "@/lib/utils/source-books";
 import type { ClassId } from "@/lib/rules/types";
 import type {
@@ -48,6 +48,7 @@ interface TabEquipmentProps {
   characterDex: number;
   characterClasses: CharacterClassRow[];
   weaponProficiencies: CharacterWeaponProficiencyRow[];
+  ignoreEncumbrance?: boolean;
 }
 
 export function TabEquipment({
@@ -67,6 +68,7 @@ export function TabEquipment({
   characterDex,
   characterClasses,
   weaponProficiencies,
+  ignoreEncumbrance = true,
 }: TabEquipmentProps) {
   const router = useRouter();
   const t = useTranslations("equipment");
@@ -134,7 +136,17 @@ export function TabEquipment({
       e.equipped &&
       (e.armor.name.toLowerCase() === "schild" || e.armor.name.toLowerCase() === "shield")
   );
-  const currentAC = calculateAC(equippedArmor?.armor?.ac ?? null, shieldEquipped, dexDefenseAdj);
+  const classGroups = characterClasses
+    .filter((cc) => cc.is_active)
+    .map((cc) => getClassGroup(cc.class_id as ClassId));
+  const currentAC = calculateAC({
+    equippedArmorAC: equippedArmor?.armor?.ac ?? null,
+    shieldEquipped,
+    dexDefenseAdj,
+    classGroups,
+    encumbrance: encumbranceLevel,
+    ignoreEncumbrance,
+  });
 
   const equippedItems = equipment.filter((e) => e.equipped);
   const inventoryItems = equipment;
@@ -434,6 +446,25 @@ export function TabEquipment({
           <div className="mt-1 text-xs text-muted-foreground">
             {t("maxWeight", { weight: lbsToKg(strWeightAllow) })}
           </div>
+          {!readOnly && (
+            <label className="mt-2 flex cursor-pointer items-center justify-center gap-1.5 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={ignoreEncumbrance}
+                onChange={async () => {
+                  const supabase = createClient();
+                  await supabase
+                    .from("characters")
+                    .update({ ignore_encumbrance: !ignoreEncumbrance })
+                    .eq("id", characterId);
+                  router.refresh();
+                }}
+                className="h-3.5 w-3.5 rounded"
+                data-testid="toggle-ignore-encumbrance"
+              />
+              {t("ignoreEncumbrance")}
+            </label>
+          )}
         </div>
       </div>
 

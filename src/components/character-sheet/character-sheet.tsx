@@ -198,16 +198,18 @@ export function CharacterSheet({
     character.cha_leadership,
     character.cha_appearance
   );
-  // AC calculation using equipped armor + shield + DEX
+  // AC calculation using equipped armor + shield + DEX + class bonuses
   const equippedArmor = equipment.find((e) => e.equipped && e.armor && e.armor.name !== "Shield");
   const hasShield = equipment.some(
     (e) => e.equipped && e.armor && e.armor.name.toLowerCase().includes("shield")
   );
-  const effectiveAC = calculateAC(
-    equippedArmor?.armor?.ac ?? null,
-    hasShield,
-    dexMods.defensiveAdj
-  );
+  const effectiveAC = calculateAC({
+    equippedArmorAC: equippedArmor?.armor?.ac ?? null,
+    shieldEquipped: hasShield,
+    dexDefenseAdj: dexMods.defensiveAdj,
+    classGroups,
+    ignoreEncumbrance: character.ignore_encumbrance,
+  });
 
   function update(field: keyof CharacterRow, value: string | number | null) {
     if (!isOwner) return;
@@ -1322,6 +1324,7 @@ export function CharacterSheet({
             characterDex={character.dex}
             characterClasses={charClasses}
             weaponProficiencies={weaponProficiencies}
+            ignoreEncumbrance={character.ignore_encumbrance}
           />
         </TabsContent>
 
