@@ -127,29 +127,38 @@ export function getAttacksPerRound(
 
 /**
  * Calculate adjusted THAC0 for a specific weapon, incorporating ability
- * modifiers and proficiency penalties.
+ * modifiers, proficiency penalties, and magical weapon bonuses.
  *
- * PHB: Melee THAC0 = base - STR hitAdj - proficiency penalty
- *      Ranged THAC0 = base - DEX missileAdj - proficiency penalty
+ * PHB: Melee THAC0 = base - STR hitAdj - proficiency penalty - weapon bonus
+ *      Ranged THAC0 = base - DEX missileAdj - proficiency penalty - weapon bonus
  */
 export function getAdjustedWeaponThac0(
   baseThac0: number,
   strHitAdj: number,
   dexMissileAdj: number,
   weaponType: "melee" | "ranged" | "both",
-  proficiencyPenalty: number
+  proficiencyPenalty: number,
+  weaponHitBonus: number = 0
 ): { melee: number; ranged: number | null } {
   return {
-    melee: baseThac0 - strHitAdj - proficiencyPenalty,
-    ranged: weaponType !== "melee" ? baseThac0 - dexMissileAdj - proficiencyPenalty : null,
+    melee: baseThac0 - strHitAdj - proficiencyPenalty - weaponHitBonus,
+    ranged:
+      weaponType !== "melee"
+        ? baseThac0 - dexMissileAdj - proficiencyPenalty - weaponHitBonus
+        : null,
   };
 }
 
 /**
- * Format a damage string with STR damage bonus.
- * e.g. "1d8" + 2 → "1d8+2", "1d6" + -1 → "1d6-1"
+ * Format a damage string with STR damage bonus and optional weapon damage bonus.
+ * e.g. "1d8" + 2 + 0 → "1d8+2", "1d6" + 0 + 2 → "1d6+2", "1d8" + 1 + 2 → "1d8+3"
  */
-export function formatDamageWithBonus(baseDamage: string, strDmgAdj: number): string {
-  if (strDmgAdj === 0) return baseDamage;
-  return `${baseDamage}${strDmgAdj > 0 ? "+" : ""}${strDmgAdj}`;
+export function formatDamageWithBonus(
+  baseDamage: string,
+  strDmgAdj: number,
+  weaponDmgBonus: number = 0
+): string {
+  const total = strDmgAdj + weaponDmgBonus;
+  if (total === 0) return baseDamage;
+  return `${baseDamage}${total > 0 ? "+" : ""}${total}`;
 }

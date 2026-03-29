@@ -4,7 +4,15 @@ import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/glass-card";
 import { Badge } from "@/components/ui/badge";
-import type { SessionRow, TagRow } from "@/lib/supabase/types";
+import { NpcManager } from "@/components/session/npc-manager";
+import { QuoteSection } from "@/components/session/quote-section";
+import type {
+  SessionRow,
+  TagRow,
+  ChronicleNpcRow,
+  ChronicleQuoteRow,
+  QuoteReactionRow,
+} from "@/lib/supabase/types";
 
 const TAG_COLORS: Record<string, string> = {
   npc: "bg-red-900/50 text-red-200",
@@ -15,7 +23,13 @@ const TAG_COLORS: Record<string, string> = {
 
 export default async function SessionsPage() {
   const t = await getTranslations("sessions");
+  const tc = await getTranslations("chronicle");
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const currentUserId = user?.id ?? "";
 
   const { data: sessions } = await supabase
     .from("sessions")
@@ -29,6 +43,27 @@ export default async function SessionsPage() {
     .from("session_tags")
     .select("session_id, tag_id, tags(*)")
     .in("session_id", sessionIds.length > 0 ? sessionIds : ["none"]);
+
+  // Fetch NPCs
+  const { data: npcs } = await supabase
+    .from("chronicle_npcs")
+    .select("*")
+    .order("name")
+    .returns<ChronicleNpcRow[]>();
+
+  // Fetch Quotes with reactions
+  const { data: quotes } = await supabase
+    .from("chronicle_quotes")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .returns<ChronicleQuoteRow[]>();
+
+  const quoteIds = quotes?.map((q) => q.id) ?? [];
+  const { data: reactions } = await supabase
+    .from("chronicle_quote_reactions")
+    .select("*")
+    .in("quote_id", quoteIds.length > 0 ? quoteIds : ["none"])
+    .returns<QuoteReactionRow[]>();
 
   // Group tags by session
   const tagsBySession: Record<string, TagRow[]> = {};
@@ -46,6 +81,23 @@ export default async function SessionsPage() {
           <Button data-testid="create-session-button">{t("newSession")}</Button>
         </Link>
       </div>
+
+      {/* NPCs & Quotes */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <GlassCard glow="neutral">
+          <NpcManager npcs={npcs ?? []} />
+        </GlassCard>
+        <GlassCard glow="neutral">
+          <QuoteSection
+            quotes={quotes ?? []}
+            reactions={reactions ?? []}
+            currentUserId={currentUserId}
+          />
+        </GlassCard>
+      </div>
+
+      {/* Session heading */}
+      <h2 className="font-heading text-2xl text-primary">{tc("sessions")}</h2>
 
       {!sessions || sessions.length === 0 ? (
         <div

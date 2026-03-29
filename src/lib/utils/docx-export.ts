@@ -131,6 +131,58 @@ function emptyParagraph(): Paragraph {
   return new Paragraph({ children: [] });
 }
 
+// ─── i18n for DOCX headings ──────────────────────────────────────────────────
+const DOCX_I18N: Record<string, Record<string, string>> = {
+  de: {
+    abilities: "Attribute",
+    combatValues: "Kampfwerte",
+    savingThrows: "Rettungswürfe",
+    racialAbilities: "Rassenfähigkeiten",
+    classAbilities: "Klassenfähigkeiten",
+    kitAbilities: "Kit-Fähigkeiten",
+    acBreakdown: "RK-Aufschlüsselung",
+    thiefSkills: "Diebesfähigkeiten",
+    weapons: "Waffen",
+    armorInventory: "Rüstung & Inventar",
+    spellsKnown: "Bekannte Zauber",
+    spellsMemorized: "Vorbereitete Zauber",
+    proficiencies: "Fertigkeiten",
+    weaponProf: "Waffenfertigkeiten",
+    nwProf: "Allgemeine Fertigkeiten",
+    languages: "Sprachen",
+    fightingStyles: "Kampfstile",
+    notes: "Notizen",
+    footer: "Chaos Forge — AD&D 2nd Edition Manager",
+    createdAt: "Erstellt am",
+  },
+  en: {
+    abilities: "Abilities",
+    combatValues: "Combat Values",
+    savingThrows: "Saving Throws",
+    racialAbilities: "Racial Abilities",
+    classAbilities: "Class Abilities",
+    kitAbilities: "Kit Abilities",
+    acBreakdown: "AC Breakdown",
+    thiefSkills: "Thief Skills",
+    weapons: "Weapons",
+    armorInventory: "Armor & Inventory",
+    spellsKnown: "Spells Known",
+    spellsMemorized: "Spells Memorized",
+    proficiencies: "Proficiencies",
+    weaponProf: "Weapon Proficiencies",
+    nwProf: "Non-Weapon Proficiencies",
+    languages: "Languages",
+    fightingStyles: "Fighting Styles",
+    notes: "Notes",
+    footer: "Chaos Forge — AD&D 2nd Edition Manager",
+    createdAt: "Created on",
+  },
+};
+
+function getDocxT(locale: string): Record<string, string> {
+  return DOCX_I18N[locale] ?? DOCX_I18N.en;
+}
+
 // ─── Main Export ──────────────────────────────────────────────────────────────
 export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blob> {
   const {
@@ -143,6 +195,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
     languages,
   } = props;
 
+  const dt = getDocxT(props.locale);
   const race = character.race_id ? RACES[character.race_id as keyof typeof RACES] : null;
   const activeClasses = characterClasses.filter((cc) => cc.is_active);
   const classEntries = activeClasses.map((cc) => ({
@@ -269,7 +322,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
   }
 
   // ── 2. Abilities Table ─────────────────────────────────────────────────────
-  children.push(sectionHeading("Abilities"));
+  children.push(sectionHeading(dt.abilities));
 
   const abilityRows: { name: string; value: string; mods: string }[] = [
     {
@@ -401,7 +454,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
   );
 
   // ── 3. Combat Values ───────────────────────────────────────────────────────
-  children.push(sectionHeading("Combat Values"));
+  children.push(sectionHeading(dt.combatValues));
 
   children.push(
     new Table({
@@ -464,7 +517,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
 
   // ── 4. Saving Throws ──────────────────────────────────────────────────────
   if (saves) {
-    children.push(sectionHeading("Saving Throws"));
+    children.push(sectionHeading(dt.savingThrows));
     children.push(
       new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
@@ -529,7 +582,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
   const kitAbilities = kitDef?.abilities?.length ? kitDef.abilities : [];
 
   if (hasRacialAbilities || classAbilitiesEntries.length > 0 || kitAbilities.length > 0) {
-    children.push(sectionHeading("Racial & Class Abilities"));
+    children.push(sectionHeading(dt.racialAbilities));
 
     if (hasRacialAbilities && race?.racialAbilities) {
       children.push(
@@ -647,7 +700,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
   }
 
   // ── 5. AC Breakdown ───────────────────────────────────────────────────────
-  children.push(sectionHeading("AC Breakdown"));
+  children.push(sectionHeading(dt.acBreakdown));
 
   const armorReduction = equippedArmorForAC ? `${-(10 - equippedArmorForAC.armor!.ac)}` : "—";
   const armorName = equippedArmorForAC
@@ -712,7 +765,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
 
   // ── 5b. Thief Skills ──────────────────────────────────────────────────────
   if (hasThiefSkills(activeClasses.map((cc) => cc.class_id as ClassId))) {
-    children.push(sectionHeading("Thief Skills"));
+    children.push(sectionHeading(dt.thiefSkills));
     const backstabLevel =
       activeClasses.find((cc) => cc.class_id === "thief" || cc.class_id === "bard")?.level ?? 1;
     const thiefData = [
@@ -753,7 +806,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
   // ── 6. Weapons Table ──────────────────────────────────────────────────────
   const equippedWeapons = equipment.filter((e) => e.weapon && e.equipped);
   if (equippedWeapons.length > 0) {
-    children.push(sectionHeading("Weapons"));
+    children.push(sectionHeading(dt.weapons));
     children.push(
       new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
@@ -784,12 +837,15 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
                         ("warrior" as ClassGroup))
                     : ("warrior" as ClassGroup)
                 );
+            const hitBonus = e.hit_bonus ?? 0;
+            const dmgBonus = e.damage_bonus ?? 0;
             const weaponThac0 = getAdjustedWeaponThac0(
               thac0,
               strMods.hitAdj,
               dexMods.missileAdj,
               weapon.weapon_type,
-              penalty
+              penalty,
+              hitBonus
             );
             const rangeStr =
               weapon.weapon_type !== "melee" &&
@@ -798,12 +854,11 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
               weapon.range_long != null
                 ? `${feetToMeters(weapon.range_short)}/${feetToMeters(weapon.range_medium)}/${feetToMeters(weapon.range_long)}`
                 : "—";
+            const weaponLabel = `${localized(weapon.name, weapon.name_en, props.locale)}${hitBonus > 0 ? ` +${hitBonus}` : ""}${!isProficient ? " *" : ""}`;
 
             return new TableRow({
               children: [
-                cell(
-                  `${localized(weapon.name, weapon.name_en, props.locale)}${!isProficient ? " *" : ""}`
-                ),
+                cell(weaponLabel),
                 cell(String(weaponThac0.melee), {
                   alignment: AlignmentType.CENTER,
                   font: "Courier New",
@@ -812,11 +867,11 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
                   alignment: AlignmentType.CENTER,
                   font: "Courier New",
                 }),
-                cell(formatDamageWithBonus(weapon.damage_sm, strMods.dmgAdj), {
+                cell(formatDamageWithBonus(weapon.damage_sm, strMods.dmgAdj, dmgBonus), {
                   alignment: AlignmentType.CENTER,
                   font: "Courier New",
                 }),
-                cell(formatDamageWithBonus(weapon.damage_l, strMods.dmgAdj), {
+                cell(formatDamageWithBonus(weapon.damage_l, strMods.dmgAdj, dmgBonus), {
                   alignment: AlignmentType.CENTER,
                   font: "Courier New",
                 }),
@@ -837,7 +892,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
   // ── 7. Equipment (Armor & Inventory) ──────────────────────────────────────
   const equipmentItems = equipment.filter((e) => e.armor || (e.weapon && !e.equipped));
   if (equipmentItems.length > 0) {
-    children.push(sectionHeading("Armor & Inventory"));
+    children.push(sectionHeading(dt.armorInventory));
     children.push(
       new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
@@ -883,53 +938,141 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
     );
   }
 
-  // ── 8. Spells ─────────────────────────────────────────────────────────────
+  // ── 8. Spells Known (Table by level) ──────────────────────────────────────
   if (spells.length > 0) {
-    children.push(sectionHeading("Spellbook"));
+    children.push(sectionHeading(dt.spellsKnown));
+
+    // Group spells by level
+    const spellsByLevel: Record<number, typeof spells> = {};
     for (const cs of spells) {
+      const lvl = cs.spell.level;
+      if (!spellsByLevel[lvl]) spellsByLevel[lvl] = [];
+      spellsByLevel[lvl].push(cs);
+    }
+
+    const spellLevels = Object.keys(spellsByLevel)
+      .map(Number)
+      .sort((a, b) => a - b);
+    for (const lvl of spellLevels) {
+      const levelSpells = spellsByLevel[lvl];
+      // Level header row + spell data table
       children.push(
-        new Paragraph({
-          spacing: { after: 40 },
-          children: [
-            new TextRun({
-              text: localized(cs.spell.name, cs.spell.name_en, props.locale),
-              bold: cs.prepared,
-              font: "Calibri",
-              size: 20,
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [
+            // Header row spanning all columns
+            new TableRow({
+              tableHeader: true,
+              children: [
+                headerCell(props.locale === "de" ? `Stufe ${lvl} Zauber` : `Level ${lvl} Spells`, {
+                  width: 25,
+                }),
+                headerCell(props.locale === "de" ? "Wirkzeit" : "Cast Time", {
+                  width: 15,
+                  alignment: AlignmentType.CENTER,
+                }),
+                headerCell(props.locale === "de" ? "Reichweite" : "Range", {
+                  width: 15,
+                  alignment: AlignmentType.CENTER,
+                }),
+                headerCell(props.locale === "de" ? "Wirkungsbereich" : "Area of Effect", {
+                  width: 25,
+                  alignment: AlignmentType.CENTER,
+                }),
+                headerCell(props.locale === "de" ? "Komp." : "Comp.", {
+                  width: 10,
+                  alignment: AlignmentType.CENTER,
+                }),
+              ],
             }),
-            new TextRun({
-              text: ` (L${cs.spell.level})`,
-              font: "Calibri",
-              size: 18,
-              color: "666666",
-            }),
-            ...(cs.prepared
-              ? [
-                  new TextRun({
-                    text: " \u2605",
-                    font: "Calibri",
-                    size: 18,
-                    color: "666666",
-                  }),
-                ]
-              : []),
+            ...levelSpells.map(
+              (cs) =>
+                new TableRow({
+                  children: [
+                    cell(
+                      `${localized(cs.spell.name, cs.spell.name_en, props.locale)}${cs.prepared ? " \u2605" : ""}`,
+                      { bold: cs.prepared }
+                    ),
+                    cell(cs.spell.casting_time || "—", {
+                      alignment: AlignmentType.CENTER,
+                      size: 18,
+                    }),
+                    cell(cs.spell.range || "—", {
+                      alignment: AlignmentType.CENTER,
+                      size: 18,
+                    }),
+                    cell(cs.spell.area_of_effect || "—", {
+                      alignment: AlignmentType.CENTER,
+                      size: 18,
+                    }),
+                    cell((cs.spell.components ?? []).join(", "), {
+                      alignment: AlignmentType.CENTER,
+                      size: 18,
+                    }),
+                  ],
+                })
+            ),
           ],
         })
       );
+      children.push(emptyParagraph());
+    }
+
+    // Spells Memorized section
+    const preparedSpells = spells.filter((cs) => cs.prepared);
+    if (preparedSpells.length > 0) {
+      children.push(sectionHeading(dt.spellsMemorized));
+      const preparedByLevel: Record<number, typeof spells> = {};
+      for (const cs of preparedSpells) {
+        const lvl = cs.spell.level;
+        if (!preparedByLevel[lvl]) preparedByLevel[lvl] = [];
+        preparedByLevel[lvl].push(cs);
+      }
+      for (const lvl of Object.keys(preparedByLevel)
+        .map(Number)
+        .sort((a, b) => a - b)) {
+        children.push(
+          new Paragraph({
+            spacing: { before: 60, after: 40 },
+            children: [
+              new TextRun({
+                text: props.locale === "de" ? `Stufe ${lvl}` : `Level ${lvl}`,
+                bold: true,
+                font: "Calibri",
+                size: 20,
+              }),
+            ],
+          })
+        );
+        for (const cs of preparedByLevel[lvl]) {
+          children.push(
+            new Paragraph({
+              spacing: { after: 20 },
+              indent: { left: 360 },
+              bullet: { level: 0 },
+              children: [
+                new TextRun({
+                  text: localized(cs.spell.name, cs.spell.name_en, props.locale),
+                  font: "Calibri",
+                  size: 20,
+                }),
+              ],
+            })
+          );
+        }
+      }
     }
   }
 
   // ── 9. Proficiencies ──────────────────────────────────────────────────────
   if (weaponProficiencies.length > 0 || nonweaponProficiencies.length > 0) {
-    children.push(sectionHeading("Proficiencies"));
+    children.push(sectionHeading(dt.proficiencies));
 
     if (weaponProficiencies.length > 0) {
       children.push(
         new Paragraph({
           spacing: { after: 60 },
-          children: [
-            new TextRun({ text: "Weapon Proficiencies", bold: true, font: "Calibri", size: 22 }),
-          ],
+          children: [new TextRun({ text: dt.weaponProf, bold: true, font: "Calibri", size: 22 })],
         })
       );
       for (const wp of weaponProficiencies) {
@@ -956,7 +1099,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
           spacing: { before: 120, after: 60 },
           children: [
             new TextRun({
-              text: "Non-Weapon Proficiencies",
+              text: dt.nwProf,
               bold: true,
               font: "Calibri",
               size: 22,
@@ -990,7 +1133,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
       children.push(
         new Paragraph({
           spacing: { before: 120, after: 60 },
-          children: [new TextRun({ text: "Languages", bold: true, font: "Calibri", size: 22 })],
+          children: [new TextRun({ text: dt.languages, bold: true, font: "Calibri", size: 22 })],
         })
       );
       children.push(
@@ -1010,19 +1153,22 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
 
   // ── 10. Notes ─────────────────────────────────────────────────────────────
   if (character.notes) {
-    children.push(sectionHeading("Notes"));
-    children.push(
-      new Paragraph({
-        spacing: { after: 40 },
-        children: [
-          new TextRun({
-            text: character.notes,
-            font: "Calibri",
-            size: 20,
-          }),
-        ],
-      })
-    );
+    children.push(sectionHeading(dt.notes));
+    const noteLines = character.notes.split("\n");
+    for (const line of noteLines) {
+      children.push(
+        new Paragraph({
+          spacing: { after: 40 },
+          children: [
+            new TextRun({
+              text: line || " ",
+              font: "Calibri",
+              size: 20,
+            }),
+          ],
+        })
+      );
+    }
   }
 
   // ── Footer ────────────────────────────────────────────────────────────────

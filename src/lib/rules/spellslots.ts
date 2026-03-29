@@ -1,6 +1,6 @@
 import type { ClassId, MagicSchool, PriestSphere } from "./types";
 import { CLASSES } from "./classes";
-import { getOppositionSchools, hasSphereAccess } from "./magic";
+import { getOppositionSchools, getSpecialist, hasSphereAccess } from "./magic";
 import { getIntelligenceModifiers, getWisdomModifiers } from "./abilities";
 
 // PHB Table 21: Wizard Spell Progression
@@ -97,6 +97,18 @@ export function getWizardSpellSlots(level: number): number[] {
   return [...WIZARD_SLOTS[Math.max(0, idx)]];
 }
 
+/**
+ * PHB: Specialist wizards gain +1 spell slot per spell level where they have
+ * at least 1 base slot. The bonus slot must be used for a spell from the
+ * specialist's school.
+ */
+export function getSpecialistBonusSlots(classId: ClassId, level: number): number[] {
+  const specialist = getSpecialist(classId);
+  if (!specialist) return new Array(9).fill(0);
+  const baseSlots = getWizardSpellSlots(level);
+  return baseSlots.map((slots) => (slots > 0 ? 1 : 0));
+}
+
 export function getPriestSpellSlots(level: number): number[] {
   const idx = Math.min(level, PRIEST_SLOTS.length) - 1;
   return [...PRIEST_SLOTS[Math.max(0, idx)]];
@@ -172,6 +184,95 @@ export function getPriestBonusSpellPoints(wisScore: number): number {
 export function getPriestSpellCost(spellLevel: number): number {
   if (spellLevel < 1 || spellLevel > 7) return 0;
   return PRIEST_SPELL_POINT_COST[spellLevel - 1];
+}
+
+// ─── WIZARD SPELL POINTS (Player's Option: Spells & Magic) ──────────────────
+// Table 17: Wizard Spell Point Progression
+const WIZARD_SPELL_POINTS: {
+  points: number;
+  specialistBonus: number;
+  maxSpellLevel: number;
+  maxMemorized: number;
+}[] = [
+  // L1-L20
+  { points: 15, specialistBonus: 10, maxSpellLevel: 1, maxMemorized: 4 }, // L1
+  { points: 22, specialistBonus: 14, maxSpellLevel: 1, maxMemorized: 4 }, // L2
+  { points: 30, specialistBonus: 18, maxSpellLevel: 2, maxMemorized: 4 }, // L3
+  { points: 40, specialistBonus: 24, maxSpellLevel: 2, maxMemorized: 4 }, // L4
+  { points: 52, specialistBonus: 30, maxSpellLevel: 3, maxMemorized: 5 }, // L5
+  { points: 65, specialistBonus: 38, maxSpellLevel: 3, maxMemorized: 5 }, // L6
+  { points: 80, specialistBonus: 46, maxSpellLevel: 4, maxMemorized: 5 }, // L7
+  { points: 96, specialistBonus: 56, maxSpellLevel: 4, maxMemorized: 5 }, // L8
+  { points: 114, specialistBonus: 66, maxSpellLevel: 5, maxMemorized: 5 }, // L9
+  { points: 133, specialistBonus: 78, maxSpellLevel: 5, maxMemorized: 5 }, // L10
+  { points: 155, specialistBonus: 90, maxSpellLevel: 6, maxMemorized: 5 }, // L11
+  { points: 178, specialistBonus: 104, maxSpellLevel: 6, maxMemorized: 5 }, // L12
+  { points: 203, specialistBonus: 118, maxSpellLevel: 7, maxMemorized: 6 }, // L13
+  { points: 229, specialistBonus: 134, maxSpellLevel: 7, maxMemorized: 6 }, // L14
+  { points: 257, specialistBonus: 150, maxSpellLevel: 8, maxMemorized: 6 }, // L15
+  { points: 287, specialistBonus: 168, maxSpellLevel: 8, maxMemorized: 6 }, // L16
+  { points: 318, specialistBonus: 186, maxSpellLevel: 9, maxMemorized: 6 }, // L17
+  { points: 351, specialistBonus: 206, maxSpellLevel: 9, maxMemorized: 6 }, // L18
+  { points: 386, specialistBonus: 226, maxSpellLevel: 9, maxMemorized: 6 }, // L19
+  { points: 422, specialistBonus: 248, maxSpellLevel: 9, maxMemorized: 6 }, // L20
+];
+
+// Table 18: Spell Cost by Level (Wizard)
+const WIZARD_SPELL_POINT_COST: { fixed: number; free: number }[] = [
+  { fixed: 3, free: 5 }, // Level 1
+  { fixed: 6, free: 10 }, // Level 2
+  { fixed: 10, free: 16 }, // Level 3
+  { fixed: 15, free: 24 }, // Level 4
+  { fixed: 21, free: 33 }, // Level 5
+  { fixed: 28, free: 44 }, // Level 6
+  { fixed: 36, free: 56 }, // Level 7
+  { fixed: 45, free: 70 }, // Level 8
+  { fixed: 55, free: 86 }, // Level 9
+];
+
+// Table 19: Bonus Spell Points for Intelligence
+const WIZARD_BONUS_SPELL_POINTS: Record<number, number> = {
+  14: 1,
+  15: 3,
+  16: 5,
+  17: 8,
+  18: 11,
+  19: 15,
+  20: 20,
+  21: 25,
+  22: 31,
+  23: 38,
+  24: 46,
+  25: 55,
+};
+
+export function getWizardSpellPoints(level: number): number {
+  const idx = Math.min(level, WIZARD_SPELL_POINTS.length) - 1;
+  return WIZARD_SPELL_POINTS[Math.max(0, idx)].points;
+}
+
+export function getWizardSpecialistBonusPoints(level: number): number {
+  const idx = Math.min(level, WIZARD_SPELL_POINTS.length) - 1;
+  return WIZARD_SPELL_POINTS[Math.max(0, idx)].specialistBonus;
+}
+
+export function getWizardBonusSpellPoints(intScore: number): number {
+  let bonus = 0;
+  for (const [score, points] of Object.entries(WIZARD_BONUS_SPELL_POINTS)) {
+    if (intScore >= parseInt(score)) bonus = points;
+  }
+  return bonus;
+}
+
+export function getWizardSpellCost(spellLevel: number, isFree: boolean = false): number {
+  if (spellLevel < 1 || spellLevel > 9) return 0;
+  const costs = WIZARD_SPELL_POINT_COST[spellLevel - 1];
+  return isFree ? costs.free : costs.fixed;
+}
+
+export function getWizardMaxMemorized(level: number): number {
+  const idx = Math.min(level, WIZARD_SPELL_POINTS.length) - 1;
+  return WIZARD_SPELL_POINTS[Math.max(0, idx)].maxMemorized;
 }
 
 export function canLearnSpell(

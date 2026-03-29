@@ -434,3 +434,80 @@ describe("ABILITY-013: rollAbilityScoresMethodV — 4d6 drop lowest, arrange fre
     expect(sumV / iterations).toBeGreaterThan(sumI / iterations);
   });
 });
+
+describe("Extended Ability Scores (19-25)", () => {
+  it("DEX 19: reactionAdj +3, missileAdj +3, defensiveAdj -4", () => {
+    const mods = getDexterityModifiers(19);
+    expect(mods.reactionAdj).toBe(3);
+    expect(mods.missileAdj).toBe(3);
+    expect(mods.defensiveAdj).toBe(-4);
+  });
+
+  it("DEX 25: reactionAdj +5, missileAdj +5, defensiveAdj -6", () => {
+    const mods = getDexterityModifiers(25);
+    expect(mods.reactionAdj).toBe(5);
+    expect(mods.missileAdj).toBe(5);
+    expect(mods.defensiveAdj).toBe(-6);
+  });
+
+  it("CON 19: hpAdj +5, poisonSave +1", () => {
+    const mods = getConstitutionModifiers(19);
+    expect(mods.hpAdj).toBe(5);
+    expect(mods.poisonSave).toBe(1);
+    expect(mods.systemShock).toBe(99);
+  });
+
+  it("CON 25: hpAdj +7, poisonSave +4", () => {
+    const mods = getConstitutionModifiers(25);
+    expect(mods.hpAdj).toBe(7);
+    expect(mods.poisonSave).toBe(4);
+  });
+
+  it("INT 19: 8 languages, spellLevel 9, chanceToLearn 95, spellImmunity 1", () => {
+    const mods = getIntelligenceModifiers(19);
+    expect(mods.numberOfLanguages).toBe(8);
+    expect(mods.spellLevel).toBe(9);
+    expect(mods.chanceToLearn).toBe(95);
+    expect(mods.maxSpellsPerLevel).toBe("All");
+    expect(mods.spellImmunity).toBe(1);
+  });
+
+  it("INT 25: 20 languages, chanceToLearn 100, spellImmunity 7", () => {
+    const mods = getIntelligenceModifiers(25);
+    expect(mods.numberOfLanguages).toBe(20);
+    expect(mods.chanceToLearn).toBe(100);
+    expect(mods.spellImmunity).toBe(7);
+  });
+
+  it("WIS 19: magicalDefenseAdj +4, bonusSpells [3,2,1,1]", () => {
+    const mods = getWisdomModifiers(19);
+    expect(mods.magicalDefenseAdj).toBe(4);
+    expect(mods.bonusSpells).toEqual([3, 2, 1, 1]);
+    expect(mods.spellFailure).toBe(0);
+  });
+
+  it("WIS 25: bonusSpells [3,3,2,2,2,1,1]", () => {
+    const mods = getWisdomModifiers(25);
+    expect(mods.bonusSpells).toEqual([3, 3, 2, 2, 2, 1, 1]);
+  });
+
+  it("CHA 19: maxHenchmen 20, loyaltyBase +10, reactionAdj +8", () => {
+    const mods = getCharismaModifiers(19);
+    expect(mods.maxHenchmen).toBe(20);
+    expect(mods.loyaltyBase).toBe(10);
+    expect(mods.reactionAdj).toBe(8);
+  });
+
+  it("CHA 25: maxHenchmen 50, loyaltyBase +20, reactionAdj +14", () => {
+    const mods = getCharismaModifiers(25);
+    expect(mods.maxHenchmen).toBe(50);
+    expect(mods.loyaltyBase).toBe(20);
+    expect(mods.reactionAdj).toBe(14);
+  });
+
+  it("Sub-stats work with values over 18 (Aim 20)", () => {
+    const mods = getDexterityModifiers(15, 20);
+    expect(mods.missileAdj).toBe(3); // from aim 20
+    expect(mods.defensiveAdj).toBe(-1); // from base DEX 15
+  });
+});

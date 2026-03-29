@@ -393,17 +393,14 @@ export function TabEquipment({
 
   function getWeaponThac0(weapon: WeaponRow, hitBonus = 0) {
     const penalty = getWeaponProficiencyPenalty(weapon.name);
-    const base = getAdjustedWeaponThac0(
+    return getAdjustedWeaponThac0(
       baseThac0,
       strHitAdj,
       dexMissileAdj,
       weapon.weapon_type,
-      penalty
+      penalty,
+      hitBonus
     );
-    return {
-      melee: base.melee !== null ? base.melee - hitBonus : null,
-      ranged: base.ranged !== null ? base.ranged - hitBonus : null,
-    };
   }
 
   return (

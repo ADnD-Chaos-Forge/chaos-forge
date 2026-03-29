@@ -10,11 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getWizardSpellSlots,
+  getSpecialistBonusSlots,
   getPriestSpellSlots,
   getPriestBonusSlots,
   getPriestSpellPoints,
   getPriestBonusSpellPoints,
   getPriestSpellCost,
+  getWizardSpellPoints,
+  getWizardSpecialistBonusPoints,
+  getWizardBonusSpellPoints,
+  getWizardSpellCost,
   canLearnSpell,
 } from "@/lib/rules/spellslots";
 import type { ClassId, MagicSchool, PriestSphere } from "@/lib/rules/types";
@@ -84,6 +89,7 @@ interface TabSpellsProps {
   spells: CharacterSpellWithDetails[];
   allSpells: SpellRow[];
   spellSlotsAdj: Record<string, number>;
+  spellSystem: "slots" | "points";
   readOnly?: boolean;
 }
 
@@ -98,6 +104,7 @@ export function TabSpells({
   spells,
   allSpells,
   spellSlotsAdj: initialAdj,
+  spellSystem: initialSpellSystem,
   readOnly = false,
 }: TabSpellsProps) {
   const router = useRouter();
@@ -134,9 +141,51 @@ export function TabSpells({
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customSpell, setCustomSpell] = useState<CustomSpellForm>(emptyCustomSpellForm);
 
+  const [spellSystem, setSpellSystem] = useState(initialSpellSystem);
   const isWizard = classGroup === "wizard";
   const isPriest = classGroup === "priest";
   const maxSpellLevel = isWizard ? 9 : 7;
+  const usePoints = spellSystem === "points";
+
+  // Spell Points calculation
+  const spellPointsTotal = useMemo(() => {
+    if (!usePoints) return 0;
+    if (isWizard) {
+      const base = getWizardSpellPoints(level);
+      const intBonus = getWizardBonusSpellPoints(intScore);
+      return base + intBonus;
+    }
+    if (isPriest) {
+      const base = getPriestSpellPoints(level);
+      const wisBonus = getPriestBonusSpellPoints(wisScore);
+      return base + wisBonus;
+    }
+    return 0;
+  }, [usePoints, isWizard, isPriest, level, intScore, wisScore]);
+
+  const specialistBonusPoints = useMemo(() => {
+    if (!usePoints || !isWizard) return 0;
+    return getWizardSpecialistBonusPoints(level);
+  }, [usePoints, isWizard, level]);
+
+  const spellPointsUsed = useMemo(() => {
+    if (!usePoints) return 0;
+    return spells
+      .filter((cs) => cs.prepared)
+      .reduce((sum, cs) => {
+        if (isWizard) return sum + getWizardSpellCost(cs.spell.level);
+        if (isPriest) return sum + getPriestSpellCost(cs.spell.level);
+        return sum;
+      }, 0);
+  }, [usePoints, spells, isWizard, isPriest]);
+
+  async function toggleSpellSystem() {
+    const newSystem = spellSystem === "slots" ? "points" : "slots";
+    setSpellSystem(newSystem);
+    const supabase = createClient();
+    await supabase.from("characters").update({ spell_system: newSystem }).eq("id", characterId);
+    router.refresh();
+  }
 
   // Calculate spell slots
   const baseSlots = useMemo(() => {
@@ -150,9 +199,18 @@ export function TabSpells({
     return new Array(maxSpellLevel).fill(0);
   }, [isPriest, wisScore, maxSpellLevel]);
 
+  const specialistBonus = useMemo(() => {
+    if (isWizard) return getSpecialistBonusSlots(classId as ClassId, level);
+    return new Array(maxSpellLevel).fill(0);
+  }, [isWizard, classId, level, maxSpellLevel]);
+
   const totalSlots = useMemo(
-    () => baseSlots.map((base, i) => base + (bonusSlots[i] ?? 0) + (slotsAdj[String(i + 1)] ?? 0)),
-    [baseSlots, bonusSlots, slotsAdj]
+    () =>
+      baseSlots.map(
+        (base, i) =>
+          base + (bonusSlots[i] ?? 0) + (specialistBonus[i] ?? 0) + (slotsAdj[String(i + 1)] ?? 0)
+      ),
+    [baseSlots, bonusSlots, specialistBonus, slotsAdj]
   );
 
   // Group spells by level
@@ -190,10 +248,11 @@ export function TabSpells({
     });
   }, [allSpells, spells, isWizard, isPriest]);
 
-  // Check which spells have restrictions (for warning display)
+  // Check which spells have restrictions (for warning display) — both known and learnable
   const spellWarnings = useMemo(() => {
     const warnings = new Map<string, string>();
-    for (const spell of learnableSpells) {
+    const allToCheck = [...learnableSpells, ...spells.map((cs) => cs.spell)];
+    for (const spell of allToCheck) {
       const result = canLearnSpell(
         classId as ClassId,
         (spell.school as MagicSchool) ?? undefined,
@@ -206,7 +265,7 @@ export function TabSpells({
       }
     }
     return warnings;
-  }, [learnableSpells, classId, intScore]);
+  }, [learnableSpells, spells, classId, intScore]);
 
   // Filtered learnable spells by search, level, and school/sphere
   const filteredLearnableSpells = useMemo(() => {
@@ -350,29 +409,73 @@ export function TabSpells({
 
   return (
     <div className="flex flex-col gap-6" data-testid="tab-spells">
-      {/* Spell Points (Priest) or Spell Slots (Wizard) */}
-      {isPriest ? (
+      {/* Spell System Toggle */}
+      {!readOnly && (
+        <div className="flex items-center gap-3" data-testid="spell-system-toggle">
+          <span className="text-sm text-muted-foreground">{t("spellSystemLabel")}</span>
+          <div className="flex rounded-md border border-border">
+            <button
+              className={`px-3 py-1 text-sm ${!usePoints ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+              onClick={() => spellSystem !== "slots" && toggleSpellSystem()}
+              data-testid="spell-system-slots"
+            >
+              {t("spellSlots")}
+            </button>
+            <button
+              className={`px-3 py-1 text-sm ${usePoints ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+              onClick={() => spellSystem !== "points" && toggleSpellSystem()}
+              data-testid="spell-system-points"
+            >
+              {t("spellPoints")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Spell Points Display */}
+      {usePoints ? (
         <div>
           <h3 className="mb-3 font-heading text-lg">{t("spellPoints")}</h3>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3" data-testid="spell-points-grid">
             <div className="rounded-md border border-primary p-4 text-center">
               <div className="text-xs text-muted-foreground">{t("totalPoints")}</div>
               <div className="font-heading text-3xl text-primary" data-testid="spell-points-total">
-                {getPriestSpellPoints(level) + getPriestBonusSpellPoints(wisScore)}
+                {spellPointsTotal}
               </div>
               <div className="text-xs text-muted-foreground">
-                {getPriestSpellPoints(level)} + {getPriestBonusSpellPoints(wisScore)} WIS
+                {isWizard
+                  ? `${getWizardSpellPoints(level)} + ${getWizardBonusSpellPoints(intScore)} INT`
+                  : `${getPriestSpellPoints(level)} + ${getPriestBonusSpellPoints(wisScore)} WIS`}
               </div>
             </div>
             <div className="rounded-md border border-border p-4 text-center">
-              <div className="text-xs text-muted-foreground">{t("spellCosts")}</div>
-              <div className="mt-1 flex flex-wrap justify-center gap-1 text-xs">
-                {[1, 2, 3, 4, 5, 6, 7].map((sl) => (
-                  <span key={sl} className="rounded bg-muted px-1.5 py-0.5 font-mono">
-                    L{sl}={getPriestSpellCost(sl)}
-                  </span>
-                ))}
+              <div className="text-xs text-muted-foreground">{t("pointsUsed")}</div>
+              <div
+                className={`font-heading text-3xl ${spellPointsUsed > spellPointsTotal ? "text-destructive" : "text-foreground"}`}
+                data-testid="spell-points-used"
+              >
+                {spellPointsUsed}
               </div>
+              <div className="text-xs text-muted-foreground">
+                {spellPointsTotal - spellPointsUsed} {t("pointsRemaining")}
+              </div>
+            </div>
+            {isWizard && specialistBonusPoints > 0 && (
+              <div className="rounded-md border border-amber-500/30 p-4 text-center">
+                <div className="text-xs text-muted-foreground">{t("specialistBonus")}</div>
+                <div className="font-heading text-3xl text-amber-400">{specialistBonusPoints}</div>
+                <div className="text-xs text-muted-foreground">{t("schoolSpellsOnly")}</div>
+              </div>
+            )}
+          </div>
+          <div className="mt-2 rounded-md border border-border p-3">
+            <div className="text-xs text-muted-foreground">{t("spellCosts")}</div>
+            <div className="mt-1 flex flex-wrap gap-1 text-xs">
+              {Array.from({ length: maxSpellLevel }, (_, i) => i + 1).map((sl) => (
+                <span key={sl} className="rounded bg-muted px-1.5 py-0.5 font-mono">
+                  L{sl}={isWizard ? getWizardSpellCost(sl) : getPriestSpellCost(sl)}
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -475,6 +578,15 @@ export function TabSpells({
                         <Badge variant="outline" className="text-xs">
                           {spell.school ?? spell.sphere}
                         </Badge>
+                        {spellWarnings.has(spell.id) && (
+                          <span
+                            className="text-xs text-orange-400"
+                            title={spellWarnings.get(spell.id)}
+                            data-testid={`spell-warning-${spell.id}`}
+                          >
+                            ⚠
+                          </span>
+                        )}
                         {spell.source_book && (
                           <span className="rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
                             {getBookAbbreviation(spell.source_book)}
@@ -670,6 +782,15 @@ export function TabSpells({
                           <Badge variant="outline" className="text-xs">
                             {spell.school ?? spell.sphere}
                           </Badge>
+                          {spellWarnings.has(spell.id) && (
+                            <span
+                              className="text-xs text-orange-400"
+                              title={spellWarnings.get(spell.id)}
+                              data-testid={`learnable-spell-warning-${spell.id}`}
+                            >
+                              ⚠ {spellWarnings.get(spell.id)}
+                            </span>
+                          )}
                           {spell.source_book && (
                             <span className="rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
                               {getBookAbbreviation(spell.source_book)}

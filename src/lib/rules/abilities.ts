@@ -160,6 +160,20 @@ const DEX_TABLE: DexterityModifiers[] = [
   { reactionAdj: 2, missileAdj: 2, defensiveAdj: -3 },
   // DEX 18
   { reactionAdj: 2, missileAdj: 2, defensiveAdj: -4 },
+  // DEX 19
+  { reactionAdj: 3, missileAdj: 3, defensiveAdj: -4 },
+  // DEX 20
+  { reactionAdj: 3, missileAdj: 3, defensiveAdj: -4 },
+  // DEX 21
+  { reactionAdj: 4, missileAdj: 4, defensiveAdj: -5 },
+  // DEX 22
+  { reactionAdj: 4, missileAdj: 4, defensiveAdj: -5 },
+  // DEX 23
+  { reactionAdj: 4, missileAdj: 4, defensiveAdj: -5 },
+  // DEX 24
+  { reactionAdj: 5, missileAdj: 5, defensiveAdj: -6 },
+  // DEX 25
+  { reactionAdj: 5, missileAdj: 5, defensiveAdj: -6 },
 ];
 
 /**
@@ -224,6 +238,20 @@ const CON_TABLE: ConstitutionModifiers[] = [
   { hpAdj: 3, systemShock: 97, resurrectionSurvival: 98, poisonSave: 0, regeneration: null },
   // CON 18
   { hpAdj: 4, systemShock: 99, resurrectionSurvival: 100, poisonSave: 0, regeneration: null },
+  // CON 19
+  { hpAdj: 5, systemShock: 99, resurrectionSurvival: 100, poisonSave: 1, regeneration: null },
+  // CON 20
+  { hpAdj: 5, systemShock: 99, resurrectionSurvival: 100, poisonSave: 1, regeneration: null },
+  // CON 21
+  { hpAdj: 6, systemShock: 99, resurrectionSurvival: 100, poisonSave: 2, regeneration: null },
+  // CON 22
+  { hpAdj: 6, systemShock: 99, resurrectionSurvival: 100, poisonSave: 2, regeneration: null },
+  // CON 23
+  { hpAdj: 6, systemShock: 99, resurrectionSurvival: 100, poisonSave: 3, regeneration: null },
+  // CON 24
+  { hpAdj: 7, systemShock: 99, resurrectionSurvival: 100, poisonSave: 3, regeneration: null },
+  // CON 25
+  { hpAdj: 7, systemShock: 99, resurrectionSurvival: 100, poisonSave: 4, regeneration: null },
 ];
 
 /**
@@ -385,6 +413,62 @@ const INT_TABLE: IntelligenceModifiers[] = [
     maxSpellsPerLevel: 18,
     spellImmunity: null,
   },
+  // INT 19
+  {
+    numberOfLanguages: 8,
+    spellLevel: 9,
+    chanceToLearn: 95,
+    maxSpellsPerLevel: "All",
+    spellImmunity: 1,
+  },
+  // INT 20
+  {
+    numberOfLanguages: 9,
+    spellLevel: 9,
+    chanceToLearn: 96,
+    maxSpellsPerLevel: "All",
+    spellImmunity: 2,
+  },
+  // INT 21
+  {
+    numberOfLanguages: 10,
+    spellLevel: 9,
+    chanceToLearn: 97,
+    maxSpellsPerLevel: "All",
+    spellImmunity: 3,
+  },
+  // INT 22
+  {
+    numberOfLanguages: 11,
+    spellLevel: 9,
+    chanceToLearn: 98,
+    maxSpellsPerLevel: "All",
+    spellImmunity: 4,
+  },
+  // INT 23
+  {
+    numberOfLanguages: 12,
+    spellLevel: 9,
+    chanceToLearn: 99,
+    maxSpellsPerLevel: "All",
+    spellImmunity: 5,
+  },
+  // INT 24
+  {
+    numberOfLanguages: 15,
+    spellLevel: 9,
+    chanceToLearn: 100,
+    maxSpellsPerLevel: "All",
+    spellImmunity: 6,
+  },
+  // INT 25
+  {
+    numberOfLanguages: 20,
+    spellLevel: 9,
+    chanceToLearn: 100,
+    maxSpellsPerLevel: "All",
+    spellImmunity: 7,
+  },
 ];
 
 /**
@@ -450,6 +534,20 @@ const WIS_TABLE: WisdomModifiers[] = [
   { magicalDefenseAdj: 3, bonusSpells: [2, 2, 1], spellFailure: 0 },
   // WIS 18
   { magicalDefenseAdj: 4, bonusSpells: [2, 2, 1, 1], spellFailure: 0 },
+  // WIS 19
+  { magicalDefenseAdj: 4, bonusSpells: [3, 2, 1, 1], spellFailure: 0 },
+  // WIS 20
+  { magicalDefenseAdj: 4, bonusSpells: [3, 2, 2, 1], spellFailure: 0 },
+  // WIS 21
+  { magicalDefenseAdj: 4, bonusSpells: [3, 3, 2, 1, 1], spellFailure: 0 },
+  // WIS 22
+  { magicalDefenseAdj: 4, bonusSpells: [3, 3, 2, 2, 1], spellFailure: 0 },
+  // WIS 23
+  { magicalDefenseAdj: 4, bonusSpells: [3, 3, 2, 2, 2], spellFailure: 0 },
+  // WIS 24
+  { magicalDefenseAdj: 4, bonusSpells: [3, 3, 2, 2, 2, 1], spellFailure: 0 },
+  // WIS 25
+  { magicalDefenseAdj: 4, bonusSpells: [3, 3, 2, 2, 2, 1, 1], spellFailure: 0 },
 ];
 
 /**
@@ -515,6 +613,20 @@ const CHA_TABLE: CharismaModifiers[] = [
   { maxHenchmen: 10, loyaltyBase: 6, reactionAdj: 6 },
   // CHA 18
   { maxHenchmen: 15, loyaltyBase: 8, reactionAdj: 7 },
+  // CHA 19
+  { maxHenchmen: 20, loyaltyBase: 10, reactionAdj: 8 },
+  // CHA 20
+  { maxHenchmen: 25, loyaltyBase: 12, reactionAdj: 9 },
+  // CHA 21
+  { maxHenchmen: 30, loyaltyBase: 14, reactionAdj: 10 },
+  // CHA 22
+  { maxHenchmen: 35, loyaltyBase: 16, reactionAdj: 11 },
+  // CHA 23
+  { maxHenchmen: 40, loyaltyBase: 18, reactionAdj: 12 },
+  // CHA 24
+  { maxHenchmen: 45, loyaltyBase: 20, reactionAdj: 13 },
+  // CHA 25
+  { maxHenchmen: 50, loyaltyBase: 20, reactionAdj: 14 },
 ];
 
 /**

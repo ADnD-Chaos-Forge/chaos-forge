@@ -33,6 +33,7 @@ export function ShareDialog({
   const [selectedUserId, setSelectedUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [configError, setConfigError] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -59,6 +60,12 @@ export function ShareDialog({
       if (res.ok) {
         const json = await res.json();
         setUsers(json.users ?? []);
+        setConfigError(false);
+      } else {
+        const json = await res.json().catch(() => ({}));
+        if (json.error === "not_configured") {
+          setConfigError(true);
+        }
       }
     } catch {
       // ignore fetch errors
@@ -180,7 +187,12 @@ export function ShareDialog({
         </div>
 
         {/* Add share */}
-        {!loading && users.length === 0 && (
+        {!loading && configError && (
+          <p className="text-sm text-yellow-500" data-testid="share-config-error">
+            {t("serviceKeyMissing")}
+          </p>
+        )}
+        {!loading && !configError && users.length === 0 && (
           <p className="text-sm text-muted-foreground" data-testid="share-no-users">
             {t("noUsers")}
           </p>

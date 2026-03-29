@@ -192,6 +192,25 @@ describe("getAdjustedWeaponThac0", () => {
     const result = getAdjustedWeaponThac0(11, 3, 0, "melee", 0);
     expect(result.melee).toBe(8);
   });
+
+  it("magical weapon bonus reduces THAC0", () => {
+    // Fighter L1 (THAC0 20), STR 10, proficient, +2 weapon
+    const result = getAdjustedWeaponThac0(20, 0, 0, "melee", 0, 2);
+    expect(result.melee).toBe(18);
+  });
+
+  it("magical weapon bonus applies to both melee and ranged", () => {
+    // Fighter L1 (THAC0 20), STR 10, DEX 16 (+1), +3 weapon (both)
+    const result = getAdjustedWeaponThac0(20, 0, 1, "both", 0, 3);
+    expect(result.melee).toBe(17);
+    expect(result.ranged).toBe(16);
+  });
+
+  it("combines STR, proficiency, and weapon bonus", () => {
+    // Fighter L5 (THAC0 16), STR 18 (+1), proficient, +2 weapon
+    const result = getAdjustedWeaponThac0(16, 1, 0, "melee", 0, 2);
+    expect(result.melee).toBe(13);
+  });
 });
 
 describe("formatDamageWithBonus", () => {
@@ -209,5 +228,17 @@ describe("formatDamageWithBonus", () => {
 
   it("works with complex damage strings", () => {
     expect(formatDamageWithBonus("2d4+1", 3)).toBe("2d4+1+3");
+  });
+
+  it("weapon damage bonus adds to STR bonus", () => {
+    expect(formatDamageWithBonus("1d8", 1, 2)).toBe("1d8+3");
+  });
+
+  it("weapon damage bonus alone", () => {
+    expect(formatDamageWithBonus("1d6", 0, 2)).toBe("1d6+2");
+  });
+
+  it("weapon bonus and negative STR cancel out", () => {
+    expect(formatDamageWithBonus("1d8", -2, 2)).toBe("1d8");
   });
 });
