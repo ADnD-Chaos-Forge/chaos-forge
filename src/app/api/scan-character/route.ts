@@ -49,11 +49,14 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
 
-    // Support both old "image" field (single file) and new "files" field (multiple files)
-    const files = formData.getAll("files") as File[];
-    const legacyFile = formData.get("image") as File | null;
-
-    const allFiles = files.length > 0 ? files : legacyFile ? [legacyFile] : [];
+    // Collect all uploaded files — iterate entries() for robustness
+    // (formData.getAll() can be unreliable in some Next.js versions)
+    const allFiles: File[] = [];
+    for (const [key, value] of formData.entries()) {
+      if ((key === "files" || key === "image") && value instanceof File) {
+        allFiles.push(value);
+      }
+    }
 
     const validation = validateImportFiles(allFiles);
     if (!validation.valid) {
