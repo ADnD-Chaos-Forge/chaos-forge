@@ -17,6 +17,8 @@ export interface ACCalculationInput {
   encumbrance?: EncumbranceLevel;
   /** If true, encumbrance is ignored for unarmored bonus (per-character setting) */
   ignoreEncumbrance?: boolean;
+  /** If true, equipped "armor" is magical protection (Bracers, Ring) — still counts as unarmored for PO bonus */
+  isMagicalProtection?: boolean;
 }
 
 /**
@@ -35,9 +37,11 @@ export function calculateAC(input: ACCalculationInput): number {
     classGroups = [],
     encumbrance = "unencumbered",
     ignoreEncumbrance = false,
+    isMagicalProtection = false,
   } = input;
 
-  const isUnarmored = equippedArmorAC == null;
+  // Magical protection (Bracers, Ring) sets AC but still counts as "unarmored" for PO bonus
+  const isUnarmored = equippedArmorAC == null || isMagicalProtection;
   const baseAC = equippedArmorAC ?? 10;
   const shieldBonus = shieldEquipped ? -1 : 0;
 

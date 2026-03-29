@@ -118,6 +118,7 @@ export function PrintSheet({
     classGroups,
     encumbrance: encumbranceLevel,
     ignoreEncumbrance: character.ignore_encumbrance,
+    isMagicalProtection: equippedArmorForAC?.armor?.is_magical_protection ?? false,
   });
 
   const strDisplay =
@@ -605,6 +606,7 @@ export function PrintSheet({
               classGroups,
               encumbrance: encumbranceLevel,
               ignoreEncumbrance: character.ignore_encumbrance,
+              isMagicalProtection: equippedArmorItem?.armor?.is_magical_protection ?? false,
             });
             return (
               <div

@@ -38,6 +38,7 @@ interface PlayCombatPanelProps {
   movementRate: number;
   backstabMultiplier: number | null;
   ignoreEncumbrance: boolean;
+  isMagicalProtection: boolean;
 }
 
 export function PlayCombatPanel({
@@ -56,6 +57,7 @@ export function PlayCombatPanel({
   movementRate,
   backstabMultiplier,
   ignoreEncumbrance,
+  isMagicalProtection,
 }: PlayCombatPanelProps) {
   const t = useTranslations("playMode");
   const locale = useLocale();
@@ -93,8 +95,9 @@ export function PlayCombatPanel({
     if (dexDefenseAdj !== 0) {
       parts.push({ label: t("dexBonus"), value: dexDefenseAdj });
     }
-    // Check for unarmored bonus
-    if (!equippedArmor?.armor) {
+    // Check for unarmored bonus (also applies with magical protection like Bracers)
+    const isEffectivelyUnarmored = !equippedArmor?.armor || isMagicalProtection;
+    if (isEffectivelyUnarmored) {
       const hasWarriorOrRogue = classGroups.some((g) => g === "warrior" || g === "rogue");
       const isUnencumbered = ignoreEncumbrance || encumbrance === "unencumbered";
       if (hasWarriorOrRogue && isUnencumbered) {
@@ -109,6 +112,7 @@ export function PlayCombatPanel({
     classGroups,
     encumbrance,
     ignoreEncumbrance,
+    isMagicalProtection,
     t,
     locale,
   ]);

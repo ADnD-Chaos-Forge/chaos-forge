@@ -146,6 +146,7 @@ export function TabEquipment({
     classGroups,
     encumbrance: encumbranceLevel,
     ignoreEncumbrance,
+    isMagicalProtection: equippedArmor?.armor?.is_magical_protection ?? false,
   });
 
   const equippedItems = equipment.filter((e) => e.equipped);

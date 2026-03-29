@@ -16,6 +16,7 @@ import {
   getWizardSpellPoints,
   getWizardBonusSpellPoints,
   getWizardSpellCost,
+  getSpecialistBonusSlots,
 } from "@/lib/rules/spellslots";
 import { getClassGroup } from "@/lib/rules/classes";
 import type { ClassGroup, ClassId } from "@/lib/rules/types";
@@ -50,13 +51,14 @@ export function PlaySpellbookPanel({
 
   const isWizard = classGroups.includes("wizard");
   const isPriest = classGroups.includes("priest");
-  const casterLevel = useMemo(() => {
+  const casterClass = useMemo(() => {
     for (const ce of classEntries) {
       const group = getClassGroup(ce.classId as ClassId);
-      if (group === "wizard" || group === "priest") return ce.level;
+      if (group === "wizard" || group === "priest") return ce;
     }
-    return classEntries[0]?.level ?? 1;
+    return classEntries[0] ?? { classId: "fighter", level: 1 };
   }, [classEntries]);
+  const casterLevel = casterClass.level;
 
   const isPointsMode = character.spell_system === "points";
 
@@ -103,9 +105,20 @@ export function PlaySpellbookPanel({
     return getPriestBonusSlots(wisScore);
   }, [isPointsMode, isPriest, wisScore, maxSpellLevel]);
 
+  const specialistBonus = useMemo(() => {
+    if (isPointsMode || !isWizard) return new Array(maxSpellLevel).fill(0);
+    return getSpecialistBonusSlots(casterClass.classId as ClassId, casterLevel);
+  }, [isPointsMode, isWizard, casterClass.classId, casterLevel, maxSpellLevel]);
+
+  const slotsAdj = character.spell_slots_adj ?? {};
+
   const totalSlots = useMemo(
-    () => baseSlots.map((base, i) => base + (bonusSlots[i] ?? 0)),
-    [baseSlots, bonusSlots]
+    () =>
+      baseSlots.map(
+        (base, i) =>
+          base + (bonusSlots[i] ?? 0) + (specialistBonus[i] ?? 0) + (slotsAdj[String(i + 1)] ?? 0)
+      ),
+    [baseSlots, bonusSlots, specialistBonus, slotsAdj]
   );
 
   const expendedByLevel = useMemo(() => {

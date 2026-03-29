@@ -132,6 +132,7 @@ export interface ArmorRow {
   max_movement: number;
   source_book: string;
   is_custom: boolean;
+  is_magical_protection: boolean;
   created_by: string | null;
 }
 

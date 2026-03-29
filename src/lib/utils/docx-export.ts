@@ -251,6 +251,7 @@ export async function generateCharacterDocx(props: PrintSheetProps): Promise<Blo
     classGroups,
     encumbrance: encumbranceLevel,
     ignoreEncumbrance: character.ignore_encumbrance,
+    isMagicalProtection: equippedArmorForAC?.armor?.is_magical_protection ?? false,
   });
 
   const strDisplay =

@@ -262,6 +262,8 @@ export function PlayMode({
     [encumbranceLevel, character.ignore_encumbrance]
   );
 
+  const isMagicalProtection = equippedArmor?.armor?.is_magical_protection ?? false;
+
   const ac = useMemo(
     () =>
       calculateAC({
@@ -271,6 +273,7 @@ export function PlayMode({
         classGroups,
         encumbrance: encumbranceLevel,
         ignoreEncumbrance: character.ignore_encumbrance,
+        isMagicalProtection,
       }),
     [
       equippedArmor,
@@ -279,6 +282,7 @@ export function PlayMode({
       classGroups,
       encumbranceLevel,
       character.ignore_encumbrance,
+      isMagicalProtection,
     ]
   );
 
@@ -414,7 +418,7 @@ export function PlayMode({
 
       {/* Mobile: Pill navigation */}
       <div
-        className="sticky top-[72px] z-20 flex gap-1 overflow-x-auto bg-background/80 px-3 py-2 backdrop-blur-sm sm:hidden"
+        className="sticky top-[72px] z-20 flex flex-wrap justify-center gap-1 bg-background/80 px-2 py-2 backdrop-blur-sm sm:hidden"
         data-testid="play-panel-nav"
       >
         {visiblePanels.map((panel) => (
@@ -454,6 +458,7 @@ export function PlayMode({
             movementRate={movementRate}
             backstabMultiplier={backstabMultiplier}
             ignoreEncumbrance={character.ignore_encumbrance}
+            isMagicalProtection={isMagicalProtection}
           />
           {showSpells && (
             <PlaySpellbookPanel
@@ -519,6 +524,7 @@ export function PlayMode({
             movementRate={movementRate}
             backstabMultiplier={backstabMultiplier}
             ignoreEncumbrance={character.ignore_encumbrance}
+            isMagicalProtection={isMagicalProtection}
           />
         )}
         {activePanel === "spellbook" && showSpells && (
