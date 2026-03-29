@@ -70,6 +70,55 @@ test.describe("Mobile Responsive (iPhone 13)", () => {
   });
 });
 
+// ─── Desktop Sidebar & Navigation Tests ─────────────────────────────────────
+
+const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
+
+test.describe("Desktop Sidebar Navigation", () => {
+  test("sidebar visible on desktop, hidden on mobile", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    await loginAsTestUser(page);
+    await page.goto("/dashboard");
+    await page.getByTestId("dashboard-page").waitFor({ timeout: 10000 });
+    // Sidebar should be visible on desktop
+    await expect(page.getByTestId("app-sidebar")).toBeVisible();
+    // Mobile nav should be hidden on desktop
+    await expect(page.getByTestId("app-nav-mobile")).not.toBeVisible();
+
+    // Switch to mobile viewport
+    await page.setViewportSize(MOBILE_VIEWPORT);
+    await page.waitForTimeout(300);
+    // Sidebar should be hidden on mobile
+    await expect(page.getByTestId("app-sidebar")).not.toBeVisible();
+    // Mobile nav should be visible
+    await expect(page.getByTestId("app-nav-mobile")).toBeVisible();
+  });
+
+  test("FAB visible on mobile, hidden on desktop", async ({ page }) => {
+    await page.setViewportSize(MOBILE_VIEWPORT);
+    await loginAsTestUser(page);
+    await page.goto("/characters");
+    await page.waitForTimeout(500);
+    await expect(page.getByTestId("fab-new-character")).toBeVisible();
+
+    // Switch to desktop
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    await page.waitForTimeout(300);
+    await expect(page.getByTestId("fab-new-character")).not.toBeVisible();
+  });
+
+  test("sidebar navigation links work", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    await loginAsTestUser(page);
+    await page.goto("/dashboard");
+    await page.getByTestId("dashboard-page").waitFor({ timeout: 10000 });
+
+    // Click characters nav item in sidebar
+    await page.getByTestId("nav-characters").click();
+    await expect(page).toHaveURL(/\/characters/);
+  });
+});
+
 // ─── Accessibility Tests (Authenticated Pages) ─────────────────────────────
 
 test.describe("Accessibility — Authenticated Pages (WCAG 2 AA)", () => {

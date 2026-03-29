@@ -46,6 +46,7 @@ export function AppSidebar({ userEmail }: AppSidebarProps) {
                     ? "bg-primary/10 text-primary shadow-sm"
                     : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                 }`}
+                aria-label={t(item.labelKey)}
                 data-testid={item.testId}
               >
                 <item.icon className="h-5 w-5" />
@@ -75,6 +76,7 @@ export function AppSidebar({ userEmail }: AppSidebarProps) {
           <TooltipTrigger
             onClick={handleLogout}
             className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
+            aria-label={t("logout")}
             data-testid="logout-button-sidebar"
           >
             <LogOut className="h-5 w-5" />
