@@ -1016,6 +1016,7 @@ export function CharacterSheet({
                   value={addClassId}
                   onChange={(e) => setAddClassId(e.target.value)}
                   className="rounded-md border border-input bg-input px-3 py-1.5 text-sm"
+                  aria-label={t("addClass")}
                   data-testid="add-class-select"
                 >
                   <option value="">{t("addClass")}</option>
