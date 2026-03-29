@@ -17,6 +17,7 @@ interface PlayInventoryPanelProps {
   inventory: CharacterInventoryWithDetails[];
   totalWeight: number;
   encumbrance: EncumbranceLevel;
+  ignoreEncumbrance: boolean;
   readOnly: boolean;
   onInventoryChange: (inventory: CharacterInventoryWithDetails[]) => void;
 }
@@ -26,6 +27,7 @@ export function PlayInventoryPanel({
   inventory,
   totalWeight,
   encumbrance,
+  ignoreEncumbrance,
   readOnly,
   onInventoryChange,
 }: PlayInventoryPanelProps) {
@@ -86,9 +88,11 @@ export function PlayInventoryPanel({
           {t("totalWeight")}:{" "}
           <span className="font-mono font-medium text-foreground">{lbsToKg(totalWeight)} kg</span>
         </span>
-        <Badge variant="outline" className="text-[10px]">
-          {getEncumbranceLabel(encumbrance)}
-        </Badge>
+        {!ignoreEncumbrance && (
+          <Badge variant="outline" className="text-[10px]">
+            {getEncumbranceLabel(encumbrance)}
+          </Badge>
+        )}
       </div>
 
       {/* Quick add */}

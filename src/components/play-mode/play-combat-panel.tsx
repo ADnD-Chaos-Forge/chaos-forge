@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/glass-card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/lib/supabase/client";
 import {
   getAdjustedWeaponThac0,
   formatDamageWithBonus,
@@ -64,6 +67,11 @@ export function PlayCombatPanel({
 
   const equippedWeapons = useMemo(
     () => equipment.filter((e) => e.equipped && e.weapon),
+    [equipment]
+  );
+
+  const unequippedWeapons = useMemo(
+    () => equipment.filter((e) => !e.equipped && e.weapon),
     [equipment]
   );
 
@@ -129,40 +137,64 @@ export function PlayCombatPanel({
     locale,
   ]);
 
+  const [showAcBreakdown, setShowAcBreakdown] = useState(false);
+  const router = useRouter();
+
+  async function toggleEquip(equipmentId: string, currentlyEquipped: boolean) {
+    const supabase = createClient();
+    await supabase
+      .from("character_equipment")
+      .update({ equipped: !currentlyEquipped })
+      .eq("id", equipmentId);
+    router.refresh();
+  }
+
   return (
     <GlassCard hover={false} data-testid="play-combat-panel">
       <h3 className="mb-3 font-heading text-sm font-semibold uppercase tracking-wider text-muted-foreground">
         {t("combat")}
       </h3>
 
-      {/* AC Breakdown */}
-      <div
-        className="mb-3 rounded-lg bg-black/10 p-2 dark:bg-white/5"
-        data-testid="play-ac-breakdown"
-      >
-        <div className="mb-1 text-xs text-muted-foreground">{t("acBreakdown")}</div>
-        <div className="flex flex-wrap items-center gap-1 text-sm">
-          <span className="font-heading text-lg font-bold">AC {ac}</span>
-          <span className="text-muted-foreground">=</span>
-          {acBreakdown.map((part, i) => (
-            <span key={i} className="flex items-center gap-0.5">
-              {i > 0 && <span className="text-muted-foreground">{part.value < 0 ? "−" : "+"}</span>}
-              {i === 0 ? (
-                <span>
-                  {part.label} ({part.value})
-                </span>
-              ) : (
-                <span>
-                  {part.label} ({Math.abs(part.value)})
-                </span>
-              )}
-            </span>
-          ))}
+      {/* AC — clickable to toggle breakdown */}
+      {showAcBreakdown && (
+        <div
+          className="mb-3 rounded-lg bg-black/10 p-2 dark:bg-white/5"
+          data-testid="play-ac-breakdown"
+        >
+          <div className="mb-1 text-xs text-muted-foreground">{t("acBreakdown")}</div>
+          <div className="flex flex-wrap items-center gap-1 text-sm">
+            <span className="font-heading text-lg font-bold">AC {ac}</span>
+            <span className="text-muted-foreground">=</span>
+            {acBreakdown.map((part, i) => (
+              <span key={i} className="flex items-center gap-0.5">
+                {i > 0 && (
+                  <span className="text-muted-foreground">{part.value < 0 ? "−" : "+"}</span>
+                )}
+                {i === 0 ? (
+                  <span>
+                    {part.label} ({part.value})
+                  </span>
+                ) : (
+                  <span>
+                    {part.label} ({Math.abs(part.value)})
+                  </span>
+                )}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Movement + Encumbrance + Backstab */}
-      <div className="mb-3 flex flex-wrap gap-3 text-sm">
+      {/* Movement + AC toggle + Backstab */}
+      <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
+        <button
+          onClick={() => setShowAcBreakdown(!showAcBreakdown)}
+          className="flex items-center gap-1 rounded-md border border-border px-2 py-0.5 text-xs transition-colors hover:bg-accent"
+          data-testid="play-ac-toggle"
+        >
+          AC <span className="font-mono font-bold">{ac}</span>
+          <span className="text-[10px] text-muted-foreground">{showAcBreakdown ? "▲" : "▼"}</span>
+        </button>
         <div>
           <span className="text-xs text-muted-foreground">{t("movementRate")}: </span>
           <span className="font-mono font-medium">{movementRate}</span>
@@ -244,12 +276,15 @@ export function PlayCombatPanel({
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
                   <div>
-                    <span className="text-xs text-muted-foreground">THAC0: </span>
+                    <span className="text-xs text-muted-foreground">THAC0 {t("melee")}: </span>
                     <span className="font-mono font-bold">{adjusted.melee}</span>
-                    {adjusted.ranged !== null && (
-                      <span className="text-muted-foreground"> / {adjusted.ranged}</span>
-                    )}
                   </div>
+                  {adjusted.ranged !== null && (
+                    <div>
+                      <span className="text-xs text-muted-foreground">THAC0 {t("ranged")}: </span>
+                      <span className="font-mono font-bold">{adjusted.ranged}</span>
+                    </div>
+                  )}
                   <div>
                     <span className="text-xs text-muted-foreground">{t("damage")}: </span>
                     <span className="font-mono">{damageSM}</span>
@@ -264,14 +299,49 @@ export function PlayCombatPanel({
                     <span className="font-mono">{apr}</span>
                   </div>
                 </div>
-                {eq.hit_bonus > 0 && (
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    +{eq.hit_bonus} {t("magicBonus")}
-                  </div>
-                )}
+                <div className="mt-1.5 flex items-center gap-2">
+                  {eq.hit_bonus > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      +{eq.hit_bonus} {t("magicBonus")}
+                    </span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-auto h-6 text-xs text-muted-foreground"
+                    onClick={() => toggleEquip(eq.id, true)}
+                    data-testid={`play-unequip-${eq.id}`}
+                  >
+                    {t("unequip")}
+                  </Button>
+                </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Unequipped weapons — available to equip */}
+      {unequippedWeapons.length > 0 && (
+        <div className="mt-2" data-testid="play-unequipped-weapons">
+          <div className="mb-1 text-xs text-muted-foreground">{t("availableWeapons")}</div>
+          <div className="flex flex-wrap gap-1">
+            {unequippedWeapons.map((eq) => {
+              const weapon = eq.weapon!;
+              return (
+                <Button
+                  key={eq.id}
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => toggleEquip(eq.id, false)}
+                  data-testid={`play-equip-${eq.id}`}
+                >
+                  {localized(weapon.name, weapon.name_en, locale)}
+                </Button>
+              );
+            })}
+          </div>
         </div>
       )}
     </GlassCard>

@@ -499,6 +499,7 @@ export function PlayMode({
             inventory={inventory}
             totalWeight={totalWeight}
             encumbrance={encumbranceLevel}
+            ignoreEncumbrance={character.ignore_encumbrance}
             readOnly={!isOwner}
             onInventoryChange={setInventory}
           />
@@ -559,6 +560,7 @@ export function PlayMode({
             inventory={inventory}
             totalWeight={totalWeight}
             encumbrance={encumbranceLevel}
+            ignoreEncumbrance={character.ignore_encumbrance}
             readOnly={!isOwner}
             onInventoryChange={setInventory}
           />
