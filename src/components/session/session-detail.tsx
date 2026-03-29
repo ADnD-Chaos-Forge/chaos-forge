@@ -215,9 +215,9 @@ export function SessionDetail({
         )}
       </div>
       <div className="mb-6">
-        {tags.length > 0 && (
+        {tagsState.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
-            {tags.map((tag) => (
+            {tagsState.map((tag) => (
               <Badge key={tag.id} className={TAG_COLORS[tag.type] ?? ""} variant="secondary">
                 {tag.name}
               </Badge>
