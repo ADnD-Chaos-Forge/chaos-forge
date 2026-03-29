@@ -66,6 +66,9 @@ export function SessionDetail({
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [summaryDirty, setSummaryDirty] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [entriesState, setEntries] = useState(entries);
+  const [tagsState, setTags] = useState(tags);
+  const [allTagsState, setAllTags] = useState(allTags);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(session.title);
   const [savingTitle, setSavingTitle] = useState(false);
@@ -77,14 +80,12 @@ export function SessionDetail({
     await supabase.from("sessions").update({ title: titleValue.trim() }).eq("id", session.id);
     setSavingTitle(false);
     setEditingTitle(false);
-    router.refresh();
   }
 
   async function handleDeleteSession() {
     const supabase = createClient();
     await supabase.from("sessions").delete().eq("id", session.id);
     router.push("/sessions");
-    router.refresh();
   }
 
   const dateStr = new Date(session.session_date).toLocaleDateString("de-DE", {
@@ -97,7 +98,7 @@ export function SessionDetail({
   const characterMap = Object.fromEntries(entryCharacters.map((c) => [c.id, c]));
 
   // Check if user already has an entry
-  const userEntry = entries.find((e) => e.user_id === userId);
+  const userEntry = entriesState.find((e) => e.user_id === userId);
   const userHasCharacters = userCharacters.length > 0;
 
   async function handleSaveSummary() {
@@ -106,15 +107,14 @@ export function SessionDetail({
     await supabase.from("sessions").update({ summary }).eq("id", session.id);
     setSavingSummary(false);
     setSummaryDirty(false);
-    router.refresh();
   }
 
   async function handleGenerateSummary() {
-    if (entries.length === 0) return;
+    if (entriesState.length === 0) return;
     setGeneratingSummary(true);
 
     try {
-      const formattedEntries = entries.map((e) => ({
+      const formattedEntries = entriesState.map((e) => ({
         characterName: characterMap[e.character_id]?.name ?? tc("unknown"),
         content:
           e.content + (e.audio_transcription ? `\n\n[Sprachnotiz]: ${e.audio_transcription}` : ""),
@@ -229,7 +229,13 @@ export function SessionDetail({
       {/* Tags Manager (for session creator) */}
       {isCreator && (
         <div className="mb-6">
-          <TagManager sessionId={session.id} currentTags={tags} allTags={allTags} />
+          <TagManager
+            sessionId={session.id}
+            currentTags={tagsState}
+            allTags={allTagsState}
+            onTagsChange={setTags}
+            onAllTagsChange={setAllTags}
+          />
         </div>
       )}
 
@@ -239,13 +245,13 @@ export function SessionDetail({
       <div className="my-6 flex flex-col gap-4">
         <h2 className="font-heading text-xl">{t("entries")}</h2>
 
-        {entries.length === 0 && (
+        {entriesState.length === 0 && (
           <p className="text-sm text-muted-foreground" data-testid="no-entries">
             {t("noEntries")}
           </p>
         )}
 
-        {entries.map((entry) => {
+        {entriesState.map((entry) => {
           const char = characterMap[entry.character_id];
           return (
             <SessionEntryCard
@@ -254,6 +260,10 @@ export function SessionDetail({
               characterName={char?.name ?? tc("unknown")}
               characterAvatarUrl={char?.avatar_url ?? null}
               isOwner={entry.user_id === userId}
+              onEntryUpdate={(updated) =>
+                setEntries((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
+              }
+              onEntryDelete={(id) => setEntries((prev) => prev.filter((e) => e.id !== id))}
             />
           );
         })}
@@ -264,6 +274,17 @@ export function SessionDetail({
             sessionId={session.id}
             userId={userId}
             userCharacters={userCharacters}
+            onEntryCreated={(newEntry) =>
+              setEntries((prev) => [
+                ...prev,
+                {
+                  ...newEntry,
+                  audio_url: newEntry.audio_url ?? null,
+                  audio_transcription: null,
+                  created_at: new Date().toISOString(),
+                } as SessionEntryRow,
+              ])
+            }
           />
         )}
 
@@ -310,7 +331,7 @@ export function SessionDetail({
         <div className="flex items-center justify-between">
           <h2 className="font-heading text-xl">{t("summary")}</h2>
           <div className="flex gap-2">
-            {entries.length > 0 && (
+            {entriesState.length > 0 && (
               <Button
                 variant="outline"
                 size="sm"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ interface SpellCardProps {
   onRemove: (spellId: string) => void;
 }
 
-export function SpellCard({
+export const SpellCard = memo(function SpellCard({
   charSpell,
   readOnly,
   loading,
@@ -166,4 +166,4 @@ export function SpellCard({
       )}
     </div>
   );
-}
+});

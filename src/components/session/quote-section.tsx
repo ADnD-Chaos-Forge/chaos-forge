@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,6 @@ export function QuoteSection({
 }: QuoteSectionProps) {
   const t = useTranslations("chronicle");
   const tcom = useTranslations("common");
-  const router = useRouter();
   const [quotes, setQuotes] = useState(initialQuotes);
   const [reactions, setReactions] = useState(initialReactions);
   const [showForm, setShowForm] = useState(false);
@@ -69,7 +67,6 @@ export function QuoteSection({
 
     resetForm();
     setSaving(false);
-    router.refresh();
   }
 
   async function handleDelete(id: string) {
@@ -78,7 +75,6 @@ export function QuoteSection({
     if (!error) {
       setQuotes((prev) => prev.filter((q) => q.id !== id));
       setReactions((prev) => prev.filter((r) => r.quote_id !== id));
-      router.refresh();
     }
   }
 

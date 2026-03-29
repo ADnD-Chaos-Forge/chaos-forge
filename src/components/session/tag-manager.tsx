@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -21,10 +20,17 @@ interface TagManagerProps {
   sessionId: string;
   currentTags: TagRow[];
   allTags: TagRow[];
+  onTagsChange?: (tags: TagRow[]) => void;
+  onAllTagsChange?: (tags: TagRow[]) => void;
 }
 
-export function TagManager({ sessionId, currentTags, allTags }: TagManagerProps) {
-  const router = useRouter();
+export function TagManager({
+  sessionId,
+  currentTags,
+  allTags,
+  onTagsChange,
+  onAllTagsChange,
+}: TagManagerProps) {
   const t = useTranslations("sessions");
   const [search, setSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -42,9 +48,10 @@ export function TagManager({ sessionId, currentTags, allTags }: TagManagerProps)
     setLoading(true);
     const supabase = createClient();
     await supabase.from("session_tags").insert({ session_id: sessionId, tag_id: tagId });
+    const addedTag = allTags.find((t) => t.id === tagId);
+    if (addedTag) onTagsChange?.([...currentTags, addedTag]);
     setSearch("");
     setShowDropdown(false);
-    router.refresh();
     setLoading(false);
   }
 
@@ -59,10 +66,17 @@ export function TagManager({ sessionId, currentTags, allTags }: TagManagerProps)
 
     if (newTag) {
       await supabase.from("session_tags").insert({ session_id: sessionId, tag_id: newTag.id });
+      const createdTag: TagRow = {
+        id: newTag.id,
+        name: search.trim(),
+        type: newTagType as TagRow["type"],
+        color: "",
+      };
+      onTagsChange?.([...currentTags, createdTag]);
+      onAllTagsChange?.([...allTags, createdTag]);
     }
     setSearch("");
     setShowDropdown(false);
-    router.refresh();
     setLoading(false);
   }
 
@@ -70,7 +84,7 @@ export function TagManager({ sessionId, currentTags, allTags }: TagManagerProps)
     setLoading(true);
     const supabase = createClient();
     await supabase.from("session_tags").delete().eq("session_id", sessionId).eq("tag_id", tagId);
-    router.refresh();
+    onTagsChange?.(currentTags.filter((t) => t.id !== tagId));
     setLoading(false);
   }
 
