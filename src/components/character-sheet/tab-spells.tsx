@@ -345,6 +345,7 @@ export function TabSpells({
     setLearnSearchQuery("");
     setLevelFilter(null);
     setSchoolSphereFilter(null);
+    setBookFilter(null);
     router.refresh();
   }
 
@@ -391,6 +392,7 @@ export function TabSpells({
     setLearnSearchQuery("");
     setLevelFilter(null);
     setSchoolSphereFilter(null);
+    setBookFilter(null);
     setShowCustomForm(false);
     setCustomSpell(emptyCustomSpellForm);
     router.refresh();
@@ -695,6 +697,7 @@ export function TabSpells({
                   setLearnSearchQuery("");
                   setLevelFilter(null);
                   setSchoolSphereFilter(null);
+                  setBookFilter(null);
                   setShowCustomForm(false);
                   setCustomSpell(emptyCustomSpellForm);
                 }}
@@ -768,6 +771,7 @@ export function TabSpells({
                     value={bookFilter ?? ""}
                     onChange={(e) => setBookFilter(e.target.value || null)}
                     className="w-full rounded-md border border-input bg-input px-2 py-1 text-sm"
+                    aria-label={t("allBooks")}
                     data-testid="spell-book-filter"
                   >
                     <option value="">{t("allBooks")}</option>

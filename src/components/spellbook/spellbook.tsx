@@ -432,6 +432,7 @@ export function Spellbook({
                   setLearnDialogOpen(false);
                   setLearnSearchQuery("");
                   setLearnLevelFilter(null);
+                  setLearnBookFilter(null);
                 }}
                 data-testid="spellbook-learn-dialog-close"
               >
@@ -476,6 +477,7 @@ export function Spellbook({
                     value={learnBookFilter ?? ""}
                     onChange={(e) => setLearnBookFilter(e.target.value || null)}
                     className="min-h-[36px] w-full rounded-md border border-input bg-input px-2 py-1 text-sm"
+                    aria-label={t("allBooks")}
                     data-testid="spellbook-learn-filter-book"
                   >
                     <option value="">{t("allBooks")}</option>
