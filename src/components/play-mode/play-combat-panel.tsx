@@ -78,16 +78,19 @@ export function PlayCombatPanel({
     return map;
   }, [weaponProficiencies]);
 
-  // AC Breakdown
+  // AC Breakdown — always starts from Base AC 10, armor shown as modifier
   const acBreakdown = useMemo(() => {
     const parts: { label: string; value: number }[] = [];
+    // Base AC 10 is always the starting point
+    parts.push({ label: t("baseAC"), value: 10 });
     if (equippedArmor?.armor) {
-      parts.push({
-        label: localized(equippedArmor.armor.name, equippedArmor.armor.name_en, locale),
-        value: equippedArmor.armor.ac,
-      });
-    } else {
-      parts.push({ label: t("baseAC"), value: 10 });
+      const armorMod = equippedArmor.armor.ac - 10; // e.g. AC 4 → -6
+      if (armorMod !== 0) {
+        parts.push({
+          label: localized(equippedArmor.armor.name, equippedArmor.armor.name_en, locale),
+          value: armorMod,
+        });
+      }
     }
     if (equippedShield) {
       parts.push({ label: t("shield"), value: -1 });
@@ -155,12 +158,14 @@ export function PlayCombatPanel({
           <span className="text-xs text-muted-foreground">{t("movementRate")}: </span>
           <span className="font-mono font-medium">{movementRate}</span>
         </div>
-        <div>
-          <span className="text-xs text-muted-foreground">{t("encumbrance")}: </span>
-          <Badge variant="outline" className="text-xs">
-            {getEncumbranceLabel(encumbrance)}
-          </Badge>
-        </div>
+        {!ignoreEncumbrance && (
+          <div>
+            <span className="text-xs text-muted-foreground">{t("encumbrance")}: </span>
+            <Badge variant="outline" className="text-xs">
+              {getEncumbranceLabel(encumbrance)}
+            </Badge>
+          </div>
+        )}
         {backstabMultiplier && (
           <div data-testid="play-backstab">
             <span className="text-xs text-muted-foreground">{t("backstabMultiplier")}: </span>
