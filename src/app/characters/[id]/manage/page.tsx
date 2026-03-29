@@ -11,7 +11,6 @@ import type {
   GeneralItemRow,
   WeaponRow,
   ArmorRow,
-  SpellRow,
   CharacterWeaponProficiencyRow,
   CharacterNWPWithDetails,
   NonweaponProficiencyRow,
@@ -65,12 +64,7 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
     .order("ac", { ascending: false })
     .returns<ArmorRow[]>();
 
-  const { data: allSpells } = await supabase
-    .from("spells")
-    .select("*")
-    .order("level")
-    .order("name")
-    .returns<SpellRow[]>();
+  // allSpells loaded lazily in TabSpells when learn dialog opens
 
   // Fetch proficiencies
   const { data: weaponProfs } = await supabase
@@ -148,7 +142,7 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
       spells={(spells as CharacterSpellWithDetails[]) ?? []}
       allWeapons={allWeapons ?? []}
       allArmor={allArmor ?? []}
-      allSpells={allSpells ?? []}
+      allSpells={[]}
       weaponProficiencies={weaponProfs ?? []}
       nonweaponProficiencies={(nwProfs as CharacterNWPWithDetails[]) ?? []}
       inventory={(inventoryData as CharacterInventoryWithDetails[]) ?? []}

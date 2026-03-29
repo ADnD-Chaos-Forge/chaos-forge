@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +41,7 @@ interface PlayCombatPanelProps {
   backstabMultiplier: number | null;
   ignoreEncumbrance: boolean;
   isMagicalProtection: boolean;
+  onEquipmentChange: (equipment: CharacterEquipmentWithDetails[]) => void;
 }
 
 export function PlayCombatPanel({
@@ -61,6 +61,7 @@ export function PlayCombatPanel({
   backstabMultiplier,
   ignoreEncumbrance,
   isMagicalProtection,
+  onEquipmentChange,
 }: PlayCombatPanelProps) {
   const t = useTranslations("playMode");
   const locale = useLocale();
@@ -138,7 +139,6 @@ export function PlayCombatPanel({
   ]);
 
   const [showAcBreakdown, setShowAcBreakdown] = useState(false);
-  const router = useRouter();
 
   // Attacks per round from first warrior class
   const warriorEntry = classEntries.find(
@@ -238,7 +238,9 @@ export function PlayCombatPanel({
       .from("character_equipment")
       .update({ equipped: !currentlyEquipped })
       .eq("id", equipmentId);
-    router.refresh();
+    onEquipmentChange(
+      equipment.map((e) => (e.id === equipmentId ? { ...e, equipped: !currentlyEquipped } : e))
+    );
   }
 
   return (

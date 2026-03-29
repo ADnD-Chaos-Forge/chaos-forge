@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { localized } from "@/lib/utils/localize";
 import { createClient } from "@/lib/supabase/client";
@@ -96,6 +95,10 @@ interface TabProficienciesProps {
   nwpSlotsAdj: number;
   languageSlotsAdj: number;
   readOnly?: boolean;
+  onWeaponProfsChange: (profs: CharacterWeaponProficiencyRow[]) => void;
+  onNwProfsChange: (profs: CharacterNWPWithDetails[]) => void;
+  onLanguagesChange: (langs: CharacterLanguageRow[]) => void;
+  onFightingStylesChange: (styles: CharacterFightingStyleRow[]) => void;
 }
 
 export function TabProficiencies({
@@ -116,8 +119,11 @@ export function TabProficiencies({
   nwpSlotsAdj: initialNwpSlotsAdj,
   languageSlotsAdj: initialLanguageSlotsAdj,
   readOnly = false,
+  onWeaponProfsChange,
+  onNwProfsChange,
+  onLanguagesChange,
+  onFightingStylesChange,
 }: TabProficienciesProps) {
-  const router = useRouter();
   const t = useTranslations("proficiencies");
   const tcom = useTranslations("common");
   const tg = useTranslations("nwpGroups");
@@ -201,28 +207,32 @@ export function TabProficiencies({
 
     setLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.from("character_weapon_proficiencies").insert({
-      character_id: characterId,
-      weapon_name: trimmed,
-      specialization: newWeaponSpecialized,
-    });
-    if (error) {
+    const { data, error } = await supabase
+      .from("character_weapon_proficiencies")
+      .insert({
+        character_id: characterId,
+        weapon_name: trimmed,
+        specialization: newWeaponSpecialized,
+      })
+      .select("*")
+      .single();
+    if (error || !data) {
       console.error("Failed to add weapon proficiency:", error);
       setLoading(false);
       return;
     }
+    onWeaponProfsChange([...weaponProficiencies, data]);
     setNewWeaponName("");
     setNewWeaponSpecialized(false);
     setLoading(false);
-    router.refresh();
   }
 
   async function removeWeaponProficiency(id: string) {
     setLoading(true);
     const supabase = createClient();
     await supabase.from("character_weapon_proficiencies").delete().eq("id", id);
+    onWeaponProfsChange(weaponProficiencies.filter((wp) => wp.id !== id));
     setLoading(false);
-    router.refresh();
   }
 
   async function toggleSpecialization(wp: CharacterWeaponProficiencyRow) {
@@ -232,30 +242,40 @@ export function TabProficiencies({
       .from("character_weapon_proficiencies")
       .update({ specialization: !wp.specialization })
       .eq("id", wp.id);
+    onWeaponProfsChange(
+      weaponProficiencies.map((w) =>
+        w.id === wp.id ? { ...w, specialization: !w.specialization } : w
+      )
+    );
     setLoading(false);
-    router.refresh();
   }
 
   async function addNonweaponProficiency(nwpId: string) {
     setLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.from("character_nonweapon_proficiencies").insert({
-      character_id: characterId,
-      proficiency_id: nwpId,
-    });
-    if (error) {
+    const { data, error } = await supabase
+      .from("character_nonweapon_proficiencies")
+      .insert({
+        character_id: characterId,
+        proficiency_id: nwpId,
+      })
+      .select("*, proficiency:nonweapon_proficiencies(*)")
+      .single();
+    if (error || !data) {
       console.error("Failed to add NWP:", error);
+      setLoading(false);
+      return;
     }
+    onNwProfsChange([...nonweaponProficiencies, data as CharacterNWPWithDetails]);
     setLoading(false);
-    router.refresh();
   }
 
   async function removeNonweaponProficiency(id: string) {
     setLoading(true);
     const supabase = createClient();
     await supabase.from("character_nonweapon_proficiencies").delete().eq("id", id);
+    onNwProfsChange(nonweaponProficiencies.filter((n) => n.id !== id));
     setLoading(false);
-    router.refresh();
   }
 
   async function createCustomNwp() {
@@ -282,16 +302,23 @@ export function TabProficiencies({
 
     if (newNwp) {
       // Also add it to the character
-      await supabase.from("character_nonweapon_proficiencies").insert({
-        character_id: characterId,
-        proficiency_id: newNwp.id,
-      });
+      const { data } = await supabase
+        .from("character_nonweapon_proficiencies")
+        .insert({
+          character_id: characterId,
+          proficiency_id: newNwp.id,
+        })
+        .select("*, proficiency:nonweapon_proficiencies(*)")
+        .single();
+
+      if (data) {
+        onNwProfsChange([...nonweaponProficiencies, data as CharacterNWPWithDetails]);
+      }
     }
 
     setCustomNwp(emptyCustomNwpForm);
     setShowCustomNwpForm(false);
     setLoading(false);
-    router.refresh();
   }
 
   // Fighting styles
@@ -306,24 +333,30 @@ export function TabProficiencies({
   async function addFightingStyle(styleId: string) {
     setLoading(true);
     const supabase = createClient();
-    const { error: insertError } = await supabase.from("character_fighting_styles").insert({
-      character_id: characterId,
-      style_id: styleId,
-      slots_invested: 1,
-    });
-    if (insertError) {
+    const { data, error: insertError } = await supabase
+      .from("character_fighting_styles")
+      .insert({
+        character_id: characterId,
+        style_id: styleId,
+        slots_invested: 1,
+      })
+      .select("*")
+      .single();
+    if (insertError || !data) {
       console.error("Failed to add fighting style:", insertError);
+      setLoading(false);
+      return;
     }
+    onFightingStylesChange([...fightingStyles, data]);
     setLoading(false);
-    router.refresh();
   }
 
   async function removeFightingStyle(id: string) {
     setLoading(true);
     const supabase = createClient();
     await supabase.from("character_fighting_styles").delete().eq("id", id);
+    onFightingStylesChange(fightingStyles.filter((f) => f.id !== id));
     setLoading(false);
-    router.refresh();
   }
 
   async function upgradeFightingStyle(fs: CharacterFightingStyleRow) {
@@ -333,8 +366,12 @@ export function TabProficiencies({
       .from("character_fighting_styles")
       .update({ slots_invested: fs.slots_invested + 1 })
       .eq("id", fs.id);
+    onFightingStylesChange(
+      fightingStyles.map((f) =>
+        f.id === fs.id ? { ...f, slots_invested: f.slots_invested + 1 } : f
+      )
+    );
     setLoading(false);
-    router.refresh();
   }
 
   async function downgradeFightingStyle(fs: CharacterFightingStyleRow) {
@@ -344,8 +381,12 @@ export function TabProficiencies({
       .from("character_fighting_styles")
       .update({ slots_invested: Math.max(1, fs.slots_invested - 1) })
       .eq("id", fs.id);
+    onFightingStylesChange(
+      fightingStyles.map((f) =>
+        f.id === fs.id ? { ...f, slots_invested: Math.max(1, f.slots_invested - 1) } : f
+      )
+    );
     setLoading(false);
-    router.refresh();
   }
 
   const raceData = RACES[raceId as keyof typeof RACES];
@@ -368,27 +409,31 @@ export function TabProficiencies({
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const { error: insertError } = await supabase.from("character_languages").insert({
-      character_id: characterId,
-      language_name: trimmed,
-    });
-    if (insertError) {
+    const { data, error: insertError } = await supabase
+      .from("character_languages")
+      .insert({
+        character_id: characterId,
+        language_name: trimmed,
+      })
+      .select("*")
+      .single();
+    if (insertError || !data) {
       console.error("Failed to add language:", insertError);
       setError(t("addLanguageError"));
       setLoading(false);
       return;
     }
+    onLanguagesChange([...languages, data]);
     setNewLanguage("");
     setLoading(false);
-    router.refresh();
   }
 
   async function removeLanguage(id: string) {
     setLoading(true);
     const supabase = createClient();
     await supabase.from("character_languages").delete().eq("id", id);
+    onLanguagesChange(languages.filter((l) => l.id !== id));
     setLoading(false);
-    router.refresh();
   }
 
   return (

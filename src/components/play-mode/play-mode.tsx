@@ -152,6 +152,7 @@ export function PlayMode({
 }: PlayModeProps) {
   const t = useTranslations("playMode");
   const [character, setCharacter] = useState(initialCharacter);
+  const [equipment, setEquipment] = useState(initialEquipment);
   const [spells, setSpells] = useState(initialSpells);
   const [inventory, setInventory] = useState(initialInventory);
   const [activePanel, setActivePanel] = useState<PanelId>("combat");
@@ -234,16 +235,13 @@ export function PlayMode({
   );
 
   // Equipment calculations
-  const equippedArmor = useMemo(
-    () => initialEquipment.find((e) => e.equipped && e.armor),
-    [initialEquipment]
-  );
+  const equippedArmor = useMemo(() => equipment.find((e) => e.equipped && e.armor), [equipment]);
   const equippedShield = useMemo(
-    () => initialEquipment.some((e) => e.equipped && e.armor && e.armor.ac >= 8),
-    [initialEquipment]
+    () => equipment.some((e) => e.equipped && e.armor && e.armor.ac >= 8),
+    [equipment]
   );
   const totalWeight = useMemo(() => {
-    const eqWeight = initialEquipment.reduce((sum, e) => {
+    const eqWeight = equipment.reduce((sum, e) => {
       const w = e.weapon?.weight ?? e.armor?.weight ?? 0;
       return sum + w * e.quantity;
     }, 0);
@@ -252,7 +250,7 @@ export function PlayMode({
       return sum + w * i.quantity;
     }, 0);
     return eqWeight + invWeight;
-  }, [initialEquipment, inventory]);
+  }, [equipment, inventory]);
   const encumbranceLevel = useMemo(
     () => calculateEncumbrance(totalWeight, strMods.weightAllow),
     [totalWeight, strMods.weightAllow]
@@ -443,7 +441,7 @@ export function PlayMode({
         {/* Left column */}
         <div className="flex flex-col gap-4">
           <PlayCombatPanel
-            equipment={initialEquipment}
+            equipment={equipment}
             weaponProficiencies={weaponProficiencies}
             thac0={thac0}
             strMods={strMods}
@@ -459,6 +457,7 @@ export function PlayMode({
             backstabMultiplier={backstabMultiplier}
             ignoreEncumbrance={character.ignore_encumbrance}
             isMagicalProtection={isMagicalProtection}
+            onEquipmentChange={setEquipment}
           />
           {showSpells && (
             <PlaySpellbookPanel
@@ -510,7 +509,7 @@ export function PlayMode({
       <div className="p-3 sm:hidden">
         {activePanel === "combat" && (
           <PlayCombatPanel
-            equipment={initialEquipment}
+            equipment={equipment}
             weaponProficiencies={weaponProficiencies}
             thac0={thac0}
             strMods={strMods}
@@ -526,6 +525,7 @@ export function PlayMode({
             backstabMultiplier={backstabMultiplier}
             ignoreEncumbrance={character.ignore_encumbrance}
             isMagicalProtection={isMagicalProtection}
+            onEquipmentChange={setEquipment}
           />
         )}
         {activePanel === "spellbook" && showSpells && (

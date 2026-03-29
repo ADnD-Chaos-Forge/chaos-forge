@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -91,6 +90,9 @@ interface TabSpellsProps {
   spellSlotsAdj: Record<string, number>;
   spellSystem: "slots" | "points";
   readOnly?: boolean;
+  onSpellsChange: (spells: CharacterSpellWithDetails[]) => void;
+  onSpellSlotsAdjChange: (adj: Record<string, number>) => void;
+  onSpellSystemChange: (system: string) => void;
 }
 
 export function TabSpells({
@@ -106,13 +108,35 @@ export function TabSpells({
   spellSlotsAdj: initialAdj,
   spellSystem: initialSpellSystem,
   readOnly = false,
+  onSpellsChange,
+  onSpellSlotsAdjChange,
+  onSpellSystemChange,
 }: TabSpellsProps) {
-  const router = useRouter();
   const t = useTranslations("spells");
   const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [slotsAdj, setSlotsAdj] = useState<Record<string, number>>(initialAdj ?? {});
+
+  // Lazy-loading for allSpells
+  const [allSpellsLoaded, setAllSpellsLoaded] = useState<SpellRow[] | null>(
+    allSpells.length > 0 ? allSpells : null
+  );
+  const [loadingSpells, setLoadingSpells] = useState(false);
+
+  // Pagination for learn dialog
+  const [displayCount, setDisplayCount] = useState(50);
+
+  async function openLearnDialog() {
+    setLearnDialogOpen(true);
+    if (!allSpellsLoaded) {
+      setLoadingSpells(true);
+      const supabase = createClient();
+      const { data } = await supabase.from("spells").select("*").order("level").order("name");
+      setAllSpellsLoaded(data ?? []);
+      setLoadingSpells(false);
+    }
+  }
 
   async function updateSlotAdj(spellLevel: number, delta: number) {
     const key = String(spellLevel);
@@ -121,7 +145,7 @@ export function TabSpells({
     setSlotsAdj(newAdj);
     const supabase = createClient();
     await supabase.from("characters").update({ spell_slots_adj: newAdj }).eq("id", characterId);
-    router.refresh();
+    onSpellSlotsAdjChange(newAdj);
   }
 
   const spellName = useCallback(
@@ -185,7 +209,7 @@ export function TabSpells({
     setSpellSystem(newSystem);
     const supabase = createClient();
     await supabase.from("characters").update({ spell_system: newSystem }).eq("id", characterId);
-    router.refresh();
+    onSpellSystemChange(newSystem);
   }
 
   // Calculate spell slots
@@ -240,14 +264,15 @@ export function TabSpells({
 
   // Learnable spells — show all, never block (house rule: only warn)
   const learnableSpells = useMemo(() => {
+    const all = allSpellsLoaded ?? [];
     const knownIds = new Set(spells.map((s) => s.spell_id));
-    return allSpells.filter((spell) => {
+    return all.filter((spell) => {
       if (knownIds.has(spell.id)) return false;
       if (isWizard && spell.spell_type !== "wizard") return false;
       if (isPriest && spell.spell_type !== "priest") return false;
       return true;
     });
-  }, [allSpells, spells, isWizard, isPriest]);
+  }, [allSpellsLoaded, spells, isWizard, isPriest]);
 
   // Check which spells have restrictions (for warning display) — both known and learnable
   const spellWarnings = useMemo(() => {
@@ -301,6 +326,14 @@ export function TabSpells({
     });
   }, [learnableSpells, learnSearchQuery, levelFilter, schoolSphereFilter, bookFilter, isWizard]);
 
+  // Reset pagination when filters change — use a filter key to track changes
+  const filterKey = `${learnSearchQuery}|${levelFilter}|${schoolSphereFilter}|${bookFilter}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
+    setDisplayCount(50);
+  }
+
   async function handleCreateCustomSpell() {
     if (!customSpell.name.trim()) return;
     setLoading(true);
@@ -331,11 +364,18 @@ export function TabSpells({
       .single();
 
     if (!error && newSpell) {
-      await supabase.from("character_spells").insert({
-        character_id: characterId,
-        spell_id: newSpell.id,
-        prepared: false,
-      });
+      const { data: charSpell } = await supabase
+        .from("character_spells")
+        .insert({
+          character_id: characterId,
+          spell_id: newSpell.id,
+          prepared: false,
+        })
+        .select("*, spell:spells(*)")
+        .single();
+      if (charSpell) {
+        onSpellsChange([...spells, charSpell as CharacterSpellWithDetails]);
+      }
     }
 
     setLoading(false);
@@ -346,7 +386,6 @@ export function TabSpells({
     setLevelFilter(null);
     setSchoolSphereFilter(null);
     setBookFilter(null);
-    router.refresh();
   }
 
   async function handleTogglePrepared(spellId: string, currentlyPrepared: boolean) {
@@ -361,6 +400,11 @@ export function TabSpells({
       if (used >= available) return;
     }
 
+    // Optimistic update
+    onSpellsChange(
+      spells.map((s) => (s.spell_id === spellId ? { ...s, prepared: !s.prepared } : s))
+    );
+
     setLoading(true);
     const supabase = createClient();
     await supabase
@@ -369,33 +413,29 @@ export function TabSpells({
       .eq("character_id", characterId)
       .eq("spell_id", spellId);
     setLoading(false);
-    router.refresh();
   }
 
   async function handleLearnSpell(spellId: string) {
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const { error: insertError } = await supabase.from("character_spells").insert({
-      character_id: characterId,
-      spell_id: spellId,
-      prepared: false,
-    });
-    if (insertError) {
+    const { data: charSpell, error: insertError } = await supabase
+      .from("character_spells")
+      .insert({
+        character_id: characterId,
+        spell_id: spellId,
+        prepared: false,
+      })
+      .select("*, spell:spells(*)")
+      .single();
+    if (insertError || !charSpell) {
       console.error("Failed to learn spell:", insertError);
       setError(t("learnSpellError"));
       setLoading(false);
       return;
     }
+    onSpellsChange([...spells, charSpell as CharacterSpellWithDetails]);
     setLoading(false);
-    setLearnDialogOpen(false);
-    setLearnSearchQuery("");
-    setLevelFilter(null);
-    setSchoolSphereFilter(null);
-    setBookFilter(null);
-    setShowCustomForm(false);
-    setCustomSpell(emptyCustomSpellForm);
-    router.refresh();
   }
 
   async function handleRemoveSpell(spellId: string) {
@@ -406,8 +446,8 @@ export function TabSpells({
       .delete()
       .eq("character_id", characterId)
       .eq("spell_id", spellId);
+    onSpellsChange(spells.filter((s) => s.spell_id !== spellId));
     setLoading(false);
-    router.refresh();
   }
 
   if (!isWizard && !isPriest) {
@@ -546,11 +586,7 @@ export function TabSpells({
       {/* Learn Spell Button */}
       {!readOnly && (
         <div className="flex justify-end">
-          <Button
-            onClick={() => setLearnDialogOpen(true)}
-            disabled={loading}
-            data-testid="learn-spell-button"
-          >
+          <Button onClick={openLearnDialog} disabled={loading} data-testid="learn-spell-button">
             {t("learnSpellTitle")}
           </Button>
         </div>
@@ -793,13 +829,20 @@ export function TabSpells({
                   {error}
                 </div>
               )}
-              {filteredLearnableSpells.length === 0 ? (
+              {loadingSpells ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                </div>
+              ) : filteredLearnableSpells.length === 0 ? (
                 <div className="py-4 text-center text-sm text-muted-foreground">
                   {t("noLearnableSpells")}
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
-                  {filteredLearnableSpells.map((spell) => (
+                  <div className="text-xs text-muted-foreground">
+                    {filteredLearnableSpells.length} {t("spellsFound")}
+                  </div>
+                  {filteredLearnableSpells.slice(0, displayCount).map((spell) => (
                     <div
                       key={spell.id}
                       className="flex items-start justify-between rounded-md border border-border p-3"
@@ -844,6 +887,16 @@ export function TabSpells({
                       </Button>
                     </div>
                   ))}
+                  {displayCount < filteredLearnableSpells.length && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setDisplayCount((c) => c + 50)}
+                      data-testid="learn-spell-show-more"
+                    >
+                      {t("showMore")} ({filteredLearnableSpells.length - displayCount})
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

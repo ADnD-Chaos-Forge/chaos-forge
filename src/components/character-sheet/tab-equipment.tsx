@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +48,9 @@ interface TabEquipmentProps {
   characterClasses: CharacterClassRow[];
   weaponProficiencies: CharacterWeaponProficiencyRow[];
   ignoreEncumbrance?: boolean;
+  onEquipmentChange: (equipment: CharacterEquipmentWithDetails[]) => void;
+  onInventoryChange: (inventory: CharacterInventoryWithDetails[]) => void;
+  onIgnoreEncumbranceChange: (value: boolean) => void;
 }
 
 export function TabEquipment({
@@ -69,8 +71,10 @@ export function TabEquipment({
   characterClasses,
   weaponProficiencies,
   ignoreEncumbrance = true,
+  onEquipmentChange,
+  onInventoryChange,
+  onIgnoreEncumbranceChange,
 }: TabEquipmentProps) {
-  const router = useRouter();
   const t = useTranslations("equipment");
   const locale = useLocale();
   const [loading, setLoading] = useState(false);
@@ -164,6 +168,7 @@ export function TabEquipment({
     const newEquipped = !item.equipped;
 
     // If equipping armor (non-shield), unequip any currently equipped armor first
+    const armorsToUnequip: string[] = [];
     if (
       newEquipped &&
       item.armor &&
@@ -180,36 +185,48 @@ export function TabEquipment({
       );
       for (const a of currentArmors) {
         await supabase.from("character_equipment").update({ equipped: false }).eq("id", a.id);
+        armorsToUnequip.push(a.id);
       }
     }
 
     await supabase.from("character_equipment").update({ equipped: newEquipped }).eq("id", item.id);
 
+    const updatedEquipment = equipment.map((e) => {
+      if (e.id === item.id) return { ...e, equipped: newEquipped };
+      if (armorsToUnequip.includes(e.id)) return { ...e, equipped: false };
+      return e;
+    });
+    onEquipmentChange(updatedEquipment);
     setLoading(false);
-    router.refresh();
   }
 
   async function removeItem(itemId: string) {
     setLoading(true);
     const supabase = createClient();
     await supabase.from("character_equipment").delete().eq("id", itemId);
+    onEquipmentChange(equipment.filter((e) => e.id !== itemId));
     setLoading(false);
-    router.refresh();
   }
 
   async function addItem(type: "weapon" | "armor", id: string) {
     setLoading(true);
     const supabase = createClient();
-    await supabase.from("character_equipment").insert({
-      character_id: characterId,
-      weapon_id: type === "weapon" ? id : null,
-      armor_id: type === "armor" ? id : null,
-      quantity: 1,
-      equipped: false,
-    });
+    const { data } = await supabase
+      .from("character_equipment")
+      .insert({
+        character_id: characterId,
+        weapon_id: type === "weapon" ? id : null,
+        armor_id: type === "armor" ? id : null,
+        quantity: 1,
+        equipped: false,
+      })
+      .select("*, weapon:weapons(*), armor:armor(*)")
+      .single();
+    if (data) {
+      onEquipmentChange([...equipment, data as CharacterEquipmentWithDetails]);
+    }
     setLoading(false);
     setShowAddDialog(false);
-    router.refresh();
   }
 
   const filteredWeapons = allWeapons.filter((w) => {
@@ -310,32 +327,38 @@ export function TabEquipment({
   async function addInventoryItem(itemId: string | null, name: string | null) {
     setLoading(true);
     const supabase = createClient();
-    await supabase.from("character_inventory").insert({
-      character_id: characterId,
-      item_id: itemId,
-      custom_name: name,
-      quantity: 1,
-    });
+    const { data } = await supabase
+      .from("character_inventory")
+      .insert({
+        character_id: characterId,
+        item_id: itemId,
+        custom_name: name,
+        quantity: 1,
+      })
+      .select("*, item:general_items(*)")
+      .single();
+    if (data) {
+      onInventoryChange([...inventory, data as CharacterInventoryWithDetails]);
+    }
     setLoading(false);
     setShowAddInventory(false);
     setInventorySearch("");
     setCustomItemName("");
-    router.refresh();
   }
 
   async function removeInventoryItem(id: string) {
     setLoading(true);
     const supabase = createClient();
     await supabase.from("character_inventory").delete().eq("id", id);
+    onInventoryChange(inventory.filter((i) => i.id !== id));
     setLoading(false);
-    router.refresh();
   }
 
   async function updateInventoryQuantity(id: string, quantity: number) {
     setLoading(true);
     const supabase = createClient();
     await supabase.from("character_inventory").update({ quantity }).eq("id", id);
-    router.refresh();
+    onInventoryChange(inventory.map((i) => (i.id === id ? { ...i, quantity } : i)));
     setLoading(false);
   }
 
@@ -349,7 +372,7 @@ export function TabEquipment({
       .from("character_equipment")
       .update({ [field]: value })
       .eq("id", id);
-    router.refresh();
+    onEquipmentChange(equipment.map((e) => (e.id === id ? { ...e, [field]: value } : e)));
   }
 
   function getItemName(item: CharacterEquipmentWithDetails): string {
@@ -459,14 +482,7 @@ export function TabEquipment({
               <input
                 type="checkbox"
                 checked={ignoreEncumbrance}
-                onChange={async () => {
-                  const supabase = createClient();
-                  await supabase
-                    .from("characters")
-                    .update({ ignore_encumbrance: !ignoreEncumbrance })
-                    .eq("id", characterId);
-                  router.refresh();
-                }}
+                onChange={() => onIgnoreEncumbranceChange(!ignoreEncumbrance)}
                 className="h-3.5 w-3.5 rounded"
                 data-testid="toggle-ignore-encumbrance"
               />

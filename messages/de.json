@@ -355,6 +355,8 @@
     "searchSpells": "Zauber suchen...",
     "all": "Alle",
     "noLearnableSpells": "Keine erlernbaren Zauber gefunden.",
+    "spellsFound": "Zauber gefunden",
+    "showMore": "Mehr anzeigen",
     "learn": "Erlernen",
     "name": "Name",
     "cancel": "Abbrechen",
