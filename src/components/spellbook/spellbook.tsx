@@ -146,14 +146,17 @@ export function Spellbook({
       if (preparedFilter && !s.prepared) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const name = spellName(s.spell).toLowerCase();
-        const school = s.spell.school?.toLowerCase() ?? "";
-        const sphere = s.spell.sphere?.toLowerCase() ?? "";
-        if (!name.includes(q) && !school.includes(q) && !sphere.includes(q)) return false;
+        if (
+          !s.spell.name.toLowerCase().includes(q) &&
+          !(s.spell.name_en && s.spell.name_en.toLowerCase().includes(q)) &&
+          !(s.spell.school && s.spell.school.toLowerCase().includes(q)) &&
+          !(s.spell.sphere && s.spell.sphere.toLowerCase().includes(q))
+        )
+          return false;
       }
       return true;
     });
-  }, [spells, levelFilter, preparedFilter, searchQuery, spellName]);
+  }, [spells, levelFilter, preparedFilter, searchQuery]);
 
   // Learnable spells — show all, never block (house rule: only warn)
   const learnableSpells = useMemo(() => {
