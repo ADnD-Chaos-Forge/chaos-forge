@@ -72,7 +72,7 @@ export function CharacterWizard() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("Nicht eingeloggt.");
+      setError(tc("notLoggedIn"));
       setSaving(false);
       return;
     }

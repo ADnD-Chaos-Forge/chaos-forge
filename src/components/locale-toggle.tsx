@@ -44,7 +44,7 @@ export function LocaleToggle() {
       onClick={toggleLocale}
       disabled={isPending}
       data-testid="locale-toggle"
-      aria-label={current === "de" ? "Switch to English" : "Auf Deutsch wechseln"}
+      aria-label={current === "de" ? "English" : "Deutsch"}
     >
       {isPending ? <Spinner className="h-4 w-4" /> : current.toUpperCase()}
     </Button>
