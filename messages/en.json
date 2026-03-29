@@ -353,7 +353,8 @@
     "close": "Close",
     "spellLevelGroup": "Level {level} Spells",
     "preparedCount": "({prepared}/{available} prepared)",
-    "choose": "-- Choose --"
+    "choose": "-- Choose --",
+    "allBooks": "All Source Books"
   },
   "proficiencies": {
     "title": "Proficiencies",
@@ -686,6 +687,7 @@
     "learnSearch": "Search spells...",
     "learnButton": "Learn",
     "closeDialog": "Close",
-    "spellPoints": "Spell Points"
+    "spellPoints": "Spell Points",
+    "allBooks": "All Source Books"
   }
 }

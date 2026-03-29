@@ -25,6 +25,7 @@ import type {
 } from "@/lib/supabase/types";
 import { ResourceTracker } from "./resource-tracker";
 import { SpellCard } from "./spell-card";
+import { getBookAbbreviation } from "@/lib/utils/source-books";
 
 interface SpellbookProps {
   character: CharacterRow;
@@ -54,6 +55,7 @@ export function Spellbook({
   const [preparedFilter, setPreparedFilter] = useState(false);
   const [learnSearchQuery, setLearnSearchQuery] = useState("");
   const [learnLevelFilter, setLearnLevelFilter] = useState<number | null>(null);
+  const [learnBookFilter, setLearnBookFilter] = useState<string | null>(null);
 
   const readOnly = character.user_id !== userId;
 
@@ -170,6 +172,7 @@ export function Spellbook({
   const filteredLearnableSpells = useMemo(() => {
     return learnableSpells.filter((s) => {
       if (learnLevelFilter !== null && s.level !== learnLevelFilter) return false;
+      if (learnBookFilter !== null && s.source_book !== learnBookFilter) return false;
       if (learnSearchQuery.trim()) {
         const q = learnSearchQuery.toLowerCase();
         if (
@@ -182,13 +185,19 @@ export function Spellbook({
       }
       return true;
     });
-  }, [learnableSpells, learnSearchQuery, learnLevelFilter]);
+  }, [learnableSpells, learnSearchQuery, learnLevelFilter, learnBookFilter]);
 
   // Available spell levels for filter chips
   const availableLevels = useMemo(() => {
     const levels = new Set(spells.map((s) => s.spell.level));
     return Array.from(levels).sort((a, b) => a - b);
   }, [spells]);
+
+  // Available source books for learn dialog filter
+  const availableBooks = useMemo(() => {
+    const books = new Set(learnableSpells.map((s) => s.source_book).filter(Boolean));
+    return Array.from(books).sort();
+  }, [learnableSpells]);
 
   async function handleTogglePrepared(spellId: string, currentlyPrepared: boolean) {
     const spell = spells.find((s) => s.spell_id === spellId);
@@ -409,6 +418,7 @@ export function Spellbook({
               setLearnDialogOpen(false);
               setLearnSearchQuery("");
               setLearnLevelFilter(null);
+              setLearnBookFilter(null);
             }
           }}
           data-testid="spellbook-learn-dialog"
@@ -425,6 +435,7 @@ export function Spellbook({
                   setLearnDialogOpen(false);
                   setLearnSearchQuery("");
                   setLearnLevelFilter(null);
+                  setLearnBookFilter(null);
                 }}
                 data-testid="spellbook-learn-dialog-close"
               >
@@ -463,6 +474,24 @@ export function Spellbook({
                   </Badge>
                 ))}
               </div>
+              {availableBooks.length > 1 && (
+                <div className="mt-2">
+                  <select
+                    value={learnBookFilter ?? ""}
+                    onChange={(e) => setLearnBookFilter(e.target.value || null)}
+                    className="min-h-[36px] w-full rounded-md border border-input bg-input px-2 py-1 text-sm"
+                    aria-label={t("allBooks")}
+                    data-testid="spellbook-learn-filter-book"
+                  >
+                    <option value="">{t("allBooks")}</option>
+                    {availableBooks.map((book) => (
+                      <option key={book} value={book}>
+                        {getBookAbbreviation(book)} — {book}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             {/* Learnable Spell List */}
@@ -488,7 +517,7 @@ export function Spellbook({
                       data-testid={`spellbook-learnable-${spell.id}`}
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           <span className="truncate text-sm font-medium">{spellName(spell)}</span>
                           <Badge variant="outline" className="shrink-0 text-xs">
                             L{spell.level}
@@ -496,6 +525,15 @@ export function Spellbook({
                           <Badge variant="outline" className="shrink-0 text-xs capitalize">
                             {spell.school ?? spell.sphere}
                           </Badge>
+                          {spell.source_book && (
+                            <Badge
+                              variant="outline"
+                              className="shrink-0 text-xs text-muted-foreground"
+                              data-testid="spell-source-badge"
+                            >
+                              {getBookAbbreviation(spell.source_book)}
+                            </Badge>
+                          )}
                         </div>
                         <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                           <ReactMarkdown>{spellDesc(spell)}</ReactMarkdown>

@@ -23,6 +23,9 @@ const BOOK_ABBREVIATIONS: Record<string, string> = {
   "Players Option Skills and Powers": "PO:S&P",
   "Players Option Combat and Tactics": "PO:C&T",
   "Players Option Spells and Magic": "PO:S&M",
+  "Players Option: Skills and Powers": "PO:S&P",
+  "Players Option: Combat and Tactics": "PO:C&T",
+  "Players Option: Spells and Magic": "PO:S&M",
 };
 
 export function getBookAbbreviation(fullName: string): string {

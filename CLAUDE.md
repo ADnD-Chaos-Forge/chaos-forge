@@ -20,7 +20,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Hosting:** Vercel (Free-Tier)
 - **AI:** Anthropic Claude API (Character Import, Session Summaries)
 - **Export:** `docx` + `file-saver` für Word-Export
-- **UI-Theme:** Glassmorphism Dark Fantasy (Cinzel Headings, Crimson Text Body, klassenbasierte Akzentfarben)
+- **UI-Theme:** Glassmorphism Dark Fantasy (Cinzel Headings, Geist Sans Body, klassenbasierte Akzentfarben, 3D-Tilt-Cards, Stagger-Reveal)
+- **Navigation:** Desktop Left-Sidebar (Icons + Tooltips) + Mobile Bottom-Nav + FAB
 
 ## Befehle
 
@@ -52,7 +53,10 @@ src/
     glass-card.tsx        # Wiederverwendbare Glass-Surface-Komponente
     hp-bar.tsx            # Leuchtende HP-Fortschrittsleiste mit Klassen-Gradient
     level-badge.tsx       # Hexagonales Level-Badge (CSS clip-path)
-    spellbook/            # Standalone Spellbook-Seite (Suche, Filter, Prepare, Learn)
+    app-sidebar.tsx       # Desktop Left-Sidebar (Icons, Tooltips, Logout)
+    app-nav.tsx           # Mobile Bottom-Nav + More-Menu
+    fab-new-character.tsx # Mobile FAB für neuen Charakter
+    spellbook/            # Standalone Spellbook-Seite (Suche, Filter, Prepare, Learn, Source-Book-Filter)
     print-sheet/          # Druckansicht + Word-Export (.docx)
     session/              # Session-Einträge, Sprachnotizen (MediaRecorder)
     wizard/               # Character Wizard (7 Steps: Basics, Abilities, Race, Class, Kit, Combat, Summary)
@@ -79,21 +83,21 @@ src/
     utils/                # Hilfsfunktionen
       class-colors.ts     # Klassengruppen-Akzentfarben (warrior/priest/rogue/wizard)
       localize.ts         # localized(de, en, locale) — Locale-aware Text-Auswahl
-      source-books.ts     # Quellenbuch-Abkürzungen (PHB, AEG, ToM, etc.)
+      source-books.ts     # Quellenbuch-Abkürzungen (PHB, WSC1-4, PSC1-3, ToM, PO:S&M, etc.)
       docx-export.ts      # Word-Export Generator (1:1 Print-Layout)
       audio-recorder.ts   # MediaRecorder Wrapper (Safari-kompatibel)
       units.ts            # lbsToKg(), feetToMeters()
   middleware.ts           # Next.js Middleware (Supabase Session-Refresh)
   test/                   # Vitest Setup, Smoke- & Regressionstests
 e2e/                      # Playwright E2E-Tests
-  responsive-a11y.spec.ts # Mobile Responsive (iPhone 13) + WCAG 2 AA (axe-core)
+  responsive-a11y.spec.ts # Mobile Responsive, Desktop Sidebar, FAB + WCAG 2 AA (axe-core)
   pages/                  # Page Object Models (character-sheet, spellbook, login)
   helpers/                # Auth-Helper (Cookie-basierter Test-Login)
 messages/                 # i18n-Dateien (de.json, en.json)
 supabase/
-  migrations/             # 30 SQL-Migrationen (Schema + Seed-Daten)
+  migrations/             # 43 SQL-Migrationen (Schema + Seed-Daten + Spell Compendium)
 ressources/
-  books/                  # OCR-Texte der AD&D 2e Regelbücher (PHB, Complete Handbooks)
+  books/                  # OCR-Texte der AD&D 2e Regelbücher (metrisch konvertiert)
 ```
 
 ## Regelwerk-Engine (`src/lib/rules/`)
@@ -157,6 +161,16 @@ const locale = useLocale();
 // Statt: race.name
 // Richtig: localized(race.name, race.name_en, locale)
 ```
+
+### Zauber-Datenbank
+
+Die DB enthält 3.200+ Zauber aus allen AD&D 2e Quellenbüchern:
+
+- **374 PHB-Zauber** mit deutschen Namen (`name`) und englischen Namen (`name_en`)
+- **2.857 weitere Zauber** aus Wizard Spell Compendium Vol 1-4, Priest Spell Compendium Vol 1-3, Tome of Magic, Player's Option: Spells & Magic — bei diesen sind `name` und `name_en` identisch (englisch)
+- **Source Book Tracking:** `source_book` Feld zeigt die Quelle, `getBookAbbreviation()` für Kurzform in der UI
+- **Bilinguale Suche:** Spellbook und Learn-Dialog durchsuchen immer beide Namensfelder (DE + EN)
+- **Source Book Filter:** Dropdown zum Filtern nach Quellenbuch im Learn-Dialog
 
 ### Regelwerk-Spezifikation (`src/lib/rules/spec/`)
 
