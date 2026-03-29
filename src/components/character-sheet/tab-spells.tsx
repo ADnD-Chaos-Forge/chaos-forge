@@ -138,6 +138,7 @@ export function TabSpells({
   const [learnSearchQuery, setLearnSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<number | null>(null);
   const [schoolSphereFilter, setSchoolSphereFilter] = useState<string | null>(null);
+  const [bookFilter, setBookFilter] = useState<string | null>(null);
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customSpell, setCustomSpell] = useState<CustomSpellForm>(emptyCustomSpellForm);
 
@@ -267,7 +268,13 @@ export function TabSpells({
     return warnings;
   }, [learnableSpells, spells, classId, intScore]);
 
-  // Filtered learnable spells by search, level, and school/sphere
+  // Available source books for filter
+  const availableBooks = useMemo(() => {
+    const books = new Set(learnableSpells.map((s) => s.source_book).filter(Boolean));
+    return Array.from(books).sort();
+  }, [learnableSpells]);
+
+  // Filtered learnable spells by search, level, school/sphere, and source book
   const filteredLearnableSpells = useMemo(() => {
     return learnableSpells.filter((s) => {
       // Level filter
@@ -277,6 +284,8 @@ export function TabSpells({
         const value = isWizard ? s.school : s.sphere;
         if (value !== schoolSphereFilter) return false;
       }
+      // Source book filter
+      if (bookFilter !== null && s.source_book !== bookFilter) return false;
       // Text search
       if (learnSearchQuery.trim()) {
         const q = learnSearchQuery.toLowerCase();
@@ -290,7 +299,7 @@ export function TabSpells({
       }
       return true;
     });
-  }, [learnableSpells, learnSearchQuery, levelFilter, schoolSphereFilter, isWizard]);
+  }, [learnableSpells, learnSearchQuery, levelFilter, schoolSphereFilter, bookFilter, isWizard]);
 
   async function handleCreateCustomSpell() {
     if (!customSpell.name.trim()) return;
@@ -751,6 +760,25 @@ export function TabSpells({
                   </Badge>
                 ))}
               </div>
+
+              {/* Source Book filter */}
+              {availableBooks.length > 1 && (
+                <div className="mt-2">
+                  <select
+                    value={bookFilter ?? ""}
+                    onChange={(e) => setBookFilter(e.target.value || null)}
+                    className="w-full rounded-md border border-input bg-input px-2 py-1 text-sm"
+                    data-testid="spell-book-filter"
+                  >
+                    <option value="">{t("allBooks")}</option>
+                    {availableBooks.map((book) => (
+                      <option key={book} value={book}>
+                        {getBookAbbreviation(book)} — {book}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto p-4">
               {error && (

@@ -353,7 +353,8 @@
     "close": "Schließen",
     "spellLevelGroup": "Zauber Stufe {level}",
     "preparedCount": "({prepared}/{available} vorbereitet)",
-    "choose": "-- Wählen --"
+    "choose": "-- Wählen --",
+    "allBooks": "Alle Quellenbücher"
   },
   "proficiencies": {
     "title": "Fertigkeiten",
@@ -686,6 +687,7 @@
     "learnSearch": "Zauber suchen...",
     "learnButton": "Lernen",
     "closeDialog": "Schließen",
-    "spellPoints": "Zauberpunkte"
+    "spellPoints": "Zauberpunkte",
+    "allBooks": "Alle Quellenbücher"
   }
 }
