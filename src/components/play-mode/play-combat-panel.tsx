@@ -84,12 +84,21 @@ export function PlayCombatPanel({
     // Base AC 10 is always the starting point
     parts.push({ label: t("baseAC"), value: 10 });
     if (equippedArmor?.armor) {
-      const armorMod = equippedArmor.armor.ac - 10; // e.g. AC 4 → -6
-      if (armorMod !== 0) {
+      if (isMagicalProtection) {
+        // Magical protection: value is a bonus (e.g. Bracers +4 → -4)
         parts.push({
           label: localized(equippedArmor.armor.name, equippedArmor.armor.name_en, locale),
-          value: armorMod,
+          value: -equippedArmor.armor.ac,
         });
+      } else {
+        // Regular armor replaces base AC (e.g. Chain Mail AC 5 → modifier is 5-10 = -5)
+        const armorMod = equippedArmor.armor.ac - 10;
+        if (armorMod !== 0) {
+          parts.push({
+            label: localized(equippedArmor.armor.name, equippedArmor.armor.name_en, locale),
+            value: armorMod,
+          });
+        }
       }
     }
     if (equippedShield) {

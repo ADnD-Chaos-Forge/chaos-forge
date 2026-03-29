@@ -156,6 +156,42 @@ describe("EQUIP-001: AC Calculation", () => {
       })
     ).toBe(0); // 10 - 4 - 4 - 2 = 0
   });
+
+  // ─── Magical Protection (Bracers as Armor entry with isMagicalProtection) ──
+  it("isMagicalProtection: Bracers +4 as armor entry → AC 6", () => {
+    // Bracers stored as armor with ac=4, isMagicalProtection=true
+    // baseAC = 10 - 4 = 6 (bonus, not replace)
+    expect(
+      calculateAC({
+        equippedArmorAC: 4,
+        dexDefenseAdj: 0,
+        isMagicalProtection: true,
+      })
+    ).toBe(6); // 10 - 4 = 6
+  });
+
+  it("isMagicalProtection: Bracers +4 + DEX -4 + Rogue unarmored = AC 0", () => {
+    expect(
+      calculateAC({
+        equippedArmorAC: 4,
+        dexDefenseAdj: -4,
+        isMagicalProtection: true,
+        classGroups: ["wizard", "rogue"],
+        ignoreEncumbrance: true,
+      })
+    ).toBe(0); // 10 - 4 bracers - 4 DEX - 2 unarmored = 0
+  });
+
+  it("isMagicalProtection: false → armor replaces base AC (normal behavior)", () => {
+    // Chain Mail AC 5 → baseAC = 5
+    expect(
+      calculateAC({
+        equippedArmorAC: 5,
+        dexDefenseAdj: -1,
+        isMagicalProtection: false,
+      })
+    ).toBe(4); // 5 - 1 = 4
+  });
 });
 
 describe("EQUIP-002: Encumbrance", () => {

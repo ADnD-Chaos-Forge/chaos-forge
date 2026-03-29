@@ -40,9 +40,10 @@ export function calculateAC(input: ACCalculationInput): number {
     isMagicalProtection = false,
   } = input;
 
-  // Magical protection (Bracers, Ring) sets AC but still counts as "unarmored" for PO bonus
+  // Magical protection (Bracers +4, Ring +1) is a BONUS subtracted from base 10,
+  // not an absolute AC replacement. Also still counts as "unarmored" for PO bonus.
   const isUnarmored = equippedArmorAC == null || isMagicalProtection;
-  const baseAC = equippedArmorAC ?? 10;
+  const baseAC = isMagicalProtection ? 10 - (equippedArmorAC ?? 0) : (equippedArmorAC ?? 10);
   const shieldBonus = shieldEquipped ? -1 : 0;
 
   // Player's Option: Skills & Powers — unarmored warrior/rogue bonus (-2)
