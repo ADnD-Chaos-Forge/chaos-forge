@@ -54,15 +54,15 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
         <p className="text-center text-muted-foreground">{t("characterChoice")}</p>
       </div>
 
-      <div className="grid w-full max-w-lg gap-4 sm:grid-cols-2">
+      <div className="grid w-full max-w-lg auto-rows-fr gap-4 sm:grid-cols-2">
         <Link
           href={`/characters/${id}/manage`}
-          className="flex"
+          className="contents"
           data-testid="character-manage-link"
         >
           <GlassCard
             glow="neutral"
-            className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center"
+            className="flex flex-col items-center justify-center gap-3 p-6 text-center"
           >
             <PenLine className="h-10 w-10 text-primary" />
             <h2 className="font-heading text-lg">{t("manageCharacter")}</h2>
@@ -70,10 +70,14 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
           </GlassCard>
         </Link>
 
-        <Link href={`/characters/${id}/play`} className="flex" data-testid="character-play-link">
+        <Link
+          href={`/characters/${id}/play`}
+          className="contents"
+          data-testid="character-play-link"
+        >
           <GlassCard
             glow="neutral"
-            className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center"
+            className="flex flex-col items-center justify-center gap-3 p-6 text-center"
           >
             <Swords className="h-10 w-10 text-primary" />
             <h2 className="font-heading text-lg">{t("playCharacter")}</h2>
