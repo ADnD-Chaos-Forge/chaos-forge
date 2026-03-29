@@ -204,6 +204,7 @@ export function ShareDialog({
               className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
+              aria-label={t("selectUser")}
               data-testid="share-user-select"
             >
               <option value="">{t("selectUser")}</option>

@@ -65,28 +65,46 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (!existingGor) {
-    const { error: gorErr } = await supabaseAdmin.from("characters").insert({
-      user_id: owner.id,
-      name: "Gor",
-      level: 5,
-      race_id: "human",
-      class_id: "fighter",
-      str: 17,
-      dex: 12,
-      con: 15,
-      int: 10,
-      wis: 9,
-      cha: 11,
-      hp_current: 45,
-      hp_max: 45,
-      alignment: "chaotic-good",
-      is_public: false,
-      is_active: true,
-    });
+    const { data: gorData, error: gorErr } = await supabaseAdmin
+      .from("characters")
+      .insert({
+        user_id: owner.id,
+        name: "Gor",
+        level: 5,
+        race_id: "human",
+        class_id: "fighter",
+        str: 17,
+        dex: 12,
+        con: 15,
+        int: 10,
+        wis: 9,
+        cha: 11,
+        hp_current: 45,
+        hp_max: 45,
+        alignment: "chaotic-good",
+        is_public: false,
+        is_active: true,
+      })
+      .select("id")
+      .single();
     if (gorErr) {
       return NextResponse.json({ error: `Gor: ${gorErr.message}` }, { status: 500 });
     }
+    await supabaseAdmin
+      .from("character_classes")
+      .upsert(
+        { character_id: gorData.id, class_id: "fighter", level: 5, xp_current: 32000 },
+        { onConflict: "character_id,class_id" }
+      );
     created.push("Gor");
+  } else {
+    // Ensure character_classes entry exists for pre-existing Gor
+    await supabaseAdmin
+      .from("character_classes")
+      .upsert(
+        { character_id: existingGor.id, class_id: "fighter", level: 5, xp_current: 32000 },
+        { onConflict: "character_id,class_id" }
+      );
   }
 
   // Create "Elara" (Mage) for secondary user — if not exists, made public
@@ -98,28 +116,46 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (!existingElara) {
-    const { error: elaraErr } = await supabaseAdmin.from("characters").insert({
-      user_id: secondary.id,
-      name: "Elara",
-      level: 7,
-      race_id: "elf",
-      class_id: "mage",
-      str: 8,
-      dex: 15,
-      con: 12,
-      int: 18,
-      wis: 14,
-      cha: 13,
-      hp_current: 20,
-      hp_max: 20,
-      alignment: "neutral-good",
-      is_public: true,
-      is_active: true,
-    });
+    const { data: elaraData, error: elaraErr } = await supabaseAdmin
+      .from("characters")
+      .insert({
+        user_id: secondary.id,
+        name: "Elara",
+        level: 7,
+        race_id: "elf",
+        class_id: "mage",
+        str: 8,
+        dex: 15,
+        con: 12,
+        int: 18,
+        wis: 14,
+        cha: 13,
+        hp_current: 20,
+        hp_max: 20,
+        alignment: "neutral-good",
+        is_public: true,
+        is_active: true,
+      })
+      .select("id")
+      .single();
     if (elaraErr) {
       return NextResponse.json({ error: `Elara: ${elaraErr.message}` }, { status: 500 });
     }
+    await supabaseAdmin
+      .from("character_classes")
+      .upsert(
+        { character_id: elaraData.id, class_id: "mage", level: 7, xp_current: 90000 },
+        { onConflict: "character_id,class_id" }
+      );
     created.push("Elara");
+  } else {
+    // Ensure character_classes entry exists for pre-existing Elara
+    await supabaseAdmin
+      .from("character_classes")
+      .upsert(
+        { character_id: existingElara.id, class_id: "mage", level: 7, xp_current: 90000 },
+        { onConflict: "character_id,class_id" }
+      );
   }
 
   return NextResponse.json({ created, owner_id: owner.id });
