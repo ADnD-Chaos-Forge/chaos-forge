@@ -3,24 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, Users, ScrollText, FileUp, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LocaleToggle } from "@/components/locale-toggle";
+import { NAV_ITEMS } from "@/lib/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-
-const NAV_ITEMS = [
-  {
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    labelKey: "dashboard" as const,
-    testId: "nav-dashboard",
-  },
-  { href: "/characters", icon: Users, labelKey: "characters" as const, testId: "nav-characters" },
-  { href: "/sessions", icon: ScrollText, labelKey: "sessions" as const, testId: "nav-sessions" },
-  { href: "/characters/import", icon: FileUp, labelKey: "import" as const, testId: "nav-import" },
-];
 
 interface AppSidebarProps {
   userEmail?: string;
@@ -41,6 +30,7 @@ export function AppSidebar({ userEmail }: AppSidebarProps) {
   return (
     <nav
       className="fixed left-0 top-0 z-50 hidden h-full w-16 flex-col items-center border-r border-border glass py-4 sm:flex"
+      aria-label="Main navigation"
       data-testid="app-sidebar"
     >
       {/* Navigation Icons */}

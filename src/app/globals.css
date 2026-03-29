@@ -210,52 +210,51 @@
 /* ─── Class Group Glow Variants ──────────────────────────────────────────── */
 
 .glow-warrior {
-  border-color: var(--warrior, oklch(0.6 0.22 25)) / 0.4;
-  border-color: oklch(from var(--warrior) l c h / 0.4);
+  border-color: oklch(0.6 0.22 25 / 0.4);
   box-shadow:
-    0 0 20px oklch(from var(--warrior) l c h / 0.15),
-    inset 0 0 20px oklch(from var(--warrior) l c h / 0.03);
+    0 0 20px oklch(0.6 0.22 25 / 0.15),
+    inset 0 0 20px oklch(0.6 0.22 25 / 0.03);
 }
 .glow-warrior:hover {
   box-shadow:
-    0 0 30px oklch(from var(--warrior) l c h / 0.25),
-    inset 0 0 30px oklch(from var(--warrior) l c h / 0.05);
+    0 0 30px oklch(0.6 0.22 25 / 0.25),
+    inset 0 0 30px oklch(0.6 0.22 25 / 0.05);
 }
 
 .glow-priest {
-  border-color: oklch(from var(--priest) l c h / 0.4);
+  border-color: oklch(0.75 0.15 80 / 0.4);
   box-shadow:
-    0 0 20px oklch(from var(--priest) l c h / 0.15),
-    inset 0 0 20px oklch(from var(--priest) l c h / 0.03);
+    0 0 20px oklch(0.75 0.15 80 / 0.15),
+    inset 0 0 20px oklch(0.75 0.15 80 / 0.03);
 }
 .glow-priest:hover {
   box-shadow:
-    0 0 30px oklch(from var(--priest) l c h / 0.25),
-    inset 0 0 30px oklch(from var(--priest) l c h / 0.05);
+    0 0 30px oklch(0.75 0.15 80 / 0.25),
+    inset 0 0 30px oklch(0.75 0.15 80 / 0.05);
 }
 
 .glow-rogue {
-  border-color: oklch(from var(--rogue) l c h / 0.4);
+  border-color: oklch(0.6 0.18 260 / 0.4);
   box-shadow:
-    0 0 20px oklch(from var(--rogue) l c h / 0.15),
-    inset 0 0 20px oklch(from var(--rogue) l c h / 0.03);
+    0 0 20px oklch(0.6 0.18 260 / 0.15),
+    inset 0 0 20px oklch(0.6 0.18 260 / 0.03);
 }
 .glow-rogue:hover {
   box-shadow:
-    0 0 30px oklch(from var(--rogue) l c h / 0.25),
-    inset 0 0 30px oklch(from var(--rogue) l c h / 0.05);
+    0 0 30px oklch(0.6 0.18 260 / 0.25),
+    inset 0 0 30px oklch(0.6 0.18 260 / 0.05);
 }
 
 .glow-wizard {
-  border-color: oklch(from var(--wizard) l c h / 0.4);
+  border-color: oklch(0.7 0.14 185 / 0.4);
   box-shadow:
-    0 0 20px oklch(from var(--wizard) l c h / 0.15),
-    inset 0 0 20px oklch(from var(--wizard) l c h / 0.03);
+    0 0 20px oklch(0.7 0.14 185 / 0.15),
+    inset 0 0 20px oklch(0.7 0.14 185 / 0.03);
 }
 .glow-wizard:hover {
   box-shadow:
-    0 0 30px oklch(from var(--wizard) l c h / 0.25),
-    inset 0 0 30px oklch(from var(--wizard) l c h / 0.05);
+    0 0 30px oklch(0.7 0.14 185 / 0.25),
+    inset 0 0 30px oklch(0.7 0.14 185 / 0.05);
 }
 
 /* Neutral glow (for non-character cards) */
@@ -270,43 +269,43 @@
 /* Dark mode enhanced glow intensity */
 .dark .glow-warrior {
   box-shadow:
-    0 0 24px oklch(from var(--warrior) l c h / 0.2),
-    inset 0 0 24px oklch(from var(--warrior) l c h / 0.04);
+    0 0 24px oklch(0.6 0.22 25 / 0.2),
+    inset 0 0 24px oklch(0.6 0.22 25 / 0.04);
 }
 .dark .glow-warrior:hover {
   box-shadow:
-    0 0 36px oklch(from var(--warrior) l c h / 0.3),
-    inset 0 0 36px oklch(from var(--warrior) l c h / 0.06);
+    0 0 36px oklch(0.6 0.22 25 / 0.3),
+    inset 0 0 36px oklch(0.6 0.22 25 / 0.06);
 }
 .dark .glow-priest {
   box-shadow:
-    0 0 24px oklch(from var(--priest) l c h / 0.2),
-    inset 0 0 24px oklch(from var(--priest) l c h / 0.04);
+    0 0 24px oklch(0.75 0.15 80 / 0.2),
+    inset 0 0 24px oklch(0.75 0.15 80 / 0.04);
 }
 .dark .glow-priest:hover {
   box-shadow:
-    0 0 36px oklch(from var(--priest) l c h / 0.3),
-    inset 0 0 36px oklch(from var(--priest) l c h / 0.06);
+    0 0 36px oklch(0.75 0.15 80 / 0.3),
+    inset 0 0 36px oklch(0.75 0.15 80 / 0.06);
 }
 .dark .glow-rogue {
   box-shadow:
-    0 0 24px oklch(from var(--rogue) l c h / 0.2),
-    inset 0 0 24px oklch(from var(--rogue) l c h / 0.04);
+    0 0 24px oklch(0.6 0.18 260 / 0.2),
+    inset 0 0 24px oklch(0.6 0.18 260 / 0.04);
 }
 .dark .glow-rogue:hover {
   box-shadow:
-    0 0 36px oklch(from var(--rogue) l c h / 0.3),
-    inset 0 0 36px oklch(from var(--rogue) l c h / 0.06);
+    0 0 36px oklch(0.6 0.18 260 / 0.3),
+    inset 0 0 36px oklch(0.6 0.18 260 / 0.06);
 }
 .dark .glow-wizard {
   box-shadow:
-    0 0 24px oklch(from var(--wizard) l c h / 0.2),
-    inset 0 0 24px oklch(from var(--wizard) l c h / 0.04);
+    0 0 24px oklch(0.7 0.14 185 / 0.2),
+    inset 0 0 24px oklch(0.7 0.14 185 / 0.04);
 }
 .dark .glow-wizard:hover {
   box-shadow:
-    0 0 36px oklch(from var(--wizard) l c h / 0.3),
-    inset 0 0 36px oklch(from var(--wizard) l c h / 0.06);
+    0 0 36px oklch(0.7 0.14 185 / 0.3),
+    inset 0 0 36px oklch(0.7 0.14 185 / 0.06);
 }
 
 /* ─── Hexagonal Level Badge ──────────────────────────────────────────────── */
@@ -355,11 +354,10 @@
 /* 3D tilt hover for desktop cards */
 .tilt-card {
   transform-style: preserve-3d;
-  perspective: 800px;
 }
 @media (hover: hover) {
   .tilt-card:hover {
-    transform: rotateY(2deg) rotateX(-1deg) translateY(-4px);
+    transform: perspective(800px) rotateY(2deg) rotateX(-1deg) translateY(-4px);
   }
 }
 
@@ -410,6 +408,21 @@
 .touch-press:active {
   transform: scale(0.95);
   transition: transform 0.1s ease;
+}
+
+/* Respect reduced motion preferences (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  .hp-bar-pulse,
+  .stagger-reveal > * {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .tilt-card:hover {
+    transform: none !important;
+  }
+  .glass-hover:hover {
+    transform: none !important;
+  }
 }
 
 /* ─── Utilities ──────────────────────────────────────────────────────────── */

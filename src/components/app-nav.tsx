@@ -4,22 +4,11 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, Users, ScrollText, FileUp, Ellipsis } from "lucide-react";
+import { Ellipsis } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LocaleToggle } from "@/components/locale-toggle";
-
-const NAV_ITEMS = [
-  {
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    labelKey: "dashboard" as const,
-    testId: "nav-dashboard",
-  },
-  { href: "/characters", icon: Users, labelKey: "characters" as const, testId: "nav-characters" },
-  { href: "/sessions", icon: ScrollText, labelKey: "sessions" as const, testId: "nav-sessions" },
-  { href: "/characters/import", icon: FileUp, labelKey: "import" as const, testId: "nav-import" },
-];
+import { NAV_ITEMS } from "@/lib/navigation";
 
 interface AppNavProps {
   userEmail?: string;
@@ -37,7 +26,11 @@ export function AppNav({ userEmail }: AppNavProps) {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 sm:hidden" data-testid="app-nav-mobile">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 sm:hidden"
+      aria-label="Mobile navigation"
+      data-testid="app-nav-mobile"
+    >
       {/* Backdrop */}
       {moreOpen && (
         <div
@@ -75,16 +68,17 @@ export function AppNav({ userEmail }: AppNavProps) {
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
-            <Link key={item.href} href={item.href} className="flex-1" onClick={closeMore}>
-              <button
-                className={`flex w-full flex-col items-center gap-0.5 rounded-md py-2 text-xs transition-colors ${
-                  isActive ? "text-primary" : "text-muted-foreground"
-                }`}
-                data-testid={`${item.testId}-mobile`}
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="truncate">{t(item.labelKey)}</span>
-              </button>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-1 flex-col items-center gap-0.5 rounded-md py-2 text-xs transition-colors ${
+                isActive ? "text-primary" : "text-muted-foreground"
+              }`}
+              onClick={closeMore}
+              data-testid={`${item.testId}-mobile`}
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="truncate">{t(item.labelKey)}</span>
             </Link>
           );
         })}
@@ -94,6 +88,7 @@ export function AppNav({ userEmail }: AppNavProps) {
             moreOpen ? "text-primary" : "text-muted-foreground"
           }`}
           onClick={() => setMoreOpen((prev) => !prev)}
+          aria-expanded={moreOpen}
           data-testid="mobile-more-trigger"
         >
           <Ellipsis className="h-5 w-5" />
