@@ -215,6 +215,7 @@ export function CharacterSheet({
     classGroups,
     encumbrance: encumbranceLevel,
     ignoreEncumbrance: character.ignore_encumbrance,
+    isMagicalProtection: equippedArmor?.armor?.is_magical_protection ?? false,
   });
 
   function update(field: keyof CharacterRow, value: string | number | null) {
@@ -395,18 +396,15 @@ export function CharacterSheet({
               {ts("shareButton")}
             </Button>
           )}
-          {showSpells && (
-            <Link href={`/characters/${character.id}/spellbook`}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                data-testid="sheet-spellbook-button"
-              >
-                {tc("spellbook")}
-              </Button>
-            </Link>
-          )}
+          <Link href={`/characters/${character.id}/play`}>
+            <Button
+              size="sm"
+              className="w-full bg-primary/20 font-heading text-primary hover:bg-primary/30"
+              data-testid="sheet-play-button"
+            >
+              {tc("playMode")}
+            </Button>
+          </Link>
           <Link href={`/characters/${character.id}/print`}>
             <Button variant="outline" size="sm" className="w-full" data-testid="sheet-print-button">
               {tc("printView")}

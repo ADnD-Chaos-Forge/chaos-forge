@@ -1,7 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { loginAsTestUser } from "./helpers/auth";
 import { CharacterSheetPage } from "./pages/character-sheet.page";
-import { SpellbookPage } from "./pages/spellbook.page";
 import { LoginPage } from "./pages/login.page";
 
 test.describe("Login Page", () => {
@@ -26,10 +25,12 @@ test.describe("Character Sheet — Owner", () => {
     await loginAsTestUser(page);
     const sheet = new CharacterSheetPage(page);
 
-    // Navigate to Gor (owned by test user)
+    // Navigate to Gor (owned by test user) → choice page → manage
     const firstCard = page.locator("a", { hasText: "Gor" });
     await expect(firstCard).toBeVisible({ timeout: 10000 });
     await firstCard.click();
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
+    await page.getByTestId("character-manage-link").click();
     await sheet.container.waitFor({ timeout: 30000 });
 
     // Character name visible
@@ -87,6 +88,7 @@ test.describe("Character Sheet — Read-Only", () => {
     const elara = page.locator("a", { hasText: "Elara" });
     await expect(elara).toBeVisible({ timeout: 10000 });
     await elara.click();
+    // Non-owner is redirected directly to manage (no choice page)
     await sheet.container.waitFor({ timeout: 30000 });
 
     // Delete button should NOT be visible for non-owner
@@ -103,49 +105,32 @@ test.describe("Loading & Navigation", () => {
   });
 });
 
-test.describe("Spellbook", () => {
-  test("caster character shows spellbook button and page loads", async ({ page }) => {
+test.describe("Character Choice Page", () => {
+  test("shows manage and play options, both navigate correctly", async ({ page }) => {
     test.setTimeout(60000);
     await loginAsTestUser(page);
-    const sheet = new CharacterSheetPage(page);
 
-    // Elara is owned by another user, so she's in the "Other Characters" section
-    const otherSection = page.getByTestId("other-characters-section");
-    if (await otherSection.isVisible()) {
-      await otherSection.locator("summary").click();
-    }
-
-    const elara = page.locator("a", { hasText: "Elara" });
-    await expect(elara).toBeVisible({ timeout: 10000 });
-    await elara.click();
-    await sheet.container.waitFor({ timeout: 30000 });
-
-    // Spellbook button should be visible for caster
-    await expect(sheet.spellbookButton).toBeVisible({ timeout: 5000 });
-    await sheet.spellbookButton.click();
-
-    // Spellbook page loads
-    const spellbook = new SpellbookPage(page);
-    await expect(spellbook.container).toBeVisible({ timeout: 15000 });
-    await expect(spellbook.backLink).toBeVisible();
-    await expect(spellbook.resources).toBeVisible();
-    await expect(spellbook.searchInput).toBeVisible();
-    await expect(spellbook.filterAll).toBeVisible();
-  });
-
-  test("non-caster character has no spellbook button", async ({ page }) => {
-    test.setTimeout(60000);
-    await loginAsTestUser(page);
-    const sheet = new CharacterSheetPage(page);
-
-    // Navigate to Gor (fighter, no spells)
+    // Navigate to Gor (fighter)
     const gor = page.locator("a", { hasText: "Gor" });
     await expect(gor).toBeVisible({ timeout: 10000 });
     await gor.click();
-    await sheet.container.waitFor({ timeout: 30000 });
 
-    // Spellbook button should NOT be visible for fighter
-    await expect(sheet.spellbookButton).not.toBeVisible({ timeout: 3000 });
+    // Choice page loads with both options
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId("character-manage-link")).toBeVisible();
+    await expect(page.getByTestId("character-play-link")).toBeVisible();
+
+    // Click play → play mode loads
+    await page.getByTestId("character-play-link").click();
+    await expect(page.getByTestId("play-mode")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId("play-hp-bar")).toBeVisible();
+
+    // Go back and click manage → character sheet loads
+    await page.goBack();
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 10000 });
+    await page.getByTestId("character-manage-link").click();
+    const sheet = new CharacterSheetPage(page);
+    await sheet.container.waitFor({ timeout: 30000 });
   });
 });
 
@@ -158,6 +143,8 @@ test.describe("Print View", () => {
     const gor = page.locator("a", { hasText: "Gor" });
     await expect(gor).toBeVisible({ timeout: 10000 });
     await gor.click();
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
+    await page.getByTestId("character-manage-link").click();
     await sheet.container.waitFor({ timeout: 30000 });
 
     await sheet.printButton.click();

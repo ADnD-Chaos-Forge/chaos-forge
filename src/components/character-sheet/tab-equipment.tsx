@@ -90,7 +90,13 @@ export function TabEquipment({
     weight: "",
     cost_gp: "",
   });
-  const [customArmor, setCustomArmor] = useState({ name: "", ac: "", weight: "", cost_gp: "" });
+  const [customArmor, setCustomArmor] = useState({
+    name: "",
+    ac: "",
+    weight: "",
+    cost_gp: "",
+    is_magical_protection: false,
+  });
 
   const [showAddInventory, setShowAddInventory] = useState(false);
   const [inventorySearch, setInventorySearch] = useState("");
@@ -146,6 +152,7 @@ export function TabEquipment({
     classGroups,
     encumbrance: encumbranceLevel,
     ignoreEncumbrance,
+    isMagicalProtection: equippedArmor?.armor?.is_magical_protection ?? false,
   });
 
   const equippedItems = equipment.filter((e) => e.equipped);
@@ -267,6 +274,7 @@ export function TabEquipment({
         cost_gp: customArmor.cost_gp ? Number(customArmor.cost_gp) : 0,
         max_movement: 12,
         is_custom: true,
+        is_magical_protection: customArmor.is_magical_protection,
         created_by: userId,
       })
       .select()
@@ -274,7 +282,7 @@ export function TabEquipment({
 
     if (!error && data) {
       await addItem("armor", data.id);
-      setCustomArmor({ name: "", ac: "", weight: "", cost_gp: "" });
+      setCustomArmor({ name: "", ac: "", weight: "", cost_gp: "", is_magical_protection: false });
       setShowCustomArmorForm(false);
     }
     setLoading(false);
@@ -939,6 +947,20 @@ export function TabEquipment({
                             data-testid="custom-armor-cost"
                           />
                         </div>
+                        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                          <input
+                            type="checkbox"
+                            checked={customArmor.is_magical_protection}
+                            onChange={(e) =>
+                              setCustomArmor({
+                                ...customArmor,
+                                is_magical_protection: e.target.checked,
+                              })
+                            }
+                            data-testid="custom-armor-magical-protection"
+                          />
+                          {t("magicalProtection")}
+                        </label>
                         <div className="flex gap-2">
                           <Button
                             variant="default"
@@ -954,7 +976,13 @@ export function TabEquipment({
                             size="sm"
                             onClick={() => {
                               setShowCustomArmorForm(false);
-                              setCustomArmor({ name: "", ac: "", weight: "", cost_gp: "" });
+                              setCustomArmor({
+                                name: "",
+                                ac: "",
+                                weight: "",
+                                cost_gp: "",
+                                is_magical_protection: false,
+                              });
                             }}
                             data-testid="custom-armor-cancel"
                           >

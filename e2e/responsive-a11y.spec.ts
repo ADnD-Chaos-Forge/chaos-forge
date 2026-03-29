@@ -56,10 +56,12 @@ test.describe("Mobile Responsive (iPhone 13)", () => {
     test.setTimeout(60000);
     await page.setViewportSize(MOBILE_VIEWPORT);
     await loginAsTestUser(page);
-    // Navigate to first character
+    // Navigate to first character → choice page → manage
     const firstCard = page.locator("[data-testid^='character-card-']").first();
     await expect(firstCard).toBeVisible({ timeout: 10000 });
     await firstCard.click();
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
+    await page.getByTestId("character-manage-link").click();
     // Tabs should be visible and wrapped (not scrolling)
     const tabs = page.getByTestId("sheet-tabs");
     await expect(tabs).toBeVisible({ timeout: 15000 });
@@ -142,6 +144,8 @@ test.describe("Accessibility — Authenticated Pages (WCAG 2 AA)", () => {
     const firstCard = page.locator("[data-testid^='character-card-']").first();
     await expect(firstCard).toBeVisible({ timeout: 10000 });
     await firstCard.click();
+    await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
+    await page.getByTestId("character-manage-link").click();
     await page.getByTestId("sheet-tabs").waitFor({ timeout: 30000 });
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
     const critical = results.violations.filter((v) => v.impact === "critical");
