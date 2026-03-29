@@ -39,6 +39,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ShareDialog } from "./share-dialog";
+import { Share2, Swords, Printer, EyeOff, Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
 import type {
   CharacterRow,
@@ -404,7 +405,7 @@ export function CharacterSheet({
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {isOwner && (
             <Button
               variant="outline"
@@ -412,21 +413,24 @@ export function CharacterSheet({
               onClick={() => setShowShareDialog(true)}
               data-testid="sheet-share-button"
             >
-              {ts("shareButton")}
+              <Share2 className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">{ts("shareButton")}</span>
             </Button>
           )}
           <Link href={`/characters/${character.id}/play`}>
             <Button
               size="sm"
-              className="w-full bg-primary/20 font-heading text-primary hover:bg-primary/30"
+              className="bg-primary/20 font-heading text-primary hover:bg-primary/30"
               data-testid="sheet-play-button"
             >
-              {tc("playMode")}
+              <Swords className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">{tc("playMode")}</span>
             </Button>
           </Link>
           <Link href={`/characters/${character.id}/print`}>
-            <Button variant="outline" size="sm" className="w-full" data-testid="sheet-print-button">
-              {tc("printView")}
+            <Button variant="outline" size="sm" data-testid="sheet-print-button">
+              <Printer className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">{tc("printView")}</span>
             </Button>
           </Link>
           {dirty && isOwner && (
@@ -460,7 +464,17 @@ export function CharacterSheet({
               }}
               data-testid="sheet-toggle-active-button"
             >
-              {character.is_active !== false ? tc("setInactive") : tc("setActive")}
+              {character.is_active !== false ? (
+                <>
+                  <EyeOff className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{tc("setInactive")}</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{tc("setActive")}</span>
+                </>
+              )}
             </Button>
           )}
           {isOwner && (
@@ -470,7 +484,8 @@ export function CharacterSheet({
               onClick={() => setShowDeleteConfirm(true)}
               data-testid="sheet-delete-button"
             >
-              {tcom("delete")}
+              <Trash2 className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">{tcom("delete")}</span>
             </Button>
           )}
         </div>
@@ -500,7 +515,7 @@ export function CharacterSheet({
 
       <Tabs defaultValue="stats" className="w-full">
         <TabsList
-          className="flex h-auto w-full flex-wrap justify-start gap-0.5"
+          className="flex w-full gap-0.5 overflow-x-auto scrollbar-hide sm:flex-wrap sm:overflow-x-visible"
           data-testid="sheet-tabs"
         >
           <TabsTrigger value="stats" data-testid="tab-trigger-stats">

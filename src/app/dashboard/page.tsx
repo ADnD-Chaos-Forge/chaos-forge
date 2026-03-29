@@ -75,7 +75,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6" data-testid="dashboard-page">
+    <div className="flex flex-1 flex-col gap-4 p-4 sm:gap-6 sm:p-6" data-testid="dashboard-page">
       <h1 className="font-heading text-3xl text-primary">{t("title")}</h1>
 
       {/* Stats row */}

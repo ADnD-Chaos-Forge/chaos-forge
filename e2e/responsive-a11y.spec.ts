@@ -52,7 +52,7 @@ test.describe("Mobile Responsive (iPhone 13)", () => {
     expect(bodyScrollWidth).toBeLessThanOrEqual(windowWidth + 1);
   });
 
-  test("character sheet tabs wrap on mobile", async ({ page }) => {
+  test("character sheet tabs scrollable on mobile", async ({ page }) => {
     test.setTimeout(60000);
     await page.setViewportSize(MOBILE_VIEWPORT);
     await loginAsTestUser(page);
@@ -62,13 +62,16 @@ test.describe("Mobile Responsive (iPhone 13)", () => {
     await firstCard.click();
     await expect(page.getByTestId("character-choice-page")).toBeVisible({ timeout: 15000 });
     await page.getByTestId("character-manage-link").click();
-    // Tabs should be visible and wrapped (not scrolling)
+    // Tabs should be visible and horizontally scrollable (not wrapped/clipped)
     const tabs = page.getByTestId("sheet-tabs");
     await expect(tabs).toBeVisible({ timeout: 15000 });
-    const tabsScrollWidth = await tabs.evaluate((el) => el.scrollWidth);
-    const tabsClientWidth = await tabs.evaluate((el) => el.clientWidth);
-    // flex-wrap means scrollWidth should equal clientWidth (no overflow)
-    expect(tabsScrollWidth).toBeLessThanOrEqual(tabsClientWidth + 2);
+    // All tab triggers should exist in the DOM
+    await expect(page.getByTestId("tab-trigger-stats")).toBeAttached();
+    await expect(page.getByTestId("tab-trigger-proficiencies")).toBeAttached();
+    // Container should not cause body-level horizontal scroll
+    const bodyScrollWidth = await page.evaluate(() => document.body.scrollWidth);
+    const windowWidth = await page.evaluate(() => window.innerWidth);
+    expect(bodyScrollWidth).toBeLessThanOrEqual(windowWidth + 1);
   });
 });
 

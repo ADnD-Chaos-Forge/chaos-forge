@@ -73,7 +73,7 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${cinzel.variable} ${marcellus.variable} ${crimsonText.variable} ${geistMono.variable} h-full antialiased dark`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col overflow-x-hidden">
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
             <TooltipProvider>
