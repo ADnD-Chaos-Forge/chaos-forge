@@ -69,3 +69,8 @@ ressources/books/
 # large reference material (copyrighted rulebooks) + upload scratch
 ressources/monsters/
 ressources/upload/
+
+# Zauberkarten-Generator (lokale Print-Assets)
+scripts/spell-cards/
+
+rules-js
