@@ -1336,7 +1336,10 @@
     "perWeek": "{count}×/Woche",
     "abilityUsed": "Eingesetzt",
     "abilityAvailable": "Verfügbar",
-    "coldDamage": "+1d6 Kälteschaden"
+    "coldDamage": "+1d6 Kälteschaden",
+    "thiefBonusHide": "Im Schatten verstecken: +{bonus}%",
+    "thiefBonusMove": "Leise bewegen: +{bonus}%",
+    "unlimited": "Unbegrenzt"
   },
   "rulebook": {
     "title": "Regelwerk & App-Hilfe",
