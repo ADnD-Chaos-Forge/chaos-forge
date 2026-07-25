@@ -339,7 +339,7 @@ Dependencies: **Phase 1**
 Das Herzstück: zwei reine Module ohne DB- und ohne React-Abhängigkeit. Beide sind vollständig unit-testbar und tragen die gesamte Fachlogik des Features.
 
 **Tasks**:
-- [ ] `src/lib/scan/character-diff.test.ts` anlegen — Tests zuerst:
+- [x] `src/lib/scan/character-diff.test.ts` anlegen — Tests zuerst:
   - identischer Wert erzeugt **keine** Change-Zeile
   - skalare Abweichung erzeugt genau eine Zeile mit korrekter `category`
   - `printed` ≠ `handwritten` → eine Zeile, `source: "handwritten"`, `conflict` gefüllt, `proposedValue` = handschriftlicher Wert
@@ -350,8 +350,8 @@ Das Herzstück: zwei reine Module ohne DB- und ohne React-Abhängigkeit. Beide s
   - Level der primären Klasse erzeugt **eine** Zeile, deren `target` `characters` und `character_classes` bedient
   - leerer Scan (nichts erkannt) → leeres `ScanChange[]`, kein Crash
   - `null`/fehlende Felder im Payload werden übersprungen, nicht als „Wert gelöscht" interpretiert
-- [ ] `src/lib/scan/character-diff.ts` implementieren — `buildChangeSet(snapshot: CharacterSnapshot, payload: ScannedUpdatePayload, catalogs: MatchCatalogs): ScanChange[]`; `catalogs` enthält die für Matching nötigen Stammdaten (Waffen, Rüstungen, NWPs, Zauber), damit das Modul DB-frei bleibt
-- [ ] `src/lib/scan/character-apply.test.ts` anlegen — Tests zuerst:
+- [x] `src/lib/scan/character-diff.ts` implementieren — `buildChangeSet(snapshot: CharacterSnapshot, payload: ScannedUpdatePayload, catalogs: MatchCatalogs): ScanChange[]`; `catalogs` enthält die für Matching nötigen Stammdaten (Waffen, Rüstungen, NWPs, Zauber), damit das Modul DB-frei bleibt
+- [x] `src/lib/scan/character-apply.test.ts` anlegen — Tests zuerst:
   - nur ausgewählte Changes landen im Plan
   - vom Nutzer editierter Wert gewinnt über den Scan-Vorschlag
   - Tabellen mit Unique-Constraint → `upsert` mit korrektem `onConflict`
@@ -360,13 +360,13 @@ Das Herzstück: zwei reine Module ohne DB- und ohne React-Abhängigkeit. Beide s
   - Level-Change der primären Klasse → zwei Operationen (`characters` + `character_classes`) aus einer Change-Zeile
   - Operationen sind nach Tabelle gruppiert (Bulk statt Einzel-Roundtrips)
   - leere Auswahl → leerer Plan
-- [ ] `src/lib/scan/character-apply.ts` implementieren — `buildApplyPlan(changes: SelectedChange[], snapshot: CharacterSnapshot): ApplyOperation[]`, rein und DB-frei
-- [ ] `src/lib/scan/execute-apply-plan.ts` implementieren — `executeApplyPlan(supabase, ops)`: gruppiert Operationen nach `(table, op)` zu Bulk-Calls, sammelt Fehler in `ApplyResult { applied: number; failed: FailedOperation[] }` statt sie wie der Create-Import (`import/page.tsx:387-390`) auf die Konsole zu loggen
+- [x] `src/lib/scan/character-apply.ts` implementieren — `buildApplyPlan(changes: SelectedChange[], snapshot: CharacterSnapshot): ApplyOperation[]`, rein und DB-frei
+- [x] `src/lib/scan/execute-apply-plan.ts` implementieren — `executeApplyPlan(supabase, ops)`: gruppiert Operationen nach `(table, op)` zu Bulk-Calls, sammelt Fehler in `ApplyResult { applied: number; failed: FailedOperation[] }` statt sie wie der Create-Import (`import/page.tsx:387-390`) auf die Konsole zu loggen
 
 **Automated Verification**:
-- [ ] `character-diff.test.ts` (Unit) passes
-- [ ] `character-apply.test.ts` (Unit) passes
-- [ ] `npm run verify` passes
+- [x] `character-diff.test.ts` (Unit) passes
+- [x] `character-apply.test.ts` (Unit) passes
+- [x] `npm run verify` passes
 
 ---
 
