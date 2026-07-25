@@ -36,6 +36,11 @@ test.describe("Auth-protected routes redirect to login", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
+  test("should redirect /characters/[id]/rescan to /login without auth", async ({ page }) => {
+    await page.goto("/characters/00000000-0000-0000-0000-000000000000/rescan");
+    await expect(page).toHaveURL(/\/login/);
+  });
+
   test("should redirect /characters/import to /login without auth", async ({ page }) => {
     await page.goto("/characters/import");
     await expect(page).toHaveURL(/\/login/);

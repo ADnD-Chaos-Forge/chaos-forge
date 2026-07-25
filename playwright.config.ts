@@ -47,6 +47,7 @@ export default defineConfig({
         "master.spec.ts",
         "notifications.spec.ts",
         "magic-items.spec.ts",
+        "character-rescan.spec.ts",
       ],
     },
     // Mobile tests — use Pixel 5 (Chromium-based) for reliable mobile viewport in CI

@@ -49,8 +49,9 @@ import { AvatarDisplay } from "@/components/avatar-display";
 import { ImageLightbox } from "@/components/image-lightbox";
 import { WebresearchBadge } from "@/components/webresearch-badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { ApprovalGate } from "@/components/approval-gate";
 import { ShareDialog } from "./share-dialog";
-import { Share2, Printer, EyeOff, Eye, Trash2, Copy, Plus, X } from "lucide-react";
+import { Share2, Printer, EyeOff, Eye, Trash2, Copy, Plus, X, ScanLine } from "lucide-react";
 import { CharacterModeNav } from "@/components/character-mode-nav";
 import Link from "next/link";
 import type {
@@ -146,6 +147,7 @@ export function CharacterSheet({
   const tc = useTranslations("characters");
   const tcom = useTranslations("common");
   const ts = useTranslations("sharing");
+  const tr = useTranslations("rescan");
   const [character, setCharacter] = useState(initial);
   const [charClasses, setCharClasses] = useState(initialClasses);
   const [equipmentState, setEquipment] = useState(equipment);
@@ -886,6 +888,16 @@ export function CharacterSheet({
               <span className="hidden sm:inline">{tc("printView")}</span>
             </Button>
           </Link>
+          {isOwner && !character.is_npc && (
+            <ApprovalGate fallback={null}>
+              <Link href={`${basePath}/${character.id}/rescan`}>
+                <Button variant="outline" size="sm" data-testid="sheet-rescan-button">
+                  <ScanLine className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{tr("title")}</span>
+                </Button>
+              </Link>
+            </ApprovalGate>
+          )}
           {dirty && isOwner && (
             <Button
               size="sm"
