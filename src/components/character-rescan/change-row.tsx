@@ -77,23 +77,27 @@ export function ChangeRow({ change, selected, value, onToggle, onValueChange }: 
       className="rounded-lg border border-border/40 bg-background/20 px-3 py-2 transition-colors hover:bg-background/40"
       data-testid={testId}
     >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={(e) => onToggle(e.target.checked)}
-          className="h-4 w-4 shrink-0 rounded"
-          aria-label={label}
-          data-testid={`${testId}-checkbox`}
-        />
-
-        <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm">
+      {/* Auf schmalen Viewports stapeln sich Label und Werte — sonst quetscht
+          die Wertespalte das Label auf ein einzelnes Zeichen zusammen, und
+          genau am Handy wird der Bogen abfotografiert. */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
+        <span className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(e) => onToggle(e.target.checked)}
+            className="h-4 w-4 shrink-0 rounded"
+            aria-label={label}
+            data-testid={`${testId}-checkbox`}
+          />
           <KindIcon kind={change.kind} />
-          <span className="truncate">{label}</span>
+          <span className="truncate" data-testid={`${testId}-label`}>
+            {label}
+          </span>
         </span>
 
         {/* Vorher → Nachher */}
-        <span className="flex items-center gap-2 text-sm">
+        <span className="flex items-center gap-2 pl-6 text-sm sm:pl-0">
           {change.kind !== "list-add" && (
             <span
               className="text-muted-foreground line-through decoration-muted-foreground/40"
@@ -114,26 +118,28 @@ export function ChangeRow({ change, selected, value, onToggle, onValueChange }: 
               type={change.valueType === "number" ? "number" : "text"}
               value={value === null || value === undefined ? "" : String(value)}
               onChange={(e) => handleEdit(e.target.value)}
-              className="h-8 w-28 text-sm"
+              className={`h-8 text-sm ${change.valueType === "number" ? "w-24" : "w-full sm:w-48"}`}
               aria-label={label}
               data-testid={`${testId}-input`}
             />
           )}
-        </span>
 
-        <span
-          className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground"
-          title={
-            change.source === "handwritten" ? t("sourceHandwrittenTitle") : t("sourcePrintedTitle")
-          }
-          data-testid={`${testId}-source`}
-        >
-          {change.source === "handwritten" ? (
-            <PenLine className="h-3 w-3" aria-hidden />
-          ) : (
-            <Keyboard className="h-3 w-3" aria-hidden />
-          )}
-          {change.source === "handwritten" ? t("sourceHandwritten") : t("sourcePrinted")}
+          <span
+            className="ml-auto flex shrink-0 items-center gap-1 text-xs text-muted-foreground sm:ml-0"
+            title={
+              change.source === "handwritten"
+                ? t("sourceHandwrittenTitle")
+                : t("sourcePrintedTitle")
+            }
+            data-testid={`${testId}-source`}
+          >
+            {change.source === "handwritten" ? (
+              <PenLine className="h-3 w-3" aria-hidden />
+            ) : (
+              <Keyboard className="h-3 w-3" aria-hidden />
+            )}
+            {change.source === "handwritten" ? t("sourceHandwritten") : t("sourcePrinted")}
+          </span>
         </span>
       </div>
 

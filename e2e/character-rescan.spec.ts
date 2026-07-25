@@ -156,3 +156,31 @@ test.describe("Charakterbogen-Rescan", () => {
     await expect(new RescanPage(page).dropzone).toBeVisible();
   });
 });
+
+test.describe("Charakterbogen-Rescan — Mobile", () => {
+  test.use({ viewport: { width: 375, height: 800 } });
+
+  test("keeps change labels readable on a phone", async ({ page, request }) => {
+    const id = await createRescanChar(request, "QA-Rescan-Mobil");
+    const rescan = new RescanPage(page);
+
+    await rescan.mockScan({ printed: { hpMax: 29, goldGp: 200 } });
+    await rescan.goto(id);
+    await rescan.uploadAndScan();
+    await expect(rescan.changeList).toBeVisible();
+
+    // Das Label muss lesbar bleiben — auf schmalen Viewports wurde es früher
+    // auf ein einzelnes Zeichen zusammengedrückt. Bei `truncate` bleibt der
+    // Textinhalt vollständig, deshalb wird gegen den Überlauf geprüft.
+    const label = rescan.row("core:hp_max").getByTestId("rescan-change-core:hp_max-label");
+    await expect(label).toHaveText("Max. Trefferpunkte");
+    const clipped = await label.evaluate((el) => el.scrollWidth > el.clientWidth + 1);
+    expect(clipped).toBe(false);
+
+    // Und die Seite darf dabei nicht horizontal überlaufen.
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+});
