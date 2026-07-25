@@ -198,6 +198,17 @@ Muster, die im aktuellen Code durchgängig verwendet werden:
 - **UI-Konvention:** Glassmorphism-Container (`glass glow-neutral rounded-xl p-6`), `data-testid` auf jedem interaktiven Element, i18n über `useTranslations(<namespace>)`, Listen-Testids mit Index-Suffix.
 - **Server-Components laden, Client-Components mutieren:** `manage/page.tsx` lädt per `Promise.all`, `CharacterSheet` hält den State und schreibt zurück.
 
+## Nachtrag (2026-07-25, nach Umsetzung)
+
+Die unten gelisteten offenen Punkte wurden vom Rescan-Feature (`docs/agents/plans/2026-07-25-character-sheet-rescan-update.md`) adressiert:
+
+- **Entitäts-Identität bei wiederholtem Scan:** gelöst über Namens-Fuzzy-Match in `src/lib/scan/character-diff.ts` (`collectOwnedItems()` + `matchesName()`). Ein Treffer erzeugt eine Änderung, kein Treffer einen Neuzugang; fehlende Einträge werden nur als abgewählter Vorschlag gelistet, nie automatisch gelöscht.
+- **Handschrift-Regel:** der Create-Prompt ignoriert Handschrift weiterhin. Der neue Update-Prompt (`CHARACTER_UPDATE_SCAN_PROMPT`) erfasst gedruckt und handschriftlich getrennt; bei Konflikt gewinnt die Handschrift, beide Werte bleiben in der UI sichtbar und umschaltbar.
+- **`gold_ep`, `character_languages`, `deity`, `priesthood`, `traits`/`disadvantages`, `notes`:** alle im Update-Schema und im Diff abgedeckt. Der Create-Import erfasst sie unverändert nicht.
+- **Fehlender `is_approved`-Check in `/api/scan-character`:** nachgerüstet, gilt für beide Modi.
+
+Weiterhin offen: der Create-Import (`src/app/characters/import/page.tsx`) schreibt nach wie vor client-seitig in einer ~360-Zeilen-Funktion und hat keinen eigenen Komponenten- oder E2E-Test. Er nutzt jetzt immerhin die extrahierten, unit-getesteten Matcher aus `src/lib/scan/character-matching.ts`.
+
 ## Open Questions
 
 - Es existiert **kein** Konzept für Entitäts-Identität bei wiederholtem Scan: `character_equipment`/`character_inventory` haben keine natürliche Unique-Spalte, `character_weapon_proficiencies` identifiziert über den (normalisierten) Namen. Wie Wiedererkennung „gleicher Gegenstand" beim zweiten Scan bestimmt werden soll, ist im Code nicht vorgezeichnet.

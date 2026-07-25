@@ -4,7 +4,7 @@ git_commit: 3294b768a0d0f62fcf62e2a429cf9ac20020502a
 branch: feat/isolde-epic-items-shadowdancer-ring
 topic: "Charakterbogen-Scan zum Aktualisieren eines bestehenden Charakters (Rescan + Review-Liste)"
 tags: [plan, character-import, scan-character, rescan, diff-engine, review-ui]
-status: draft
+status: in-progress
 ---
 
 # Charakterbogen-Rescan mit Änderungs-Review Implementation Plan
@@ -409,14 +409,14 @@ Erst hier wird das Feature für den Nutzer sichtbar. Die UI ist bewusst dünn: s
 Dependencies: **Phase 3**
 
 **Tasks**:
-- [ ] `e2e/pages/rescan.page.ts` anlegen — Page Object nach dem Muster von `e2e/pages/character-sheet.page.ts`
-- [ ] `e2e/character-rescan.spec.ts` anlegen — Scan-Response mit `page.route("**/api/scan-character*", ...)` mocken (Muster: `e2e/rulebook-chat.spec.ts:46`), damit der Test deterministisch und ohne API-Kosten läuft. Fälle: Änderungsliste erscheint mit korrekten Default-Häkchen; Abwählen reduziert den Zähler; „Übernehmen" schreibt und leitet auf `/manage` weiter; der geschriebene Wert steht danach im Bogen; Scan ohne Änderungen zeigt `noChanges`; `/characters/[id]/rescan` ohne Login leitet auf `/login` (Muster: `e2e/auth-redirect.spec.ts:39-40`)
+- [x] `e2e/pages/rescan.page.ts` anlegen — Page Object nach dem Muster von `e2e/pages/character-sheet.page.ts`
+- [x] `e2e/character-rescan.spec.ts` anlegen — Scan-Response mit `page.route("**/api/scan-character*", ...)` mocken (Muster: `e2e/rulebook-chat.spec.ts:46`), damit der Test deterministisch und ohne API-Kosten läuft. Fälle: Änderungsliste erscheint mit korrekten Default-Häkchen; Abwählen reduziert den Zähler; „Übernehmen" schreibt und leitet auf `/manage` weiter; der geschriebene Wert steht danach im Bogen; Scan ohne Änderungen zeigt `noChanges`; `/characters/[id]/rescan` ohne Login leitet auf `/login` (Muster: `e2e/auth-redirect.spec.ts:39-40`)
 - [ ] Explorativer Test mit `playwright-cli` gemäß CLAUDE.md Phase 4 — für jeden gefundenen Bug zuerst einen fehlschlagenden Test, dann den Fix
-- [ ] `CLAUDE.md` aktualisieren — Projektstruktur (`characters/[id]/rescan/`, `components/character-rescan/`, `lib/scan/character-*.ts`), Roadmap-Punkt 20 „Charakterbogen-Rescan", Testzahlen in Tech-Stack
-- [ ] `docs/agents/research/2026-07-25-character-sheet-rescan-update.md` — Status-Vermerk, dass die dort gelisteten offenen Punkte (fehlender `is_approved`-Check, `gold_ep`, Sprachen, Gottheit/Priesterschaft, Traits, Notizen) durch dieses Feature adressiert wurden
+- [x] `CLAUDE.md` aktualisieren — Projektstruktur (`characters/[id]/rescan/`, `components/character-rescan/`, `lib/scan/character-*.ts`), Roadmap-Punkt 20 „Charakterbogen-Rescan", Testzahlen in Tech-Stack
+- [x] `docs/agents/research/2026-07-25-character-sheet-rescan-update.md` — Status-Vermerk, dass die dort gelisteten offenen Punkte (fehlender `is_approved`-Check, `gold_ep`, Sprachen, Gottheit/Priesterschaft, Traits, Notizen) durch dieses Feature adressiert wurden
 
 **Automated Verification**:
-- [ ] `e2e/character-rescan.spec.ts` (E2E) passes
+- [x] `e2e/character-rescan.spec.ts` (E2E) passes
 - [ ] `npm run test:e2e` passes vollständig (keine Regression in den bestehenden 120+ Tests)
 - [ ] `npm run verify` passes
 

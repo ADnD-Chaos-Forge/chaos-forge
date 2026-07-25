@@ -14,8 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Datenbank & Auth:** Supabase (PostgreSQL + Row Level Security)
 - **Styling:** Tailwind CSS v4 + shadcn/ui + Glassmorphism Design-System
 - **i18n:** next-intl (Cookie-basiert, DE/EN) + `localized()` Utility für DB-Daten
-- **Unit-/Integrationstests:** Vitest (1564 Tests)
-- **E2E-Tests:** Playwright (120+ E2E inkl. Responsive, A11y, Sidebar, XP-Management, GM-Dashboard, Master, Mobile, Approval-Flow)
+- **Unit-/Integrationstests:** Vitest (1764 Tests)
+- **E2E-Tests:** Playwright (130+ E2E inkl. Responsive, A11y, Sidebar, XP-Management, GM-Dashboard, Master, Mobile, Approval-Flow, Rescan)
 - **Linting/Formatting:** ESLint (next config) + Prettier (0 Warnings, 0 Errors)
 - **Hosting:** Vercel (Free-Tier)
 - **AI:** Anthropic Claude API (Character Import, Monster Import, Session Summaries) + Google Gemini (Imagen für Bild-Generierung)
@@ -48,9 +48,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 src/
   app/                    # Next.js App Router (Pages, Layouts)
     characters/[id]/      # Charakterbogen, Druckansicht, Zauberbuch, Play Mode, Epische Ausrüstung
+    characters/[id]/rescan/ # Bogen erneut scannen → kuratierbare Änderungsliste
     characters/new/       # Charakter-Erstellung (Auswahl: Wizard oder Import)
     characters/import/    # OCR/Vision-Import (Claude API)
-    api/scan-character/   # Claude Vision Endpoint für Character-Import
+    api/scan-character/   # Claude Vision Endpoint für Character-Import (mode=create|update)
     api/scan-monster/     # Claude Vision Endpoint für Monster-Import (Haiku/Sonnet Precise Mode)
     api/rulebook-chat/    # Claude Endpoint für GM Rulebook Chat
     dashboard/            # Dashboard mit 8 Widgets (Zitat, NPCs, XP, Tags, Party-Übersicht, etc.)
@@ -68,6 +69,7 @@ src/
     app-nav.tsx           # Mobile Bottom-Nav + More-Menu
     master/               # GM-Dashboard: Immersive PIN-Gate (Chaos-Artwork), Party Panel (Council of Heroes mit Aggregat-Stats), Gold Panel (Treasury Vault mit Multi-Select + Split), Items Panel (CRUD + In-Use-Check), Bestiary Panel (Monster CRUD + AI Import + Precise-Mode-Toggle), MonsterForm (Create/Edit), MonsterVariantPicker (Multi-Variant-Scan), NPCs, Combat Simulator, Bookmarks, Rulebook Chat, Sidebar, Bottom Nav
     notifications/        # Notification Bell mit Delete-Funktion (einzeln + alle)
+    character-rescan/     # Rescan: Upload-Panel, Änderungsliste, Änderungs-Zeile
     epic-equipment/       # Epische Ausrüstung (Schadensstufen-Cards, Simple Items, Blade System, Spell Abilities)
     party/                # Party-Inventar (Gold-Panel, Items-Panel, Log-Panel, Loot-Verteilung)
     play-mode/            # Play Mode (Kampf, Zauber, Fähigkeiten, Checks, Wahrnehmung, Inventar, Geldbörse, Untote vertreiben, Gestaltwandlung)
@@ -113,8 +115,13 @@ src/
     rules/
       magic-items.ts      # getMagicItemEffects(equipment) — Aggregiert AC-Bonus, Saves etc. aus character_equipment.magic_effects
     gemini/               # Google Gemini Imagen Client für Bild-Generierung (Rassen, Klassen, Banner)
-    scan/                 # AI-Scan-Prompts
+    scan/                 # AI-Scan-Prompts + Charakterbogen-Rescan-Engine
       monster-scan-prompt.ts # Claude Vision Prompt für Monster-Import (ScannedMonsterVariant-Schema)
+      character-scan-prompt.ts # Create-/Update-Prompt, Typen, parseUpdateScanResponse()
+      character-matching.ts # Fuzzy-Matching gegen Stammdaten (Waffen, NWPs, Zauber), Whitelists
+      character-diff.ts     # buildChangeSet() — DB-Stand vs. Scan-Payload → ScanChange[]
+      character-apply.ts    # buildApplyPlan() — ausgewählte Änderungen → ApplyOperation[]
+      execute-apply-plan.ts # Dünner I/O-Layer mit Fehler-Sammlung
     test/                 # Test-Infrastruktur
       constants.ts        # TEST_DOMAIN (@qa.chaosforge.test), TEST_PRIMARY_EMAIL, TEST_SECONDARY_EMAIL
     hooks/                # Custom React Hooks
@@ -352,3 +359,5 @@ Finaler explorativer Test mit etablierten Testing-Heuristiken und gezielten "Tes
 17. **Immersive Screens & QA-Migration** — PIN-Gate + Login-Screens mit Chaos-Artwork (Parchment-Cards, Party-Background mit allen aktiven Chars), NPC-Card-Layout-Polish + Confirm-Dialog, Bestiary-Header-Redesign (konsistente Buttons + Settings-Cog für Precise-Mode), Test-Domain Migration auf `@qa.chaosforge.test` (RFC .test TLD, zentrale Constants, 0 Spam-Risiko), 5 pre-existing E2E-Failures gefixt ✅
 18. **Landing Page, Tutorial & User-Freigabe** — Landing-Redesign (Hero + 4 Feature-Cards mit Klassen-Glows + How-It-Works + Footer-CTA), Custom Tutorial-Overlay mit Spotlight-Clip-Path (Dashboard, Charakterbogen, Party, Chronik), Rulebook Chat im Dual-Mode (Regeln + App-Hilfe), `profiles.is_approved` mit BEFORE-Trigger auf 20+ Tabellen, Approval-Banner + Realtime, Admin-Approve/Reject-Page `/admin/approve/[id]`, Discord-Webhook-Ping, Legacy-User-Heal-Migration, Larry-Artwork-Replacement via Gemini Image-Edit ✅
 19. **Settings, Legal & Kondensator** — `/settings` (Profil, Theme, Sprache, Tutorial-Reset, DSGVO-Self-Delete), `/impressum` + `/datenschutz` + Footer mit externen Diensten + DSGVO-Rechten, `forceStatOverrides`-Semantik für Epic Items mit `simple_effects.base_<stat>` (Kondensator CON-Fallback: beim Ablegen → CON 5, beim Anlegen → 18), `computeEffectiveMaxHp` Delta-Helper mit asymmetrischer Current-HP-Clamping-Regel (CON↑ max steigt/current bleibt, CON↓ current geclamped), ApprovalGate + Server-403 um Chronik-Actions (Bild-Gen/KI-Summary), KI-Summary max_tokens 500→1500, `skip_tutorials`-Flag für bestehende User ✅
+
+20. **Charakterbogen-Rescan** — Zweiter Scan-Pfad, der einen bestehenden Charakter aktualisiert statt einen neuen anzulegen: `/characters/[id]/rescan` mit kuratierbarer Änderungsliste (jede Änderung ab-/anwählbar und im Wert editierbar). Der Update-Prompt erfasst gedruckte UND handschriftliche Werte getrennt; bei Konflikt gewinnt die Handschrift, beide Werte bleiben sichtbar und umschaltbar. Reine, unit-getestete Pipeline in `src/lib/scan/` (Diff → Apply-Plan → Executor). Entfernungs-Vorschläge, aktuelle TP, Stammdaten und Notizen starten sichtbar-aber-abgewählt; nicht gelesene Felder erzeugen nie einen Vorschlag. Ausrüstung wird per Namens-Fuzzy-Match wiedererkannt. Nebenbei: `is_approved`-Check für `/api/scan-character` nachgerüstet, Matching-Logik aus dem Create-Import extrahiert und erstmals testabgedeckt ✅
