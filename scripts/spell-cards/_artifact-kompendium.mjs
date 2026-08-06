@@ -68,6 +68,7 @@ const BLOCKS = {
   item: { label: "Ausrüstung", note: "Was die aktiven Helden wirklich tragen — mit Besitzer, Effekten aus der Datenbank und geprüftem Artwork" },
   npc: { label: "Chronik-NPCs", note: "Porträt, Ort und Beschreibung aus eurer Chronik — nach Ort sortiert" },
   spielleiter: { label: "Spielleiter", note: "Das Artwork aus dem PIN-Gate des GM-Bereichs" },
+  zustand: { label: "Zustände", note: "Zum Auslegen, solange der Zustand läuft — die Regeln stammen aus den Zauberbeschreibungen eurer eigenen Zauber" },
   zitat: { label: "Zitate", note: "Gesammelte Sprüche aus der Chronik — kein Regelwerk speichert so etwas" },
 };
 
@@ -77,6 +78,7 @@ function describe(file) {
   const rest = stem.slice(block.length + 1);
   if (block === "catrina") return ["Lady Catrina of Tiamat", "Human Crusader 11 · Lawful Neutral"];
   if (block === "spielleiter") return ["Master of Chaos", "Der Spielleiter"];
+  if (block === "zustand") return [rest.replace(/^./, (c) => c.toUpperCase()), "Zustandskarte"];
   if (block === "zitat") return [rest.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase()), "Chronik-Zitat"];
   if (block === "sprocket") return ["Hold Person", "Sprocket · Grad 3 · Enchantment/Charm"];
   if (block === "regel") return RULE_TITLES[rest] || [rest, "Regelkarte"];
@@ -224,9 +226,9 @@ footer{margin-top:20px;padding-top:26px;border-top:1px solid var(--edge);
 <div class="wrap">
 <header class="top">
   <h1>Kompendium</h1>
-  <p class="lede">Das zweite Kartenset für die Chaos-RPG-Runde: die magische Ausrüstung der Helden, das Personenverzeichnis der Chronik und die gesammelten Sprüche — 71 Karten im Tarotformat 70 × 120 mm.</p>
+  <p class="lede">Das zweite Kartenset für die Chaos-RPG-Runde: die magische Ausrüstung der Helden, Zustandskarten zum Auslegen, das Personenverzeichnis der Chronik und die gesammelten Sprüche — 79 Karten im Tarotformat 70 × 120 mm.</p>
   <div class="facts">
-    <span><b>71</b> Karten</span>
+    <span><b>79</b> Karten</span>
     <span><b>898 × 1488</b> px bei 300 dpi</span>
     <span><b>3 mm</b> Beschnitt</span>
     <span>Rückseite: <b>Grimoire</b>, neutral</span>
@@ -235,6 +237,7 @@ footer{margin-top:20px;padding-top:26px;border-top:1px solid var(--edge);
     <a href="#b-catrina">Charakter</a>
     <a href="#b-sprocket">Nachzügler</a>
     <a href="#b-item">Ausrüstung</a>
+    <a href="#b-zustand">Zustände</a>
     <a href="#b-npc">NPCs</a>
     <a href="#b-zitat">Zitate</a>
   </nav>

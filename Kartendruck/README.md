@@ -60,25 +60,28 @@ Die 16 Lernvorschläge (`*_sprocket-neu-*`, erzeugt via `node render-extra-cards
 
 ---
 
-### Zweites Set: `kompendium` (71 Karten)
+### Zweites Set: `kompendium` (79 Karten)
 
 Das zweite Bestellset — kein Helden-Deck, sondern das, was auf keinem Charakterbogen steht. Rückseite ist die neutrale Grimoire-Karte, weil das Set niemandem einzeln gehört.
 
-| Block                  | Karten | Inhalt                                                                      |
-| ---------------------- | ------ | --------------------------------------------------------------------------- |
-| Lady Catrina of Tiamat | **1**  | Referenzkarte (Human Crusader 11), Klasse und Stufe aus `character_classes` |
-| Spielleiter            | **1**  | Das Artwork aus dem PIN-Gate des GM-Bereichs                                |
-| Sprocket — Nachzügler  | **1**  | Hold Person, siehe Nachtrag unten                                           |
-| Ausrüstung             | **9**  | Die magischen Gegenstände der aktiven Helden — mit Besitzer                 |
-| Chronik-NPCs           | **28** | Porträt, Ort und Beschreibung, nach Ort sortiert                            |
-| Zitate                 | **31** | Die gesammelten Sprüche aus der Chronik                                     |
-| **gesamt**             | **71** |                                                                             |
+| Block                  | Karten | Inhalt                                                                                                      |
+| ---------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+| Lady Catrina of Tiamat | **1**  | Referenzkarte (Human Crusader 11), Klasse und Stufe aus `character_classes`                                 |
+| Spielleiter            | **1**  | Das Artwork aus dem PIN-Gate des GM-Bereichs                                                                |
+| Sprocket — Nachzügler  | **1**  | Hold Person, siehe Nachtrag unten                                                                           |
+| Ausrüstung             | **9**  | Die magischen Gegenstände der aktiven Helden — mit Besitzer                                                 |
+| Zustände               | **8**  | Zum Auslegen: Bezaubert, Schlafend, Gehalten, Geblendet, Verängstigt, Unsichtbar, Beschleunigt, Verlangsamt |
+| Chronik-NPCs           | **28** | Porträt, Ort und Beschreibung, nach Ort sortiert                                                            |
+| Zitate                 | **31** | Die gesammelten Sprüche aus der Chronik                                                                     |
+| **gesamt**             | **79** |                                                                                                             |
 
 **Die Ausrüstungskarten zeigen nur, was wirklich jemandem gehört.** Quelle ist `character_equipment` der aktiven Helden, nicht der `magic_items`-Katalog — ein Katalogeintrag, den niemand trägt, ergibt keine Karte für den Spieltisch. Der Besitzer steht als Kopfzeile auf jeder Karte. Larrys Klinge des Wassers fehlt bewusst: die hat als Epic Item schon eine eigene, ausführlichere Karte im ersten Set. Ladungen werden **nicht** gedruckt, nur „Verbrauchsgegenstand" — den Verbrauch führen die Spielenden selbst, eine gedruckte Zahl wäre ab der ersten Sitzung falsch.
 
 **Jedes erzeugte Artwork wird geprüft, bevor es auf eine Karte darf** (`check-art.mjs`, über Gemini). Verworfen wird bei falschem Motiv, sichtbarem Text und abgebildeten Menschen; dekorative Fantasy-Runen sind erwünscht und werden nicht als Text gewertet. Bis zu vier Versuche je Gegenstand. Der Filter ist kein Luxus: Imagen lieferte ein Porträtfoto statt eines Gürtels, den Prompt als Bildunterschrift und einmal ein wolfsähnliches Tier mit Sprechblase. **Der Bildprompt darf den Kartennamen nicht enthalten** — „Short Sword +1/-1" landete sonst als Schriftzug im Bild.
 
 Die NPC-Karten (`node build-npc-cards.mjs --tarot70`) nutzen die Avatare aus dem Supabase-Storage — es wird kein Bild erzeugt, nur geladen und von oben zugeschnitten, damit die Gesichter sitzen. Die Ortsbadge ist nach Region eingefärbt (Berrybuck gold, die Burg rot, Finnigans Höhlen teal, Greifen blau, Archenbridge/Archendale violett), sodass sich der Stapel nach Orten sortieren lässt. Reicht der Platz für einen langen Text nicht, rückt die Schrift stufenweise enger (26 → 19 px), statt das Porträt auf einen Streifen zu quetschen.
+
+Die Zustandskarten (`node build-condition-cards.mjs --tarot70`) legt man vor sich, solange der Zustand läuft — das erinnert den Tisch daran und sagt zugleich, was er bewirkt. Ausgewählt sind genau die acht Zustände, die **eure eigenen Zauber** auslösen: Nowi wirkt Charm Person, Sleep und Hold Person, Sprocket Blindness, Fear, Invisibility und Haste; Slow gehört als Gegenstück zu Haste dazu. Jede Regelangabe stammt aus `spells.description` in der Datenbank, nichts ist hinzugedichtet. Ein farbiger Balken zeigt quer über den Tisch, ob der Zustand schadet (rot) oder hilft (teal).
 
 Die Zitatkarten (`node build-quote-cards.mjs --tarot70`) kommen ohne Artwork und ohne einen einzigen KI-Aufruf aus — der Spruch ist die Karte. Der Sprecher erscheint in seiner Klassenfarbe.
 
@@ -90,7 +93,7 @@ Die 23 Regelkarten sind bewusst **nicht** Teil des Sets — THAC0, Rettungswürf
 
 Verpackt mit `node build-print-packages.mjs tarot70 --set2` und `node build-print-pdf.mjs tarot70 --set2`.
 
-71 Karten fallen in meinspiels Umfang-Kategorie „55 – 72 Karten".
+79 Karten fallen in meinspiels Umfang-Kategorie „73 – 80 Karten".
 
 ---
 

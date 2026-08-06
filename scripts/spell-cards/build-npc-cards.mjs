@@ -79,16 +79,21 @@ for (const npc of npcs) {
 
   // Textbedarf messen, Portrait füllt den Rest. Die Beschreibungen reichen von
   // 80 bis 550 Zeichen — eine feste Bildhöhe würde die kurzen Karten halb leer
-  // lassen. Reicht der Platz auch dann nicht, rückt die Schrift stufenweise
-  // enger zusammen, statt das Portrait auf einen Streifen zu quetschen.
-  const MIN_ART = 620;
+  // lassen und die langen zum Textblock mit Briefmarke machen.
+  //
+  // Deshalb ein ZIEL statt einer Untergrenze: Das Porträt soll gut die Hälfte
+  // der Karte tragen. Die Schrift rückt so lange enger, bis das erreicht ist —
+  // reicht selbst die kleinste Stufe nicht, gewinnt der Text, damit nichts
+  // abgeschnitten wird.
+  const TARGET_ART = Math.round(CH * 0.56);
   let textFont = 26, artH = 0;
-  for (const size of [26, 24, 22, 20, 19]) {
+  for (const size of [26, 24, 22, 21, 20, 19, 18]) {
     textFont = size;
     await page.setContent(card(null, size), { waitUntil: "networkidle" });
-    artH = Math.max(MIN_ART, Math.min(1010, CH - (F?.bodyBottom ?? 78) - (await measure()) - 36));
-    if (artH > MIN_ART) break; // passt, ohne das Portrait ans Minimum zu drücken
+    artH = Math.min(1010, CH - (F?.bodyBottom ?? 78) - (await measure()) - 36);
+    if (artH >= TARGET_ART) break;
   }
+  artH = Math.max(460, artH); // Notnagel für extrem lange Texte
   await page.setContent(card(artH, textFont), { waitUntil: "networkidle" });
   await page.screenshot({ path: join(OUT, `${String(++n).padStart(2, "0")}_${slug(npc.name)}.png`), clip: { x: 0, y: 0, width: CW, height: CH } });
   const over = await page.evaluate(() => {

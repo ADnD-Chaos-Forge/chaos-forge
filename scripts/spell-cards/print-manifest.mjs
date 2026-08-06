@@ -13,7 +13,7 @@
 // Set nicht zu einem einzelnen Helden gehört.
 export const SET_TWO = {
   id: "kompendium",
-  label: "Kompendium — Ausrüstung, Leute & Zitate",
+  label: "Kompendium — Ausrüstung, Zustände, Leute & Zitate",
   sources: [
     // Verzeichnisse ohne Profil-Suffix — das ergänzen die Build-Skripte.
     { dir: "out/char-cards", only: ["reference-lady-catrina-of-tiamat.png"], prefix: "catrina" },
@@ -22,6 +22,7 @@ export const SET_TWO = {
     // (out/extras-tarot70/sprocket-nachtrag), das Suffix sitzt also am dir.
     { dir: "out/extras", sub: "sprocket-nachtrag", prefix: "sprocket" },
     { dir: "out/item-cards", prefix: "item" },
+    { dir: "out/condition-cards", prefix: "zustand" },
     { dir: "out/npc-cards", prefix: "npc" },
     { dir: "out/quote-cards", prefix: "zitat" },
   ],
