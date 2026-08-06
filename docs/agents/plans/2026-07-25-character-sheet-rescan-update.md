@@ -29,16 +29,16 @@ Aus `docs/agents/research/2026-07-25-character-sheet-rescan-update.md`:
 
 Unique-Constraints, die den Update-Pfad tragen:
 
-| Tabelle | Unique-Key | Update-Strategie |
-| --- | --- | --- |
-| `character_classes` | `(character_id, class_id)` | Upsert |
-| `character_weapon_proficiencies` | `(character_id, weapon_name)` | Upsert |
-| `character_nonweapon_proficiencies` | `(character_id, proficiency_id)` | Upsert |
-| `character_fighting_styles` | `(character_id, style_id)` | Upsert |
-| `character_languages` | `(character_id, language_name)` | Upsert |
-| `character_spells` | PK `(character_id, spell_id)` | Upsert |
-| `character_equipment` | **keiner** | Fuzzy-Match über Namen → `id`, sonst Insert |
-| `character_inventory` | **keiner** | Fuzzy-Match über Namen → `id`, sonst Insert |
+| Tabelle                             | Unique-Key                       | Update-Strategie                            |
+| ----------------------------------- | -------------------------------- | ------------------------------------------- |
+| `character_classes`                 | `(character_id, class_id)`       | Upsert                                      |
+| `character_weapon_proficiencies`    | `(character_id, weapon_name)`    | Upsert                                      |
+| `character_nonweapon_proficiencies` | `(character_id, proficiency_id)` | Upsert                                      |
+| `character_fighting_styles`         | `(character_id, style_id)`       | Upsert                                      |
+| `character_languages`               | `(character_id, language_name)`  | Upsert                                      |
+| `character_spells`                  | PK `(character_id, spell_id)`    | Upsert                                      |
+| `character_equipment`               | **keiner**                       | Fuzzy-Match über Namen → `id`, sonst Insert |
+| `character_inventory`               | **keiner**                       | Fuzzy-Match über Namen → `id`, sonst Insert |
 
 ## Desired End State
 
@@ -158,10 +158,10 @@ Kern der Architektur: **eine reine, unit-testbare Pipeline**, an deren Enden nur
 
 ```jsonc
 {
-  "printed":     { "level": 3, "hpMax": 24, /* vollständiges Schema, wie heute */ },
-  "handwritten": { "level": 4 },              // NUR abweichende/ergänzte Felder
-  "equipment":   [ { "name": "Langschwert +1", "magicBonus": 1, "source": "printed" } ],
-  "spells":      [ { "name": "Invisibility", "level": 2, "source": "handwritten" } ]
+  "printed": { "level": 3, "hpMax": 24 /* vollständiges Schema, wie heute */ },
+  "handwritten": { "level": 4 }, // NUR abweichende/ergänzte Felder
+  "equipment": [{ "name": "Langschwert +1", "magicBonus": 1, "source": "printed" }],
+  "spells": [{ "name": "Invisibility", "level": 2, "source": "handwritten" }],
 }
 ```
 
@@ -171,8 +171,12 @@ Kern der Architektur: **eine reine, unit-testbare Pipeline**, an deren Enden nur
 
 ```ts
 export type ValueSource = "printed" | "handwritten";
-export interface ScannedCharacterFields { /* heutiges ScannedCharacter, ohne Listen */ }
-export interface ScannedListItem { source: ValueSource }
+export interface ScannedCharacterFields {
+  /* heutiges ScannedCharacter, ohne Listen */
+}
+export interface ScannedListItem {
+  source: ValueSource;
+}
 export interface ScannedUpdatePayload {
   printed: ScannedCharacterFields;
   handwritten: Partial<ScannedCharacterFields>;
@@ -187,10 +191,13 @@ export interface ScannedUpdatePayload {
 **Prompt ist nicht rein statisch.** Anders als `MONSTER_SCAN_PROMPT` interpoliert der Charakter-Prompt einen Multi-File-Hinweis (`route.ts:125`). Das Modul exportiert deshalb die statischen Teile als Konstanten (für die Integritätstests) **und** einen Builder:
 
 ```ts
-export const CHARACTER_SCAN_PROMPT: string;         // statischer Create-Teil
-export const CHARACTER_UPDATE_SCAN_PROMPT: string;  // statischer Update-Teil
+export const CHARACTER_SCAN_PROMPT: string; // statischer Create-Teil
+export const CHARACTER_UPDATE_SCAN_PROMPT: string; // statischer Update-Teil
 export const MULTI_FILE_HINT: string;
-export function buildCharacterScanPrompt(opts: { mode: "create" | "update"; isMultiFile: boolean }): string;
+export function buildCharacterScanPrompt(opts: {
+  mode: "create" | "update";
+  isMultiFile: boolean;
+}): string;
 ```
 
 **Change-Modell** (`character-diff.ts`):
@@ -200,18 +207,18 @@ export type ChangeCategory = "core" | "lists" | "identity" | "extended";
 export type ChangeKind = "scalar" | "list-add" | "list-update" | "list-remove";
 
 export interface ScanChange {
-  id: string;                 // stabil, z.B. "core:level:thief" — React-Key + Test-Selektor
+  id: string; // stabil, z.B. "core:level:thief" — React-Key + Test-Selektor
   category: ChangeCategory;
   kind: ChangeKind;
-  labelKey: string;           // i18n-Key im Namespace "rescan"
+  labelKey: string; // i18n-Key im Namespace "rescan"
   labelParams?: Record<string, string | number>;
-  currentValue: unknown;      // Stand in der DB
-  proposedValue: unknown;     // Vorschlag aus dem Scan
+  currentValue: unknown; // Stand in der DB
+  proposedValue: unknown; // Vorschlag aus dem Scan
   source: ValueSource;
   conflict?: { printed: unknown; handwritten: unknown };
   defaultSelected: boolean;
-  noteKey?: string;           // Hinweiszeile, z.B. "hpCurrentPlayModeHint"
-  target: ChangeTarget;       // wohin geschrieben wird (Tabelle + Match)
+  noteKey?: string; // Hinweiszeile, z.B. "hpCurrentPlayModeHint"
+  target: ChangeTarget; // wohin geschrieben wird (Tabelle + Match)
 }
 
 /** Wohin eine Änderung geschrieben wird. Eine Change-Zeile kann mehrere
@@ -219,16 +226,16 @@ export interface ScanChange {
 export interface ChangeTarget {
   writes: Array<{
     table: string;
-    field?: string;              // bei kind === "scalar"
-    rowId?: string;              // getroffene Zeile bei list-update/list-remove
-    matchKey?: Record<string, string>;  // für Upsert-Tabellen, z.B. { class_id: "thief" }
+    field?: string; // bei kind === "scalar"
+    rowId?: string; // getroffene Zeile bei list-update/list-remove
+    matchKey?: Record<string, string>; // für Upsert-Tabellen, z.B. { class_id: "thief" }
   }>;
 }
 
 /** Was die UI an buildApplyPlan() zurückgibt. */
 export interface SelectedChange extends ScanChange {
   selected: boolean;
-  editedValue?: unknown;         // vom Nutzer überschriebener Zielwert; gewinnt über proposedValue
+  editedValue?: unknown; // vom Nutzer überschriebener Zielwert; gewinnt über proposedValue
 }
 
 /** Eine ausführbare DB-Operation. Bewusst datenhaltig statt Callback,
@@ -236,7 +243,7 @@ export interface SelectedChange extends ScanChange {
 export interface ApplyOperation {
   table: string;
   op: "update" | "insert" | "upsert" | "delete";
-  onConflict?: string;           // für upsert, z.B. "character_id,class_id"
+  onConflict?: string; // für upsert, z.B. "character_id,class_id"
   match?: Record<string, string>;
   values?: Record<string, unknown>;
 }
@@ -246,24 +253,24 @@ export interface ApplyOperation {
 
 **Default-Selektion** (Nutzer-Entscheidung, in `character-diff.ts` als Tabelle kodiert):
 
-| Bedingung | `defaultSelected` |
-| --- | --- |
-| `kind === "list-remove"` | `false` |
-| Feld `hp_current` | `false` |
-| `category === "identity"` (Name, Rasse, Klassen-Zusammensetzung, Kit, Gesinnung) | `false` |
-| Feld `notes` | `false` |
-| alles Übrige | `true` |
+| Bedingung                                                                        | `defaultSelected` |
+| -------------------------------------------------------------------------------- | ----------------- |
+| `kind === "list-remove"`                                                         | `false`           |
+| Feld `hp_current`                                                                | `false`           |
+| `category === "identity"` (Name, Rasse, Klassen-Zusammensetzung, Kit, Gesinnung) | `false`           |
+| Feld `notes`                                                                     | `false`           |
+| alles Übrige                                                                     | `true`            |
 
 **Konflikt-Auflösung:** Weichen `printed` und `handwritten` für ein Feld ab, entsteht **eine** Change-Zeile mit `source: "handwritten"`, `proposedValue` = handschriftlicher Wert und gefülltem `conflict`. Die UI zeigt beide Werte und einen Umschalter.
 
 **Kategorien-Zuordnung:**
 
-| Kategorie | Felder |
-| --- | --- |
-| `core` | `characters.level`/`xp_current`, `character_classes.level`/`xp_current`, `hp_max`, `hp_current`, 6 Attribute + `str_exceptional` + 12 Sub-Stats, `gold_pp/gp/ep/sp/cp` |
-| `lists` | Ausrüstung, Inventar, Zauber, Waffenfertigkeiten, NWPs, Fighting Styles, Sprachen |
-| `identity` | `name`, `race_id`, Klassen-Zusammensetzung (Hinzufügen/Entfernen einer Klasse), `kit`, `alignment` |
-| `extended` | `player_name`, `age`, `gender`, `height_cm`, `weight_kg`, `deity`, `priesthood`, `traits`, `disadvantages`, `notes` |
+| Kategorie  | Felder                                                                                                                                                                 |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `core`     | `characters.level`/`xp_current`, `character_classes.level`/`xp_current`, `hp_max`, `hp_current`, 6 Attribute + `str_exceptional` + 12 Sub-Stats, `gold_pp/gp/ep/sp/cp` |
+| `lists`    | Ausrüstung, Inventar, Zauber, Waffenfertigkeiten, NWPs, Fighting Styles, Sprachen                                                                                      |
+| `identity` | `name`, `race_id`, Klassen-Zusammensetzung (Hinzufügen/Entfernen einer Klasse), `kit`, `alignment`                                                                     |
+| `extended` | `player_name`, `age`, `gender`, `height_cm`, `weight_kg`, `deity`, `priesthood`, `traits`, `disadvantages`, `notes`                                                    |
 
 **Level/XP-Sonderfall:** `characters.level` und `characters.xp_current` sind Denormalisierungen der primären Klasse (der Import setzt sie aus `resolvedClasses[0]`, `page.tsx:298-300`). Eine Level-Änderung der primären Klasse erzeugt **eine** Change-Zeile, deren `target` beide Tabellen bedient — nicht zwei Zeilen für denselben fachlichen Sachverhalt.
 
@@ -313,6 +320,7 @@ Eine bewusste Verhaltensänderung am Bestand: `/api/scan-character` bekommt den 
 Extrahiert die verstreuten Prompt- und Matching-Bausteine in testbare Module und erweitert die Route um den Update-Modus. Der Create-Import verhält sich danach exakt wie vorher, ist aber erstmals durch Tests abgedeckt.
 
 **Tasks**:
+
 - [x] `src/lib/scan/character-matching.test.ts` anlegen — Tests zuerst: `matchesName()` (Substring, Token-Match „Axe, hand/throwing" ↔ „Hand Axe", Nicht-Treffer), `parseImperialHeight()` (`5'10"`, `5 ft 10 in`, Müll → 0), `normalizeRaceId()` (`stout_halfling` → `halfling`, unbekannt → unverändert), `resolveFightingStyleId()` (alle 4 Stile + `null`), `normalizeNwpName()` (`Native Languages:`-Präfix, `common`/`native` → übersprungen), `matchSpell()` (Level muss übereinstimmen, DE/EN, beidseitiges `includes`)
 - [x] `src/lib/scan/character-matching.ts` implementieren — reine Funktionen, 1:1 aus `import/page.tsx` übernommen, plus `VALID_CLASS_IDS` / `VALID_KIT_IDS` / `RACE_ALIAS_MAP` als exportierte Konstanten
 - [x] `src/app/characters/import/page.tsx` auf die extrahierten Funktionen umstellen — lokale Kopien löschen, Verhalten unverändert
@@ -325,6 +333,7 @@ Extrahiert die verstreuten Prompt- und Matching-Bausteine in testbare Module und
   ```
 
 **Automated Verification**:
+
 - [x] `character-matching.test.ts` (Unit) passes
 - [x] `character-scan-prompt.test.ts` (Unit) passes
 - [x] `import-validation.test.ts` (Unit) passes weiterhin
@@ -339,6 +348,7 @@ Dependencies: **Phase 1**
 Das Herzstück: zwei reine Module ohne DB- und ohne React-Abhängigkeit. Beide sind vollständig unit-testbar und tragen die gesamte Fachlogik des Features.
 
 **Tasks**:
+
 - [x] `src/lib/scan/character-diff.test.ts` anlegen — Tests zuerst:
   - identischer Wert erzeugt **keine** Change-Zeile
   - skalare Abweichung erzeugt genau eine Zeile mit korrekter `category`
@@ -364,6 +374,7 @@ Das Herzstück: zwei reine Module ohne DB- und ohne React-Abhängigkeit. Beide s
 - [x] `src/lib/scan/execute-apply-plan.ts` implementieren — `executeApplyPlan(supabase, ops)`: gruppiert Operationen nach `(table, op)` zu Bulk-Calls, sammelt Fehler in `ApplyResult { applied: number; failed: FailedOperation[] }` statt sie wie der Create-Import (`import/page.tsx:387-390`) auf die Konsole zu loggen
 
 **Automated Verification**:
+
 - [x] `character-diff.test.ts` (Unit) passes
 - [x] `character-apply.test.ts` (Unit) passes
 - [x] `npm run verify` passes
@@ -377,6 +388,7 @@ Dependencies: **Phase 2**
 Erst hier wird das Feature für den Nutzer sichtbar. Die UI ist bewusst dünn: sie hält Auswahl- und Editier-State und ruft die Module aus Phase 2.
 
 **Tasks**:
+
 - [x] `messages/de.json` + `messages/en.json` — `import.dropzoneHint` und die hartcodierte Route-Meldung `tooManyFiles` (`route.ts:66`) auf die tatsächliche Grenze 15 korrigieren (heute steht dort „5", während `MAX_FILE_COUNT = 15` gilt)
 - [x] `messages/de.json` + `messages/en.json` — Namespace `rescan` anlegen: Titel/Beschreibung, Dropzone (Wiederverwendung der `import`-Keys wo wortgleich), Kategorie-Überschriften (`categoryCore`/`categoryLists`/`categoryIdentity`/`categoryExtended`), Aktionen (`selectAll`, `selectNone`, `applyChanges` mit `{count}`), Quellen-Labels (`sourcePrinted`, `sourceHandwritten`), Konflikt (`conflictHint`, `useprinted`), Hinweise (`hpCurrentPlayModeHint`, `removeHint`), Zustände (`noChanges`, `applying`, `applyFailed` mit `{count}`), sowie Feld-Labels für alle diff-fähigen Felder
 - [x] `src/components/character-rescan/change-list.test.tsx` anlegen — Tests zuerst (Muster: `monster-form.test.tsx:1-16`, `next-intl` gemockt): rendert Gruppen mit Zählern; nur `defaultSelected`-Zeilen sind initial angehakt; Toggle ändert den Auswahl-Zähler; „Alle"/„Keine" wirken auf alle Gruppen; Editieren eines Werts ändert den übergebenen Change; Konflikt-Umschalter tauscht `proposedValue` auf den gedruckten Wert; Apply-Button ist bei 0 Auswahl disabled und trägt die Anzahl im Label; leeres Change-Set zeigt `noChanges`
@@ -387,11 +399,13 @@ Erst hier wird das Feature für den Nutzer sichtbar. Die UI ist bewusst dünn: s
 - [x] `src/components/character-sheet/character-sheet.tsx` — Header-Button „Bogen scannen" (`ScanLine`-Icon aus lucide-react) neben Drucken, nur für `isOwner`, in `ApprovalGate` gewrappt, `data-testid="sheet-rescan-button"`, Link auf `${basePath}/${character.id}/rescan`
 
 **Automated Verification**:
+
 - [x] `change-list.test.tsx` (Komponente) passes
 - [x] `npm run verify` passes
 - [x] `messages/de.json` und `messages/en.json` haben identische Schlüsselmengen im Namespace `rescan`
 
 **Manual Verification**:
+
 - [ ] Kompletter Happy Path mit einem echten Bogen
   1. Charakterbogen öffnen, „Bogen scannen" klicken
   2. Foto eines Bogens mit handschriftlich korrigierter Stufe/XP hochladen, „Änderungen ermitteln"
@@ -409,6 +423,7 @@ Erst hier wird das Feature für den Nutzer sichtbar. Die UI ist bewusst dünn: s
 Dependencies: **Phase 3**
 
 **Tasks**:
+
 - [x] `e2e/pages/rescan.page.ts` anlegen — Page Object nach dem Muster von `e2e/pages/character-sheet.page.ts`
 - [x] `e2e/character-rescan.spec.ts` anlegen — Scan-Response mit `page.route("**/api/scan-character*", ...)` mocken (Muster: `e2e/rulebook-chat.spec.ts:46`), damit der Test deterministisch und ohne API-Kosten läuft. Fälle: Änderungsliste erscheint mit korrekten Default-Häkchen; Abwählen reduziert den Zähler; „Übernehmen" schreibt und leitet auf `/manage` weiter; der geschriebene Wert steht danach im Bogen; Scan ohne Änderungen zeigt `noChanges`; `/characters/[id]/rescan` ohne Login leitet auf `/login` (Muster: `e2e/auth-redirect.spec.ts:39-40`)
 - [x] Explorativer Test mit `playwright-cli` gemäß CLAUDE.md Phase 4 — für jeden gefundenen Bug zuerst einen fehlschlagenden Test, dann den Fix
@@ -416,11 +431,13 @@ Dependencies: **Phase 3**
 - [x] `docs/agents/research/2026-07-25-character-sheet-rescan-update.md` — Status-Vermerk, dass die dort gelisteten offenen Punkte (fehlender `is_approved`-Check, `gold_ep`, Sprachen, Gottheit/Priesterschaft, Traits, Notizen) durch dieses Feature adressiert wurden
 
 **Automated Verification**:
+
 - [x] `e2e/character-rescan.spec.ts` (E2E) passes
 - [x] `npm run test:e2e` passes vollständig (keine Regression in den bestehenden 120+ Tests)
 - [x] `npm run verify` passes
 
 **Manual Verification**:
+
 - [ ] Nicht freigegebener Nutzer sieht den „Bogen scannen"-Button nicht und erhält beim direkten Aufruf von `/api/scan-character` einen 403
 - [ ] Bestehender Create-Import (`/characters/new` → Importieren) funktioniert unverändert — insbesondere Ausrüstungs-, NWP- und Zauber-Matching nach der Extraktion in Phase 1
 
