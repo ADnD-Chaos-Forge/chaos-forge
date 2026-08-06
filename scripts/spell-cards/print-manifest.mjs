@@ -25,6 +25,7 @@ export const SET_TWO = {
     { dir: "out/condition-cards", prefix: "zustand" },
     { dir: "out/npc-cards", prefix: "npc" },
     { dir: "out/quote-cards", prefix: "zitat" },
+    { dir: "out/special-cards", prefix: "special" },
   ],
 };
 

@@ -60,7 +60,7 @@ Die 16 Lernvorschläge (`*_sprocket-neu-*`, erzeugt via `node render-extra-cards
 
 ---
 
-### Zweites Set: `kompendium` (79 Karten)
+### Zweites Set: `kompendium` (80 Karten)
 
 Das zweite Bestellset — kein Helden-Deck, sondern das, was auf keinem Charakterbogen steht. Rückseite ist die neutrale Grimoire-Karte, weil das Set niemandem einzeln gehört.
 
@@ -73,7 +73,7 @@ Das zweite Bestellset — kein Helden-Deck, sondern das, was auf keinem Charakte
 | Zustände               | **8**  | Zum Auslegen: Bezaubert, Schlafend, Gehalten, Geblendet, Verängstigt, Unsichtbar, Beschleunigt, Verlangsamt |
 | Chronik-NPCs           | **28** | Porträt, Ort und Beschreibung, nach Ort sortiert                                                            |
 | Zitate                 | **31** | Die gesammelten Sprüche aus der Chronik                                                                     |
-| **gesamt**             | **79** |                                                                                                             |
+| **gesamt**             | **80** |                                                                                                             |
 
 **Die Ausrüstungskarten zeigen nur, was wirklich jemandem gehört.** Quelle ist `character_equipment` der aktiven Helden, nicht der `magic_items`-Katalog — ein Katalogeintrag, den niemand trägt, ergibt keine Karte für den Spieltisch. Der Besitzer steht als Kopfzeile auf jeder Karte. Larrys Klinge des Wassers fehlt bewusst: die hat als Epic Item schon eine eigene, ausführlichere Karte im ersten Set. Ladungen werden **nicht** gedruckt, nur „Verbrauchsgegenstand" — den Verbrauch führen die Spielenden selbst, eine gedruckte Zahl wäre ab der ersten Sitzung falsch.
 
@@ -87,6 +87,8 @@ Die Zustandskarten (`node build-condition-cards.mjs --tarot70`) legt man vor sic
 
 Die Zitatkarten (`node build-quote-cards.mjs --tarot70`) kommen ohne Artwork und ohne einen einzigen KI-Aufruf aus — der Spruch ist die Karte. Der Sprecher erscheint in seiner Klassenfarbe.
 
+Die Sonderkarte (`node build-special-card.mjs --tarot70`) setzt ein Zitat auf ein eigenes Artwork statt auf leeren Grund — ein Verlauf legt der Schrift einen dunklen Grund unter, ohne das Motiv zuzudecken. Anders als bei den Gegenstandskarten sind hier Menschen im Bild erwünscht; geprüft wird nur auf sichtbaren Text.
+
 Die Spielleiterkarte (`node build-gm-card.mjs --tarot70`) schneidet das PIN-Gate-Artwork oben an: dort sitzt das Gesicht, und der Schriftzug „Master of Chaos" im aufgeschlagenen Buch fällt aus dem Bild. Name und Text lassen sich über `--name=` und `--text=` überschreiben.
 
 Nicht enthalten: der Testeintrag `QA-NPC-ms06kp11`, der als einziger NPC kein Porträt hat.
@@ -95,7 +97,7 @@ Die 23 Regelkarten sind bewusst **nicht** Teil des Sets — THAC0, Rettungswürf
 
 Verpackt mit `node build-print-packages.mjs tarot70 --set2` und `node build-print-pdf.mjs tarot70 --set2`.
 
-79 Karten fallen in meinspiels Umfang-Kategorie „73 – 80 Karten".
+80 Karten schöpfen meinspiels Umfang-Kategorie „73 – 80 Karten" genau aus.
 
 ---
 

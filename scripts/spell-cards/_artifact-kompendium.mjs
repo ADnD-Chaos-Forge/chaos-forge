@@ -70,6 +70,7 @@ const BLOCKS = {
   spielleiter: { label: "Spielleiter", note: "Das Artwork aus dem PIN-Gate des GM-Bereichs" },
   zustand: { label: "Zustände", note: "Zum Auslegen, solange der Zustand läuft — die Regeln stammen aus den Zauberbeschreibungen eurer eigenen Zauber" },
   zitat: { label: "Zitate", note: "Gesammelte Sprüche aus der Chronik — kein Regelwerk speichert so etwas" },
+  special: { label: "Special", note: "Der eine Spruch, der eine eigene Bühne verdient hat" },
 };
 
 function describe(file) {
@@ -79,6 +80,7 @@ function describe(file) {
   if (block === "catrina") return ["Lady Catrina of Tiamat", "Human Crusader 11 · Lawful Neutral"];
   if (block === "spielleiter") return ["Master of Chaos", "Der Spielleiter"];
   if (block === "zustand") return [rest.replace(/^./, (c) => c.toUpperCase()), "Zustandskarte"];
+  if (block === "special") return ["East Coast, West Coast, Labskaus", "Sonderkarte"];
   if (block === "zitat") return [rest.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase()), "Chronik-Zitat"];
   if (block === "sprocket") return ["Hold Person", "Sprocket · Grad 3 · Enchantment/Charm"];
   if (block === "regel") return RULE_TITLES[rest] || [rest, "Regelkarte"];
@@ -124,7 +126,7 @@ for (const [block, list] of groups) {
   console.log(`  ${b.label}: ${list.length}`);
 }
 
-const page = `<title>Kompendium · Karten für die Chaos-RPG-Runde</title>
+const page = `<title>Kompendium · 80 Karten für die Chaos-RPG-Runde</title>
 <style>
 ${face("Cinzel", "Cinzel|700|normal", 700)}
 ${face("EB Garamond", "EB Garamond|400|normal", 400)}
@@ -226,9 +228,9 @@ footer{margin-top:20px;padding-top:26px;border-top:1px solid var(--edge);
 <div class="wrap">
 <header class="top">
   <h1>Kompendium</h1>
-  <p class="lede">Das zweite Kartenset für die Chaos-RPG-Runde: die magische Ausrüstung der Helden, Zustandskarten zum Auslegen, das Personenverzeichnis der Chronik und die gesammelten Sprüche — 79 Karten im Tarotformat 70 × 120 mm.</p>
+  <p class="lede">Das zweite Kartenset für die Chaos-RPG-Runde: die magische Ausrüstung der Helden, Zustandskarten zum Auslegen, das Personenverzeichnis der Chronik und die gesammelten Sprüche — 80 Karten im Tarotformat 70 × 120 mm.</p>
   <div class="facts">
-    <span><b>79</b> Karten</span>
+    <span><b>80</b> Karten</span>
     <span><b>898 × 1488</b> px bei 300 dpi</span>
     <span><b>3 mm</b> Beschnitt</span>
     <span>Rückseite: <b>Grimoire</b>, neutral</span>
@@ -240,6 +242,7 @@ footer{margin-top:20px;padding-top:26px;border-top:1px solid var(--edge);
     <a href="#b-zustand">Zustände</a>
     <a href="#b-npc">NPCs</a>
     <a href="#b-zitat">Zitate</a>
+    <a href="#b-special">Special</a>
   </nav>
 </header>
 
