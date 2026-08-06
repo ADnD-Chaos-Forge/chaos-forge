@@ -1,8 +1,11 @@
-// Baut Karten für die magischen Gegenstände aus magic_items. Effekte werden aus
-// dem magic_effects-JSONB gelesen und in lesbare Zeilen übersetzt; Artwork via
-// Imagen, gecacht in cache/art-items/ (ein Bild pro Gegenstand, einmalig).
+// Baut Karten für die magischen Gegenstände, die die aktiven Helden WIRKLICH
+// besitzen — Quelle ist character_equipment, nicht der magic_items-Katalog.
+// Ein Katalogeintrag, den niemand trägt, ergibt keine Karte für den Spieltisch.
 //
-// Nutzung: node build-item-cards.mjs [--tarot70|--tarot] [--only=ring] [--force]
+// Epic Items bleiben außen vor: die haben ihre eigenen, aufwendigeren Karten
+// (siehe build-char-cards.mjs).
+//
+// Nutzung: node build-item-cards.mjs [--tarot70|--tarot] [--only=cloak] [--force]
 import { chromium } from "playwright";
 import { GoogleGenAI } from "@google/genai";
 import sharp from "sharp";
@@ -10,6 +13,7 @@ import { readFileSync, existsSync, mkdirSync, rmSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { supa, slug } from "./lib.mjs";
+import { checkArt } from "./check-art.mjs";
 import { renderItemCard } from "./template-item.mjs";
 import { TAROT_EPIC_FMT, IS_TAROT as TAROT, DIR_SUFFIX } from "./tarot.mjs";
 
@@ -32,73 +36,55 @@ const genai = new GoogleGenAI({ apiKey: env.GOOGLE_API_KEY });
 const STYLE =
   " — a single magic item as the clear subject, centered on dark stone, dark fantasy painterly digital illustration," +
   " deep indigo-purple atmosphere with teal and gold arcane light, dramatic rim lighting, highly detailed," +
-  " no people, no hands, no text, no letters, no words.";
+  " no people, no hands, no faces, no text, no letters, no numbers, no watermark, no logo.";
 
-// Kategorie → Akzentfarbe (wie die Klassengruppen im übrigen Set) + Bildmotiv.
-const CAT = {
-  Ring: { a: ["#e0b24e", "#a1782f"], art: "an ornate magical ring" },
-  Amulet: { a: ["#e0b24e", "#a1782f"], art: "an ornate magical amulet on a chain" },
-  Potion: { a: ["#3ec7bd", "#0d7d75"], art: "a glass potion vial with luminous liquid" },
-  Cloak: { a: ["#5b8def", "#2f4fa0"], art: "a flowing enchanted cloak" },
-  Boots: { a: ["#5b8def", "#2f4fa0"], art: "a pair of enchanted leather boots" },
-  Bracers: { a: ["#e0524e", "#8f2f2b"], art: "a pair of enchanted bracers" },
-  Belt: { a: ["#e0524e", "#8f2f2b"], art: "a broad enchanted belt with a heavy buckle" },
-  Rod: { a: ["#3ec7bd", "#0d7d75"], art: "an ornate magical rod" },
-  Wand: { a: ["#3ec7bd", "#0d7d75"], art: "a slender magical wand" },
-  Wondrous: { a: ["#e0b24e", "#a1782f"], art: "a wondrous enchanted object" },
+// Bildmotiv je Art des Gegenstands. Waffen bekommen ihr echtes Motiv, damit ein
+// Kampfstab nicht wie ein Schwert aussieht.
+const MOTIF = {
+  "Short Sword": "an ornate magical short sword",
+  "Throwing Dagger": "an ornate magical throwing dagger",
+  Dagger: "an ornate magical dagger",
+  Quarterstaff: "an ornate magical quarterstaff of dark polished wood",
+  "Long Sword": "an ornate magical long sword",
+  "Bracers of Protection": "a pair of enchanted bracers",
+  Ring: "an ornate magical ring",
+  Cloak: "a flowing enchanted cloak",
+};
+const ACCENT = {
+  weapon: ["#e0524e", "#8f2f2b"],
+  armor: ["#5b8def", "#2f4fa0"],
+  wondrous: ["#e0b24e", "#a1782f"],
 };
 
 const sgn = (n) => (n >= 0 ? `+${n}` : `${n}`);
 
-// magic_effects → Zeilen für die Karte. AD&D nutzt absteigende AC, ein
-// ac_bonus von -1 ist also eine Verbesserung um 1 und wird auch so gezeigt.
-function effectLines(fx) {
-  const out = [];
-  if (typeof fx.ac_bonus === "number") out.push({ label: "Armor Class", value: `${sgn(-fx.ac_bonus)} (AC ${sgn(fx.ac_bonus)})` });
-  if (typeof fx.save_all === "number") out.push({ label: "All Saves", value: sgn(fx.save_all) });
-  if (typeof fx.save_vs_breath === "number") out.push({ label: "Save vs. Breath", value: sgn(fx.save_vs_breath) });
-  if (typeof fx.save_vs_spell === "number") out.push({ label: "Save vs. Spell", value: sgn(fx.save_vs_spell) });
-  if (typeof fx.save_vs_poison === "number") out.push({ label: "Save vs. Poison", value: sgn(fx.save_vs_poison) });
-  if (typeof fx.movement_bonus === "number") out.push({ label: "Movement", value: sgn(fx.movement_bonus) });
-  if (typeof fx.hide_in_shadows === "number") out.push({ label: "Hide in Shadows", value: `${fx.hide_in_shadows}%` });
-  if (typeof fx.move_silently === "number") out.push({ label: "Move Silently", value: `${fx.move_silently}%` });
-  if (fx.stat_overrides) {
-    for (const [k, v] of Object.entries(fx.stat_overrides)) {
-      if (k === "str_exceptional") continue; // wird an STR angehängt
-      const exc = k === "str" && fx.stat_overrides.str_exceptional;
-      out.push({ label: k.toUpperCase(), value: exc ? `${v}/${exc === 100 ? "00" : exc}` : String(v) });
-    }
-  }
-  if (typeof fx.max_charges === "number") out.push({ label: "Charges", value: `${fx.current_charges ?? fx.max_charges} / ${fx.max_charges}` });
-  for (const r of fx.resistances || []) out.push({ label: "Resistance", value: r });
-  return out;
-}
-
-function noteLines(fx) {
-  const out = [];
-  for (const p of fx.passive_abilities || []) out.push(p);
-  for (const s of fx.spell_abilities || []) out.push(`${s.name_en || s.name}: ${s.description_en || s.description}`);
-  const d = fx.description_en || fx.description;
-  if (d && !out.some((o) => o.includes(d))) out.push(d);
-  return out;
-}
-
-async function artB64(key, prompt) {
+async function artB64(key, prompt, subject) {
   const f = join(ITEMART, `${key}${SUF}.webp`);
   const srcCache = join(ITEMART, `${key}.src.webp`);
   if (!existsSync(f) || process.argv.includes("--force")) {
     let srcBuf;
-    if (existsSync(srcCache)) {
-      srcBuf = readFileSync(srcCache); // Original wiederverwenden, keine neue Quota
+    if (existsSync(srcCache) && !process.argv.includes("--force")) {
+      srcBuf = readFileSync(srcCache);
     } else {
-      const r = await genai.models.generateImages({
-        model: "imagen-4.0-generate-001",
-        prompt: prompt + STYLE,
-        config: { numberOfImages: 1, aspectRatio: "4:3" },
-      });
-      const b64 = r.generatedImages?.[0]?.image?.imageBytes;
-      if (!b64) throw new Error("kein Artwork für " + key);
-      srcBuf = Buffer.from(b64, "base64");
+      // Jedes frisch erzeugte Bild wird geprüft, bevor es auf die Karte darf:
+      // Imagen liefert gelegentlich den Prompt als Bildinhalt oder ein
+      // Stockfoto-Porträt. Auf einer gedruckten Karte ist das nicht heilbar.
+      let last = "";
+      for (let attempt = 1; attempt <= 4; attempt++) {
+        const r = await genai.models.generateImages({
+          model: "imagen-4.0-generate-001",
+          prompt: prompt + STYLE,
+          config: { numberOfImages: 1, aspectRatio: "4:3" },
+        });
+        const b64 = r.generatedImages?.[0]?.image?.imageBytes;
+        if (!b64) throw new Error("kein Artwork für " + key);
+        const buf = Buffer.from(b64, "base64");
+        const check = await checkArt(buf, subject);
+        if (check.ok) { srcBuf = buf; console.log(`      Bildprüfung ok (Versuch ${attempt})`); break; }
+        last = check.reason;
+        console.log(`      Versuch ${attempt} verworfen: ${check.reason}`);
+      }
+      if (!srcBuf) return null; // aufgeben, Karte wird übersprungen
       await sharp(srcBuf).webp({ quality: 95 }).toFile(srcCache);
     }
     await sharp(srcBuf).resize(A_W, A_H, { fit: "cover", position: "attention" }).webp({ quality: 88 }).toFile(f);
@@ -107,44 +93,106 @@ async function artB64(key, prompt) {
 }
 
 const sb = supa();
-const { data: items } = await sb.from("magic_items").select("*").order("category").order("name");
+const { data: chars } = await sb.from("characters").select("id,name").eq("is_active", true).eq("is_npc", false);
+const byId = Object.fromEntries(chars.map((c) => [c.id, c.name]));
+const { data: eq } = await sb.from("character_equipment").select("*").in("character_id", Object.keys(byId));
+const { data: weapons } = await sb.from("weapons").select("id,name,name_en");
+const { data: armors } = await sb.from("armor").select("id,name,name_en,ac");
+const { data: epics } = await sb.from("epic_items").select("name,name_en");
+const wById = Object.fromEntries(weapons.map((x) => [x.id, x]));
+const aById = Object.fromEntries(armors.map((x) => [x.id, x]));
+// Epic Items haben eigene Karten — hier nicht doppeln.
+const epicNames = new Set(epics.flatMap((e) => [e.name, e.name_en].filter(Boolean).map((n) => n.toLowerCase())));
+
+function describe(e) {
+  const base = wById[e.weapon_id] || aById[e.armor_id];
+  const isWeapon = !!e.weapon_id;
+  const baseEn = base?.name_en || base?.name || "";
+  const fx = e.magic_effects || {};
+  const custom = (e.custom_label || "").trim();
+
+  // Name: Eigenname wenn vorhanden, sonst Basiswaffe mit Bonus in AD&D-Schreibweise.
+  let name;
+  if (custom) {
+    name = custom.replace(/\s*\((Ring|Cloak|Schürze|Bracers?)\)\s*$/i, "");
+  } else if (e.hit_bonus && e.hit_bonus === e.damage_bonus) {
+    name = `${baseEn} ${sgn(e.hit_bonus)}`;
+  } else if (e.hit_bonus || e.damage_bonus) {
+    name = `${baseEn} ${sgn(e.hit_bonus || 0)}/${sgn(e.damage_bonus || 0)}`;
+  } else {
+    name = baseEn;
+  }
+
+  const kind = isWeapon ? "weapon" : e.armor_id ? "armor" : "wondrous";
+  const motif = MOTIF[baseEn] || (custom.match(/cloak/i) ? MOTIF.Cloak : custom.match(/ring/i) ? MOTIF.Ring : MOTIF[baseEn] || "an ornate magic item");
+
+  const effects = [];
+  if (e.hit_bonus) effects.push({ label: "Trefferwurf", value: sgn(e.hit_bonus) });
+  if (e.damage_bonus) effects.push({ label: "Schaden", value: sgn(e.damage_bonus) });
+  if (typeof fx.ac_bonus === "number") effects.push({ label: "Rüstungsklasse", value: `${sgn(-fx.ac_bonus)} (RK ${sgn(fx.ac_bonus)})` });
+  if (typeof fx.save_all === "number") effects.push({ label: "Alle Rettungswürfe", value: sgn(fx.save_all) });
+  if (base?.ac != null && !isWeapon && !custom) effects.push({ label: "Rüstungsklasse", value: String(base.ac) });
+  for (const [k, v] of Object.entries(fx.stat_overrides || {})) {
+    if (k === "str_exceptional") continue;
+    effects.push({ label: k.toUpperCase(), value: String(v) });
+  }
+  // Ladungen bewusst OHNE Zahl: die Spielenden führen den Verbrauch selbst,
+  // eine gedruckte Zahl wäre ab der ersten Sitzung falsch.
+  if (fx.max_charges != null) effects.push({ label: "Art", value: "Verbrauchsgegenstand" });
+
+  // Beschreibung und Kurzfassung überlappen oft (Shadow Cloak nennt die
+  // 50%-Chance in beiden). Die längere Fassung gewinnt, die enthaltene fällt weg.
+  const notes = [];
+  const d = (fx.description || fx.description_en || "").trim();
+  for (const p of fx.passive_abilities || []) {
+    const kern = String(p).slice(0, 24).toLowerCase();
+    if (d && d.toLowerCase().includes(kern)) continue;
+    notes.push(p);
+  }
+  if (d) notes.push(d);
+
+  return { name, owner: byId[e.character_id], kind, motif, effects, notes, base: baseEn };
+}
 
 const ONLY = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1]?.toLowerCase();
-// Beim Vollauf den Ordner leeren: die Karten sind durchnummeriert, ein Rest aus
-// einem früheren --only-Lauf trüge sonst eine alte Nummer und liefe als Dublette
-// ins Druckpaket.
 if (!ONLY) { rmSync(OUT, { recursive: true, force: true }); mkdirSync(OUT, { recursive: true }); }
-// Dublette in der DB: "Ring des Schutzes (Ring)" ist eine unvollständige Kopie
-// von "Ring of Protection +1" (nur ac_bonus, ohne save_all) und ohne name_en.
-// Zwei Karten für denselben Ring wären am Spieltisch nur verwirrend.
-const SKIP = new Set(["Ring des Schutzes (Ring)"]);
+
+// Magisch = Bonus, Effekte, Katalog-Verweis, Eigenname oder eine Basis, die
+// schon dem Namen nach magisch ist (Bracers of Protection).
+const candidates = eq
+  .map((e) => ({ e, d: describe(e) }))
+  .filter(({ e, d }) => {
+    const magic =
+      e.hit_bonus || e.damage_bonus || e.magic_item_id || (e.magic_effects && Object.keys(e.magic_effects).length) ||
+      e.custom_label || /Bracers of|of Protection/i.test(d.base);
+    return magic && !epicNames.has(d.name.toLowerCase());
+  })
+  .sort((a, b) => a.d.owner.localeCompare(b.d.owner) || a.d.name.localeCompare(b.d.name));
+
+console.log(`Kandidaten: ${candidates.length}`);
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: CW, height: CH }, deviceScaleFactor: 1 });
 let n = 0;
-for (const it of items) {
-  const name = (it.name_en || it.name).trim();
-  if (SKIP.has(it.name)) { console.log(`  – übersprungen (Dublette): ${it.name}`); continue; }
-  if (ONLY && !name.toLowerCase().includes(ONLY)) continue;
-  const cat = CAT[it.category] || CAT.Wondrous;
-  const key = slug(name);
-  const fx = it.magic_effects || {};
-  const b64 = await artB64(key, `${cat.art}, ${name}`);
-  const footer = [it.source_book, it.weight ? `${it.weight} kg` : null].filter(Boolean).join(" · ");
+const failed = [];
+for (const { d } of candidates) {
+  if (ONLY && !d.name.toLowerCase().includes(ONLY)) continue;
+  console.log(`  → ${d.name} (${d.owner})`);
+  const key = slug(`${d.owner.split(" ")[0]}-${d.name}`);
+  // Bewusst ohne den Kartennamen: "Short Sword +1/-1" landete sonst als
+  // Schriftzug im Bild. Die Prüfung bekommt das Motiv als Sollbild.
+  const b64 = await artB64(key, d.motif, d.motif);
+  if (!b64) { failed.push(d.name); console.log("     ✗ kein brauchbares Bild — Karte übersprungen"); continue; }
   const card = (artH) =>
     renderItemCard({
-      name, category: it.category, artB64: b64,
-      accent: cat.a[0], accent2: cat.a[1],
-      effects: effectLines(fx), notes: noteLines(fx), footer,
+      name: d.name, category: d.owner, artB64: b64,
+      accent: ACCENT[d.kind][0], accent2: ACCENT[d.kind][1],
+      effects: d.effects, notes: d.notes, footer: d.base || "",
       fmt: artH ? { ...F, artH, bodyTop: artH - 14 } : F,
     });
-
-  // Zweistufig: erst messen, wie viel Text die Karte wirklich braucht, dann das
-  // Artwork den gesamten Rest einnehmen lassen. Ein Ring mit zwei Effektzeilen
-  // bekommt so ein großes Bild statt einer halbleeren unteren Kartenhälfte.
   await page.setContent(card(null), { waitUntil: "networkidle" });
   const needed = await page.evaluate(() => {
     const b = document.querySelector(".body");
-    return [...b.children].reduce((sum, el) => sum + el.offsetHeight, 0) + 44; // 44 = Abstände der .rule
+    return [...b.children].reduce((sum, el) => sum + el.offsetHeight, 0) + 44;
   });
   const artH = Math.max(520, Math.min(1010, CH - (F?.bodyBottom ?? 78) - needed - 36));
   await page.setContent(card(artH), { waitUntil: "networkidle" });
@@ -153,7 +201,8 @@ for (const it of items) {
     const b = document.querySelector(".body");
     return b.scrollHeight - b.clientHeight;
   });
-  console.log(`  ✓ ${name}${over > 4 ? `   ⚠ ${over}px Überlauf` : ""}`);
+  console.log(`     ✓ ${over > 4 ? `⚠ ${over}px Überlauf` : "fertig"}`);
 }
 await browser.close();
 console.log(`\nFertig: ${n} Item-Karten → ${OUT}`);
+if (failed.length) console.log(`⚠ ohne Bild geblieben: ${failed.join(", ")}`);
