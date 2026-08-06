@@ -12,8 +12,8 @@
 // in fester Reihenfolge ein. Rückseite ist die neutrale Grimoire-Karte, weil das
 // Set nicht zu einem einzelnen Helden gehört.
 export const SET_TWO = {
-  id: "regeln-und-gegenstaende",
-  label: "Regeln & Magische Gegenstände",
+  id: "kompendium",
+  label: "Kompendium — Regeln, Gegenstände & NPCs",
   sources: [
     // Verzeichnisse ohne Profil-Suffix — das ergänzen die Build-Skripte.
     { dir: "out/char-cards", only: ["reference-lady-catrina-of-tiamat.png"], prefix: "catrina" },
@@ -22,6 +22,7 @@ export const SET_TWO = {
     { dir: "out/extras", sub: "sprocket-nachtrag", prefix: "sprocket" },
     { dir: "out/rules-cards", prefix: "regel" },
     { dir: "out/item-cards", prefix: "item" },
+    { dir: "out/npc-cards", prefix: "npc" },
   ],
 };
 
