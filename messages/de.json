@@ -1336,7 +1336,10 @@
     "perWeek": "{count}×/Woche",
     "abilityUsed": "Eingesetzt",
     "abilityAvailable": "Verfügbar",
-    "coldDamage": "+1d6 Kälteschaden"
+    "coldDamage": "+1d6 Kälteschaden",
+    "hpToSpConversion": "Netherese Blooded",
+    "hpToSpConversionRatio": "Trefferpunkte in Zauberpunkte umwandeln (1 TP → {ratio} SP)",
+    "hpToSpConvertButton": "Umwandeln"
   },
   "rulebook": {
     "title": "Regelwerk & App-Hilfe",
