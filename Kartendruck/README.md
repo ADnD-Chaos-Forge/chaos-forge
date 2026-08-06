@@ -40,23 +40,47 @@ Der Regeltext auf den Zauberkarten ist der Engpass. Die beiden Rendering-Profile
 
 Weil pro Set nur **eine** Rückseite möglich ist, gibt es zusätzlich zu den vier Einzelpaketen ein kombiniertes Set mit allen Karten und der **charakterunabhängigen Grimoire-Rückseite** (`neutrale-ruckseite.png`, erzeugt via `node back.mjs --tarot70`):
 
-| Block | Karten |
-| --- | --- |
-| Nowi (Referenz + 2 Epics + 30 Zauber) | 33 |
-| Sprocket (Referenz + 3 Epics + 22 Zauber) | 26 |
-| Sprocket — Lernvorschläge | 16 |
-| Larry (Referenz + Epic) | 2 |
-| Isolde (Referenz + 2 Epics) | 3 |
-| **gesamt** | **80** |
+| Block                                     | Karten |
+| ----------------------------------------- | ------ |
+| Nowi (Referenz + 2 Epics + 30 Zauber)     | 33     |
+| Sprocket (Referenz + 3 Epics + 22 Zauber) | 26     |
+| Sprocket — Lernvorschläge                 | 16     |
+| Larry (Referenz + Epic)                   | 2      |
+| Isolde (Referenz + 2 Epics)               | 3      |
+| **gesamt**                                | **80** |
 
 Damit im gemischten Set erkennbar bleibt, wem ein Zauber gehört, trägt jede Zauberkarte oben mittig ein **Besitzer-Kürzel** (`Nowi` bzw. `FixIt`) — gesteuert über `OWNER_LABEL` in `generate-deck.mjs`.
 
 Die 16 Lernvorschläge (`*_sprocket-neu-*`, erzeugt via `node render-extra-cards.mjs FixIt --tarot70 --deck=sprocket`) sind Zauber, die Sprocket **noch nicht** kennt:
 
 - **14 aus Nowis Repertoire**, gefiltert auf das, was ein Illusionist lernen darf. Die Oppositionsschulen Necromancy / Invocation / Abjuration sind gesperrt — deshalb fehlen hier Magic Missile, Fireball, Dispel Magic, Alarm, Stinking Cloud, Lance of Disruption und Dig.
-- **2 Empfehlungen**: *Shadow Monsters* (L4, Illusion) als einzige echte Kampfoption, da ihm die gesamte Invocation-Schule versperrt ist, und *Rope Trick* (L2, Alteration) als sicherer Rastplatz, den die Gruppe bisher nicht hat.
+- **2 Empfehlungen**: _Shadow Monsters_ (L4, Illusion) als einzige echte Kampfoption, da ihm die gesamte Invocation-Schule versperrt ist, und _Rope Trick_ (L2, Alteration) als sicherer Rastplatz, den die Gruppe bisher nicht hat.
 
 80 Karten passen genau in meinspiels Umfang-Kategorie „73 – 80 Karten".
+
+---
+
+### Zweites Set: `regeln-und-gegenstaende` (50 Karten)
+
+Das zweite Bestellset — kein Helden-Deck, sondern Nachschlagewerk und Fundus. Rückseite ist die neutrale Grimoire-Karte, weil das Set niemandem einzeln gehört.
+
+| Block                  | Karten | Inhalt                                                                                                                                                                                                       |
+| ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Lady Catrina of Tiamat | **1**  | Referenzkarte (Human Crusader 11), Klasse und Stufe aus `character_classes`                                                                                                                                  |
+| Sprocket — Nachzügler  | **1**  | Hold Person, siehe Nachtrag unten                                                                                                                                                                            |
+| Regelkarten            | **23** | THAC0, Rettungswürfe (4×), Angriffe/Runde, Attributstabellen (6×), Diebesfähigkeiten (2×), Untote vertreiben, Belastung, Zauberslots, Zauberpunkte, Fertigkeiten-Slots, Level-Limits, Kampfstile, Hausregeln |
+| Magische Gegenstände   | **25** | Alle Einträge aus `magic_items` mit Effekten und eigenem Artwork                                                                                                                                             |
+| **gesamt**             | **50** |                                                                                                                                                                                                              |
+
+**Die Regelkarten rechnen ihre Werte zur Laufzeit aus `rules-js/` aus** — sie sind damit per Konstruktion mit der App identisch und können nicht veralten. Erzeugt via `node build-rules-cards.mjs --tarot70`, ganz ohne KI.
+
+Die Item-Karten (`node build-item-cards.mjs --tarot70`) lesen `magic_items.magic_effects` und übersetzen die Felder in lesbare Zeilen — ein `ac_bonus: -1` erscheint als „Armor Class +1 (AC −1)", weil AD&D absteigend zählt. Die Bildhöhe wird pro Karte gemessen und dem Textbedarf angepasst, damit keine halbleere untere Kartenhälfte entsteht.
+
+Nicht enthalten: `Ring des Schutzes (Ring)` — eine unvollständige Dublette von `Ring of Protection +1` in der DB (nur `ac_bonus`, kein `save_all`, kein `name_en`).
+
+Verpackt mit `node build-print-packages.mjs tarot70 --set2` und `node build-print-pdf.mjs tarot70 --set2`.
+
+50 Karten fallen in meinspiels Umfang-Kategorie „37 – 54 Karten".
 
 ---
 

@@ -7,6 +7,24 @@
 // Dateinamen der Epic Items folgen den deutschen Item-Namen aus der DB, passend
 // zu den bereits bestehenden Larry-/Isolde-Paketen.
 
+// Zweites Bestellset: Nachzügler + Nachschlagewerk. Anders als die Helden-Decks
+// besteht es nicht aus Deck-Ordnern, sondern sammelt ganze Ausgabeverzeichnisse
+// in fester Reihenfolge ein. Rückseite ist die neutrale Grimoire-Karte, weil das
+// Set nicht zu einem einzelnen Helden gehört.
+export const SET_TWO = {
+  id: "regeln-und-gegenstaende",
+  label: "Regeln & Magische Gegenstände",
+  sources: [
+    // Verzeichnisse ohne Profil-Suffix — das ergänzen die Build-Skripte.
+    { dir: "out/char-cards", only: ["reference-lady-catrina-of-tiamat.png"], prefix: "catrina" },
+    // sub = Unterordner UNTERHALB des profilspezifischen Verzeichnisses
+    // (out/extras-tarot70/sprocket-nachtrag), das Suffix sitzt also am dir.
+    { dir: "out/extras", sub: "sprocket-nachtrag", prefix: "sprocket" },
+    { dir: "out/rules-cards", prefix: "regel" },
+    { dir: "out/item-cards", prefix: "item" },
+  ],
+};
+
 export const PACKAGES = [
   {
     id: "nowi-zauberdeck",

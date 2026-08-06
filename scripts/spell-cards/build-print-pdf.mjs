@@ -10,8 +10,8 @@
 import { chromium } from "playwright";
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
-import { PACKAGES } from "./print-manifest.mjs";
-import { collectCards } from "./build-print-packages.mjs";
+import { PACKAGES, SET_TWO } from "./print-manifest.mjs";
+import { collectCards, collectSetTwo } from "./build-print-packages.mjs";
 
 // Chromium rundet die Seitengröße auf ganze CSS-Pixel auf — aus 76×126 mm wird
 // 76,2×126,32 mm. Druckereien prüfen die Dokumentgröße exakt, deshalb korrigieren
@@ -90,6 +90,16 @@ for (const key of profiles) {
     await renderPagesToPdf(browser, cards.map((c) => c.src), join(p.out, `${pkg.id}-vorderseiten.pdf`), p);
     await renderPagesToPdf(browser, [back], join(p.out, `${stem}-ruckseite.pdf`), p);
     console.log(`✓ ${pkg.label} · ${p.label}: ${cards.length} Seiten + Rückseite`);
+  }
+
+  // Zweites Set (Regeln & magische Gegenstände) — gleiche Quelle wie das ZIP,
+  // Rückseite ist die neutrale Grimoire-Karte statt einer Helden-Rückseite.
+  if (process.argv.includes("--set2")) {
+    const cards = collectSetTwo(key === "std" ? "std" : "tarot70");
+    const back = join("out", key === "std" ? "card-back.png" : "card-back-tarot70.png");
+    await renderPagesToPdf(browser, cards.map((c) => c.src), join(p.out, `${SET_TWO.id}-vorderseiten.pdf`), p);
+    await renderPagesToPdf(browser, [back], join(p.out, `${SET_TWO.id}-ruckseite.pdf`), p);
+    console.log(`✓ ${SET_TWO.label} · ${p.label}: ${cards.length} Seiten + Rückseite`);
   }
 }
 
