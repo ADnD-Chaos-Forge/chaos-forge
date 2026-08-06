@@ -498,6 +498,95 @@ describe("spell abilities", () => {
   });
 });
 
+// ── Bonus Spell Points & HP-to-SP Conversion ──────────────────
+
+function makeNethereseBlooded(overrides: Partial<EpicItemRow> = {}): EpicItemRow {
+  return {
+    id: "test-netherese-blooded",
+    character_id: "char-1",
+    slug: "netherese-blooded",
+    name: "Netherese Blooded",
+    name_en: "Netherese Blooded",
+    description: "",
+    description_en: null,
+    icon: "sparkles",
+    equipped: true,
+    damage_level: 0,
+    max_damage_level: 4,
+    damage_levels: {
+      "0": { description: "Base", description_en: "Base", effects: [] },
+      "1": { description: "L3-4", description_en: "L3-4", effects: [] },
+      "2": { description: "L5-6", description_en: "L5-6", effects: [] },
+      "3": { description: "L7-8", description_en: "L7-8", effects: [] },
+      "4": { description: "L9-10", description_en: "L9-10", effects: [] },
+    },
+    simple_effects: {
+      level_thresholds: [3, 5, 7, 9],
+      spell_points_bonus_multiplier: 2,
+      hp_to_sp_conversion: { unlock_level: 4, ratio: 2 },
+    },
+    notes: "",
+    created_at: "",
+    updated_at: "",
+    ...overrides,
+  };
+}
+
+describe("bonus spell points", () => {
+  it("scales with characterLevel × multiplier", () => {
+    const effects = getEpicEffects([makeNethereseBlooded()], 9);
+    expect(effects.bonusSpellPoints).toBe(18);
+  });
+
+  it("is 0 when characterLevel is not provided", () => {
+    const effects = getEpicEffects([makeNethereseBlooded()]);
+    expect(effects.bonusSpellPoints).toBe(0);
+  });
+
+  it("is 0 when the item is not equipped", () => {
+    const effects = getEpicEffects([makeNethereseBlooded({ equipped: false })], 9);
+    expect(effects.bonusSpellPoints).toBe(0);
+  });
+
+  it("applies regardless of the item's own unlocked tier", () => {
+    // Level 1 is below every level_threshold (tier 0), but the bonus is a
+    // base effect, not tied to the item's own damage-level progression.
+    const effects = getEpicEffects([makeNethereseBlooded()], 1);
+    expect(effects.bonusSpellPoints).toBe(2);
+  });
+
+  it("combines additively across multiple items", () => {
+    const a = makeNethereseBlooded({ id: "a", slug: "a" });
+    const b = makeNethereseBlooded({ id: "b", slug: "b" });
+    const effects = getEpicEffects([a, b], 9);
+    expect(effects.bonusSpellPoints).toBe(36);
+  });
+});
+
+describe("HP-to-SP conversion", () => {
+  it("is null below the unlock_level tier", () => {
+    const effects = getEpicEffects([makeNethereseBlooded()], 7);
+    expect(effects.hpToSpConversion).toBeNull();
+  });
+
+  it("is set with the correct ratio at the unlock_level tier", () => {
+    const effects = getEpicEffects([makeNethereseBlooded()], 9);
+    expect(effects.hpToSpConversion).toEqual({ ratio: 2 });
+  });
+
+  it("is null when the item is not equipped", () => {
+    const effects = getEpicEffects([makeNethereseBlooded({ equipped: false })], 9);
+    expect(effects.hpToSpConversion).toBeNull();
+  });
+
+  it("does not get overwritten by a second item without conversion", () => {
+    const netherese = makeNethereseBlooded();
+    const blade = makeBladeOfWater();
+    const effects = getEpicEffects([netherese, blade], 9);
+    expect(effects.hpToSpConversion).toEqual({ ratio: 2 });
+  });
+});
+
 describe("getEpicEffects — base_<stat> unequipped semantic", () => {
   it("applies base_con as forceStatOverride when condenser is unequipped", () => {
     const condenser = makeCondenser({

@@ -1336,7 +1336,10 @@
     "perWeek": "{count}×/week",
     "abilityUsed": "Used",
     "abilityAvailable": "Available",
-    "coldDamage": "+1d6 Cold Damage"
+    "coldDamage": "+1d6 Cold Damage",
+    "hpToSpConversion": "Netherese Blooded",
+    "hpToSpConversionRatio": "Convert hit points to spell points (1 HP → {ratio} SP)",
+    "hpToSpConvertButton": "Convert"
   },
   "rulebook": {
     "title": "Rules & App Help",

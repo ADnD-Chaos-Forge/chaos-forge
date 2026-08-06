@@ -83,6 +83,8 @@ function PlayChecksPanelInner({
       passiveAbilities: [],
       overclockAbility: null,
       spellAbilities: [],
+      bonusSpellPoints: 0,
+      hpToSpConversion: null,
     }),
     []
   );
