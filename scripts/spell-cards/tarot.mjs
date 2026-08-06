@@ -48,3 +48,11 @@ export const TAROT_EPIC_FMT = {
 
 // Kartenrückseite (Portrait + Runensiegel): symmetrisch skaliert (H-Verhältnis 1488/1146).
 export const TAROT_BACK_FMT = { W: TAROT.W, H: TAROT.H, fs: 1.3 };
+
+// Regel-Referenzkarte: kein Artwork, dafür maximale Tabellenfläche. Die Karte
+// wird im Spiel gelesen, nicht bewundert — Schrift daher etwas kleiner als auf
+// den Zauberkarten, um ganze Tabellen unterzubringen.
+export const TAROT_RULES_FMT = {
+  W: TAROT.W, H: TAROT.H, bodyTop: 150, bodyBottom: 84,
+  titleFont: 46, subFont: 17, headFont: 19, cellFont: 23, noteFont: 20,
+};
