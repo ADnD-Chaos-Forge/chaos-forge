@@ -76,7 +76,8 @@ ressources/upload/
 Kartendruck/*
 !Kartendruck/README.md
 
-# Spell-Cards-Pipeline: gerenderte Karten (~1 GB) und der Text-/Art-Cache.
-# Nur die Skripte selbst sind versioniert.
+# Spell-Cards-Pipeline: nur die gerenderten Karten (~1 GB) bleiben lokal.
+# cache/ ist BEWUSST versioniert: Die Bilder darin sind per Gemini generiert
+# und nicht reproduzierbar — ein Neubau liefert andere Motive, nicht dieselben.
+# Gleiches gilt für die Claude-generierten Regeltexte in content.json.
 scripts/spell-cards/out/
-scripts/spell-cards/cache/
