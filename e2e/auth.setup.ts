@@ -1,5 +1,4 @@
 import { test as setup, expect } from "@playwright/test";
-import { createTestCharacter, deleteTestCharacter } from "./helpers/test-character";
 
 const SUPABASE_PROJECT_REF = "ptozyrwvbngascgydjjt";
 const TEST_EMAIL = "QA-primary@qa.chaosforge.test";
@@ -11,7 +10,8 @@ export const AUTH_FILE = "e2e/.auth/user.json";
  * Authenticates via test-login API and saves browser state (cookies + localStorage)
  * so that parallel workers can reuse the same session without repeated API calls.
  *
- * Creates a temporary character to verify the session works, then deletes it.
+ * Deliberately creates no data: the session is verified by loading a protected
+ * page and confirming it does not bounce to the login screen.
  */
 setup("authenticate", async ({ page }) => {
   const resp = await page.request.post("/api/test-login", {
@@ -44,13 +44,12 @@ setup("authenticate", async ({ page }) => {
     },
   ]);
 
-  // Create a temporary character to verify the session works
-  const charId = await createTestCharacter(page.request, { name: "QA-AuthSetup" });
-
-  // Verify the session works — characters page loads (not redirect to login)
+  // Verify the session works — characters page loads (not redirect to login).
+  // Waiting on the grid would require a seeded character; the redirect check
+  // alone proves the session, and the setup leaves no data behind.
   await page.goto("/characters");
   await expect(page).not.toHaveURL(/\/login/, { timeout: 15000 });
-  await page.getByTestId("active-characters-grid").waitFor({ state: "visible", timeout: 15000 });
+  await expect(page.getByRole("main")).toBeVisible({ timeout: 15000 });
 
   // Pre-dismiss all tutorial overlays so they don't intercept clicks in tests.
   await page.evaluate(() => {
@@ -60,10 +59,6 @@ setup("authenticate", async ({ page }) => {
     );
   });
 
-  // Save state for all workers to reuse, then clean up temp character
-  try {
-    await page.context().storageState({ path: AUTH_FILE });
-  } finally {
-    await deleteTestCharacter(page.request, charId);
-  }
+  // Save state for all workers to reuse
+  await page.context().storageState({ path: AUTH_FILE });
 });

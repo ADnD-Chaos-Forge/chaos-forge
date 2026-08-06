@@ -2,11 +2,15 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { TEST_DOMAIN } from "@/lib/test/constants";
 
-const TEST_CHARACTER_NAMES = ["Gor", "Elara", "QA-MultiXP", "QA-SingleXP"];
-
 /**
  * Removes test characters created by the E2E test seed.
- * Only works for test-domain users. Deletes characters by name.
+ * Only works for test-domain users.
+ *
+ * Deletes EVERY character owned by a test-domain user — deliberately not a
+ * fixed name list. A list silently misses every character a new test suite
+ * introduces: the rescan specs left 49 orphans in production because their
+ * "QA-Rescan-*" names were never added here. Ownership is the safe criterion,
+ * since test users only ever exist on the reserved .test domain.
  */
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -36,12 +40,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ deleted: 0 });
   }
 
-  // Delete test characters by name, owned by test users
+  // Delete all characters owned by test users
   const { data: deleted } = await supabaseAdmin
     .from("characters")
     .delete()
     .in("user_id", testUserIds)
-    .in("name", TEST_CHARACTER_NAMES)
     .select("id");
 
   // Clean up party loot test data: reset gold to 0, clear log + items created by test users
@@ -52,12 +55,10 @@ export async function POST(request: Request) {
   await supabaseAdmin.from("party_loot_items").delete().in("added_by", testUserIds);
   await supabaseAdmin.from("party_loot_log").delete().in("user_id", testUserIds);
 
-  // Clean up QA NPCs created by test users
-  await supabaseAdmin
-    .from("chronicle_npcs")
-    .delete()
-    .in("created_by", testUserIds)
-    .like("name", "QA%");
+  // Clean up QA NPCs. Matched by name alone: the seeded NPC carries no
+  // created_by, so the previous owner filter never caught it and left it in
+  // production. No real NPC uses the QA- prefix.
+  await supabaseAdmin.from("chronicle_npcs").delete().like("name", "QA-%");
 
   return NextResponse.json({ deleted: deleted?.length ?? 0 });
 }
