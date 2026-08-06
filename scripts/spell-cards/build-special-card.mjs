@@ -77,33 +77,20 @@ body{position:relative;overflow:hidden;font-family:'EB Garamond',Georgia,serif;c
 /* Das Zitat sitzt auf dem Bild — der Verlauf legt ihm einen dunklen Grund
    unter, ohne das Motiv zuzudecken. */
 .art::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(16,11,24,.55) 0%,rgba(16,11,24,.15) 28%,rgba(16,11,24,.62) 58%,rgba(16,11,24,.94) 82%,#100b18 100%);}
+  background:linear-gradient(180deg,rgba(16,11,24,.35) 0%,transparent 22%,transparent 62%,rgba(16,11,24,.72) 80%,rgba(16,11,24,.96) 92%,#100b18 100%);}
 .frame{position:absolute;left:66px;top:66px;right:66px;bottom:66px;border-radius:22px;
   border:2px solid color-mix(in srgb,var(--gold) 70%,#3a3350);
   box-shadow:0 0 0 1px rgba(0,0,0,.55) inset,0 0 60px rgba(0,0,0,.6) inset;pointer-events:none;z-index:3;}
 .frame::before{content:"";position:absolute;inset:7px;border-radius:16px;border:1px solid color-mix(in srgb,var(--gold) 38%,transparent);}
-.tag{position:absolute;top:${px(104)}px;left:50%;transform:translateX(-50%);z-index:3;
-  font:600 ${px(16)}px/1 'EB Garamond',serif;letter-spacing:.34em;text-transform:uppercase;
-  color:var(--gold);text-shadow:0 2px 10px rgba(0,0,0,.8);}
-.body{position:absolute;left:${px(96)}px;right:${px(96)}px;bottom:${px(150)}px;z-index:3;
+.body{position:absolute;left:${px(84)}px;right:${px(84)}px;bottom:${px(104)}px;z-index:3;
   display:flex;flex-direction:column;align-items:center;gap:${px(26)}px;text-align:center;}
 .q{font-family:'Cinzel',serif;font-weight:700;font-size:${px(58)}px;line-height:1.14;color:#fdf8ec;
   text-wrap:balance;text-shadow:0 3px 18px rgba(0,0,0,.85),0 1px 3px rgba(0,0,0,.9);}
-.by{display:flex;flex-direction:column;align-items:center;gap:${px(9)}px;}
-.by .line{width:${px(120)}px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
-.by .who{font:600 ${px(17)}px/1 'EB Garamond',serif;letter-spacing:.2em;text-transform:uppercase;
-  color:#e8dcc6;text-shadow:0 2px 8px rgba(0,0,0,.8);}
-.foot{position:absolute;left:${px(96)}px;right:${px(96)}px;bottom:${px(96)}px;z-index:3;
-  display:flex;justify-content:center;font:600 ${px(14)}px/1 'EB Garamond',serif;
-  letter-spacing:.16em;text-transform:uppercase;color:var(--gold);opacity:.85;}
 </style></head><body>
 <div class="art"></div><div class="frame"></div>
-<div class="tag">Special</div>
 <div class="body">
   <div class="q">${escapeHtml(CARD.quote)}</div>
-  <div class="by"><span class="line"></span><span class="who">${escapeHtml(CARD.who)}</span></div>
 </div>
-<div class="foot">Chaos Forge</div>
 </body></html>`;
 
 const browser = await chromium.launch();

@@ -87,7 +87,7 @@ Die Zustandskarten (`node build-condition-cards.mjs --tarot70`) legt man vor sic
 
 Die Zitatkarten (`node build-quote-cards.mjs --tarot70`) kommen ohne Artwork und ohne einen einzigen KI-Aufruf aus — der Spruch ist die Karte. Der Sprecher erscheint in seiner Klassenfarbe.
 
-Die Sonderkarte (`node build-special-card.mjs --tarot70`) setzt ein Zitat auf ein eigenes Artwork statt auf leeren Grund — ein Verlauf legt der Schrift einen dunklen Grund unter, ohne das Motiv zuzudecken. Anders als bei den Gegenstandskarten sind hier Menschen im Bild erwünscht; geprüft wird nur auf sichtbaren Text.
+Die Sonderkarte (`node build-special-card.mjs --tarot70`) trägt **nur** das Zitat und das Bild — keine Rubrik, keine Zuschreibung, keine Fußzeile. Der Schriftzug sitzt am unteren Rand, damit der Teller Labskaus frei bleibt; er ist die Pointe des Bildes. Der Verlauf verdunkelt nur das untere Fünftel, statt die Bildmitte grau zu überziehen. Anders als bei den Gegenstandskarten sind hier Menschen im Bild erwünscht — geprüft wird deshalb nur auf sichtbaren Text.
 
 Die Spielleiterkarte (`node build-gm-card.mjs --tarot70`) schneidet das PIN-Gate-Artwork oben an: dort sitzt das Gesicht, und der Schriftzug „Master of Chaos" im aufgeschlagenen Buch fällt aus dem Bild. Name und Text lassen sich über `--name=` und `--text=` überschreiben.
 
