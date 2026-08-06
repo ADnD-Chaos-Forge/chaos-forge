@@ -48,7 +48,7 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 /e2e/.auth/
-/.playwright-cli/
+.playwright-cli/
 
 # Supabase
 supabase/.temp/
@@ -69,3 +69,14 @@ ressources/books/
 # large reference material (copyrighted rulebooks) + upload scratch
 ressources/monsters/
 ressources/upload/
+
+# Kartendruck: druckreife Endergebnisse (~0,5 GB PNG/PDF/ZIP) — jederzeit über
+# scripts/spell-cards/ reproduzierbar, gehören nicht in die Git-History.
+# Die Bestell-Anleitung wird bewusst mitversioniert.
+Kartendruck/*
+!Kartendruck/README.md
+
+# Spell-Cards-Pipeline: gerenderte Karten (~1 GB) und der Text-/Art-Cache.
+# Nur die Skripte selbst sind versioniert.
+scripts/spell-cards/out/
+scripts/spell-cards/cache/
