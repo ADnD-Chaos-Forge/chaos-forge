@@ -114,15 +114,32 @@ function referenceData(c, portrait, castsWizard) {
 
 (async () => {
   const sb = supa();
-  const { data: chars } = await sb.from("characters").select("*").eq("is_active", true);
+  // Optionaler Filter: nur einen Charakter/Bearer generieren (z. B. --only=isolde).
+  // Ist er gesetzt, entfällt der is_active-Filter — sonst käme man an inaktive
+  // Charaktere wie Lady Catrina gar nicht heran.
+  const ONLY = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1]?.toLowerCase();
+  const q = sb.from("characters").select("*");
+  const { data: chars } = await (ONLY ? q : q.eq("is_active", true));
   const byName = Object.fromEntries(chars.map((c) => [c.name, c]));
+
+  // Klasse und Stufe stehen bei Multiclass-Charakteren in character_classes;
+  // auf der characters-Zeile können class_id/level fehlen oder veraltet sein.
+  for (const c of chars) {
+    const { data: cls } = await sb
+      .from("character_classes")
+      .select("class_id,level,is_active")
+      .eq("character_id", c.id)
+      .order("level", { ascending: false });
+    const primary = (cls || []).find((r) => r.is_active) || (cls || [])[0];
+    if (primary) {
+      if (!c.class_id) c.class_id = primary.class_id;
+      if (!c.level || c.level < primary.level) c.level = primary.level;
+    }
+  }
 
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: CW, height: CH }, deviceScaleFactor: 1 });
   const shot = async (html, file) => { await page.setContent(html, { waitUntil: "networkidle" }); await page.screenshot({ path: join(OUT, file), clip: { x: 0, y: 0, width: CW, height: CH } }); };
-
-  // Optionaler Filter: nur einen Charakter/Bearer generieren (z. B. --only=isolde)
-  const ONLY = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1]?.toLowerCase();
 
   // ── Referenzkarten ──
   for (const c of chars) {

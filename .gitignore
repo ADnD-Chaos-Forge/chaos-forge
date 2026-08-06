@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ".env*" greift NUR bei Dateien, die mit ".env" beginnen — keys.env & Co. fielen
+# sonst durch und lägen mit ihren API-Keys im Repo.
+*.env
 
 # vercel
 .vercel

@@ -11,7 +11,7 @@ import { readdirSync, existsSync, mkdirSync, copyFileSync, readFileSync, writeFi
 import { join } from "path";
 import { execFileSync } from "child_process";
 import { crc32 } from "zlib";
-import { PACKAGES } from "./print-manifest.mjs";
+import { PACKAGES, SET_TWO } from "./print-manifest.mjs";
 
 // Playwright-Screenshots enthalten keinen pHYs-Chunk, die PNGs tragen also keine
 // dpi-Angabe. Upload-Editoren nehmen dann 72 dpi an und platzieren die Karte in
@@ -137,6 +137,49 @@ function buildCombined(profileKey) {
   console.log(`✓ Alle Helden · ${p.label}: ${cards.length} Karten + neutrale Rückseite → ${zip}`);
 }
 
+// Kartenliste des zweiten Sets (Catrina, Nachzügler-Zauber, Regel- und
+// Item-Karten). Die Quellordner tragen je Profil ein Suffix — bei "std" keins.
+export function collectSetTwo(profileKey) {
+  const sfx = profileKey === "std" ? "" : `-${profileKey}`;
+  const cards = [];
+  for (const s of SET_TWO.sources) {
+    const dir = s.sub ? join(`${s.dir}${sfx}`, s.sub) : `${s.dir}${sfx}`;
+    if (!existsSync(dir)) throw new Error(`${SET_TWO.id} (${profileKey}): Quellordner fehlt: ${dir}`);
+    const files = s.only ?? readdirSync(dir).filter((f) => f.endsWith(".png")).sort();
+    for (const f of files) {
+      const src = join(dir, f);
+      if (!existsSync(src)) throw new Error(`${SET_TWO.id}: Datei fehlt: ${src}`);
+      // Führende Nummern der Quellordner entfernen — die Nummerierung des
+      // Pakets vergibt buildSetTwo neu und fortlaufend über alle Blöcke.
+      cards.push({ src, name: `${s.prefix}-${f.replace(/^\d+_/, "").replace(/\.png$/, "")}` });
+    }
+  }
+  return cards;
+}
+
+function buildSetTwo(profileKey) {
+  const p = PROFILES[profileKey];
+  const backFile = { tarot70: "card-back-tarot70.png", tarot: "card-back-tarot.png", std: "card-back.png" }[profileKey];
+  const back = join("out", backFile);
+  if (!existsSync(back)) throw new Error(`Neutrale Rückseite fehlt: ${back} — vorher "node back.mjs --${profileKey}" laufen lassen`);
+
+  const cards = collectSetTwo(profileKey);
+  const outDir = join(p.outRoot, SET_TWO.id);
+  rmSync(outDir, { recursive: true, force: true });
+  mkdirSync(outDir, { recursive: true });
+  const pad = String(cards.length).length;
+  let stamped = 0;
+  cards.forEach((c, i) => {
+    if (copyWithDpi(c.src, join(outDir, `${String(i + 1).padStart(pad, "0")}_${c.name}.png`))) stamped++;
+  });
+  if (copyWithDpi(back, join(outDir, "_ruckseite.png"))) stamped++;
+
+  const zip = `${outDir}.zip`;
+  rmSync(zip, { force: true });
+  execFileSync("zip", ["-qrj", zip, outDir]);
+  console.log(`✓ ${SET_TWO.label} · ${p.label}: ${cards.length} Karten + neutrale Rückseite (${stamped}× 300-dpi-Angabe ergänzt) → ${zip}`);
+}
+
 // Nur bauen, wenn direkt aufgerufen — build-print-pdf.mjs importiert collectCards().
 if (process.argv[1]?.endsWith("build-print-packages.mjs")) {
   const wanted = process.argv.slice(2).filter((a) => !a.startsWith("-"));
@@ -144,5 +187,6 @@ if (process.argv[1]?.endsWith("build-print-packages.mjs")) {
   for (const key of profiles) {
     for (const pkg of PACKAGES) buildPackage(pkg, key);
     if (process.argv.includes("--combined")) buildCombined(key);
+    if (process.argv.includes("--set2")) buildSetTwo(key);
   }
 }
