@@ -60,9 +60,9 @@ Die 16 Lernvorschläge (`*_sprocket-neu-*`, erzeugt via `node render-extra-cards
 
 ---
 
-### Zweites Set: `regeln-und-gegenstaende` (50 Karten)
+### Zweites Set: `kompendium` (78 Karten)
 
-Das zweite Bestellset — kein Helden-Deck, sondern Nachschlagewerk und Fundus. Rückseite ist die neutrale Grimoire-Karte, weil das Set niemandem einzeln gehört.
+Das zweite Bestellset — kein Helden-Deck, sondern Nachschlagewerk, Fundus und Personenverzeichnis. Rückseite ist die neutrale Grimoire-Karte, weil das Set niemandem einzeln gehört.
 
 | Block                  | Karten | Inhalt                                                                                                                                                                                                       |
 | ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -70,17 +70,20 @@ Das zweite Bestellset — kein Helden-Deck, sondern Nachschlagewerk und Fundus. 
 | Sprocket — Nachzügler  | **1**  | Hold Person, siehe Nachtrag unten                                                                                                                                                                            |
 | Regelkarten            | **23** | THAC0, Rettungswürfe (4×), Angriffe/Runde, Attributstabellen (6×), Diebesfähigkeiten (2×), Untote vertreiben, Belastung, Zauberslots, Zauberpunkte, Fertigkeiten-Slots, Level-Limits, Kampfstile, Hausregeln |
 | Magische Gegenstände   | **25** | Alle Einträge aus `magic_items` mit Effekten und eigenem Artwork                                                                                                                                             |
-| **gesamt**             | **50** |                                                                                                                                                                                                              |
+| Chronik-NPCs           | **28** | Portrait, Ort und Beschreibung, nach Ort sortiert                                                                                                                                                            |
+| **gesamt**             | **78** |                                                                                                                                                                                                              |
 
 **Die Regelkarten rechnen ihre Werte zur Laufzeit aus `rules-js/` aus** — sie sind damit per Konstruktion mit der App identisch und können nicht veralten. Erzeugt via `node build-rules-cards.mjs --tarot70`, ganz ohne KI.
 
 Die Item-Karten (`node build-item-cards.mjs --tarot70`) lesen `magic_items.magic_effects` und übersetzen die Felder in lesbare Zeilen — ein `ac_bonus: -1` erscheint als „Armor Class +1 (AC −1)", weil AD&D absteigend zählt. Die Bildhöhe wird pro Karte gemessen und dem Textbedarf angepasst, damit keine halbleere untere Kartenhälfte entsteht.
 
-Nicht enthalten: `Ring des Schutzes (Ring)` — eine unvollständige Dublette von `Ring of Protection +1` in der DB (nur `ac_bonus`, kein `save_all`, kein `name_en`).
+Die NPC-Karten (`node build-npc-cards.mjs --tarot70`) nutzen die Avatare aus dem Supabase-Storage — es wird kein Bild generiert, nur geladen und von oben zugeschnitten, damit die Gesichter sitzen. Die Ortsbadge ist nach Region eingefärbt (Berrybuck gold, die Burg rot, Finnigans Höhlen teal, Greifen blau, Archenbridge/Archendale violett), sodass sich der Stapel am Tisch nach Orten sortieren lässt. Als einzige Karten des Sets sind sie **deutsch** — der Text stammt wörtlich aus der Chronik.
+
+Nicht enthalten: `Ring des Schutzes (Ring)` — eine unvollständige Dublette von `Ring of Protection +1` in der DB (nur `ac_bonus`, kein `save_all`, kein `name_en`) — und der Testeintrag `QA-NPC-ms06kp11`, der als einziger NPC kein Portrait hat.
 
 Verpackt mit `node build-print-packages.mjs tarot70 --set2` und `node build-print-pdf.mjs tarot70 --set2`.
 
-50 Karten fallen in meinspiels Umfang-Kategorie „37 – 54 Karten".
+78 Karten fallen in meinspiels Umfang-Kategorie „73 – 80 Karten".
 
 ---
 
