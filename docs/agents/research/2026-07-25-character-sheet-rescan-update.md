@@ -122,16 +122,16 @@ Fehlerbehandlung ist uneinheitlich: `characters`-Insert bricht ab, `character_cl
 
 Relationstabellen:
 
-| Tabelle | Schlüssel/Constraint | Migration |
-| --- | --- | --- |
-| `character_classes` | `unique(character_id, class_id)`, Felder `level`, `xp_current`, `is_active` | `00015_multiclass.sql:6` |
-| `character_equipment` | `weapon_id` **xor** `armor_id` (später gelockert für Magic Items), `quantity`, `equipped`, `hit_bonus`, `damage_bonus`, `magic_effects` (JSONB), `custom_label`, `magic_item_id` | `00004:24`, `00036`, `00070`, `00072`, `00192` |
-| `character_inventory` | `item_id` **oder** `custom_name`, `quantity`, `notes` | `00017_inventory.sql:30` |
-| `character_spells` | PK `(character_id, spell_id)`, `prepared`, `expended` | `00004:39` |
-| `character_weapon_proficiencies` | `unique(character_id, weapon_name)`, `specialization` | `00010:18` |
-| `character_nonweapon_proficiencies` | `unique(character_id, proficiency_id)` | `00010:26` |
-| `character_fighting_styles` | `unique(character_id, style_id)`, `slots_invested` | `00032:4` |
-| `character_languages` | — (wird vom Import nicht bedient) | — |
+| Tabelle                             | Schlüssel/Constraint                                                                                                                                                             | Migration                                      |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `character_classes`                 | `unique(character_id, class_id)`, Felder `level`, `xp_current`, `is_active`                                                                                                      | `00015_multiclass.sql:6`                       |
+| `character_equipment`               | `weapon_id` **xor** `armor_id` (später gelockert für Magic Items), `quantity`, `equipped`, `hit_bonus`, `damage_bonus`, `magic_effects` (JSONB), `custom_label`, `magic_item_id` | `00004:24`, `00036`, `00070`, `00072`, `00192` |
+| `character_inventory`               | `item_id` **oder** `custom_name`, `quantity`, `notes`                                                                                                                            | `00017_inventory.sql:30`                       |
+| `character_spells`                  | PK `(character_id, spell_id)`, `prepared`, `expended`                                                                                                                            | `00004:39`                                     |
+| `character_weapon_proficiencies`    | `unique(character_id, weapon_name)`, `specialization`                                                                                                                            | `00010:18`                                     |
+| `character_nonweapon_proficiencies` | `unique(character_id, proficiency_id)`                                                                                                                                           | `00010:26`                                     |
+| `character_fighting_styles`         | `unique(character_id, style_id)`, `slots_invested`                                                                                                                               | `00032:4`                                      |
+| `character_languages`               | — (wird vom Import nicht bedient)                                                                                                                                                | —                                              |
 
 Die `unique`-Constraints auf 4 der 7 Relationstabellen sind für einen Update-Flow direkt nutzbar (Upsert statt Insert); `character_equipment` und `character_inventory` haben **keine** natürliche Unique-Spalte — hier ist Identität nur über `id` oder Heuristik bestimmbar.
 
@@ -145,6 +145,7 @@ Die `unique`-Constraints auf 4 der 7 Relationstabellen sind für einen Update-Fl
 ### Vorhandenes Auswahl-UI (`monster-variant-picker.tsx`)
 
 Der `MonsterVariantPicker` (`src/components/master/monster-variant-picker.tsx`) ist das nächste Vorbild für eine ab-/anwählbare Liste nach einem Scan:
+
 - `useState<Set<number>>` mit allen Indizes vorausgewählt (`:34`), `toggle(i)` über Set-Kopie (`:39-46`).
 - Jeder Eintrag ist ein `<label>` mit Checkbox + Titel + Stat-Zeile, `data-testid={`monster-variant-picker-item-${i}`}` (`:65-94`).
 - Button-Label zeigt die Anzahl der Auswahl, disabled bei 0 (`:142-152`).
