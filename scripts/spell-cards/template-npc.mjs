@@ -35,7 +35,7 @@ body{position:relative;overflow:hidden;font-family:'EB Garamond',Georgia,serif;c
 .title{font-family:'Cinzel',serif;font-weight:700;font-size:${px(48)}px;line-height:1.04;color:#fbf6ea;
   text-shadow:0 2px 12px rgba(0,0,0,.6);text-wrap:balance;}
 .rule{height:2px;margin:${px(16)}px 0 ${px(20)}px;background:linear-gradient(90deg,var(--gold),transparent);}
-.text{font-size:${px(26)}px;line-height:1.45;color:#e9e2d6;hyphens:auto;}
+.text{font-size:${px(data.textFont || 26)}px;line-height:1.42;color:#e9e2d6;hyphens:auto;}
 .foot{margin-top:auto;padding-top:${px(14)}px;border-top:1px solid rgba(224,178,78,.22);
   display:flex;justify-content:space-between;font:600 ${px(14)}px/1 'EB Garamond',serif;
   letter-spacing:.16em;text-transform:uppercase;color:#8f84a0;}

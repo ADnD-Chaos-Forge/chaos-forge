@@ -65,23 +65,31 @@ for (const npc of npcs) {
   if (ONLY && !npc.name.toLowerCase().includes(ONLY)) continue;
   const [a, a2] = PLACE[npc.location] || PLACE["Faerûn"];
   const b64 = await portraitB64(npc);
-  const card = (artH) =>
+  const card = (artH, textFont) =>
     renderNpcCard({
       name: npc.name, location: npc.location || "Unbekannt", text: (npc.description || "").trim(),
-      portraitB64: b64, accent: a, accent2: a2,
+      portraitB64: b64, accent: a, accent2: a2, textFont,
       fmt: artH ? { ...F, artH, bodyTop: artH - 14 } : F,
     });
+  const measure = async () =>
+    page.evaluate(() => {
+      const b = document.querySelector(".body");
+      return [...b.children].reduce((sum, el) => sum + el.offsetHeight, 0) + 44;
+    });
 
-  // Wie bei den Item-Karten: Textbedarf messen, Portrait füllt den Rest. Die
-  // Beschreibungen reichen von 80 bis 550 Zeichen — eine feste Bildhöhe würde
-  // die kurzen Karten halb leer und die langen zu eng machen.
-  await page.setContent(card(null), { waitUntil: "networkidle" });
-  const needed = await page.evaluate(() => {
-    const b = document.querySelector(".body");
-    return [...b.children].reduce((sum, el) => sum + el.offsetHeight, 0) + 44;
-  });
-  const artH = Math.max(500, Math.min(1010, CH - (F?.bodyBottom ?? 78) - needed - 36));
-  await page.setContent(card(artH), { waitUntil: "networkidle" });
+  // Textbedarf messen, Portrait füllt den Rest. Die Beschreibungen reichen von
+  // 80 bis 550 Zeichen — eine feste Bildhöhe würde die kurzen Karten halb leer
+  // lassen. Reicht der Platz auch dann nicht, rückt die Schrift stufenweise
+  // enger zusammen, statt das Portrait auf einen Streifen zu quetschen.
+  const MIN_ART = 620;
+  let textFont = 26, artH = 0;
+  for (const size of [26, 24, 22, 20, 19]) {
+    textFont = size;
+    await page.setContent(card(null, size), { waitUntil: "networkidle" });
+    artH = Math.max(MIN_ART, Math.min(1010, CH - (F?.bodyBottom ?? 78) - (await measure()) - 36));
+    if (artH > MIN_ART) break; // passt, ohne das Portrait ans Minimum zu drücken
+  }
+  await page.setContent(card(artH, textFont), { waitUntil: "networkidle" });
   await page.screenshot({ path: join(OUT, `${String(++n).padStart(2, "0")}_${slug(npc.name)}.png`), clip: { x: 0, y: 0, width: CW, height: CH } });
   const over = await page.evaluate(() => {
     const b = document.querySelector(".body");
