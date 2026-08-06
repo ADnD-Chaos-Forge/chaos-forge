@@ -95,6 +95,8 @@ Nicht enthalten: der Testeintrag `QA-NPC-ms06kp11`, der als einziger NPC kein Po
 
 Die 23 Regelkarten sind bewusst **nicht** Teil des Sets — THAC0, Rettungswürfe und Attributstabellen stehen bereits auf den Charakterbögen. Das Skript bleibt: `node build-rules-cards.mjs --tarot70` erzeugt sie in Sekunden neu, ganz ohne KI, mit Werten direkt aus `rules-js/`.
 
+**Zum Hochladen:** Der Ordner `kompendium-upload/` enthält alle 80 Vorderseiten fortlaufend nummeriert (`01_…` bis `80_…`) plus `_ruckseite.png`. Alle Dateien sind 898 × 1488 px mit eingetragener 300-dpi-Angabe — im Konfigurator die Bilder in dieser Reihenfolge hochladen und `_ruckseite.png` als Rückseite zuweisen. Wer lieber PDFs hochlädt, nimmt `kompendium-vorderseiten.pdf` und `kompendium-ruckseite.pdf`; `kompendium.zip` ist derselbe Inhalt gepackt.
+
 Verpackt mit `node build-print-packages.mjs tarot70 --set2` und `node build-print-pdf.mjs tarot70 --set2`.
 
 80 Karten schöpfen meinspiels Umfang-Kategorie „73 – 80 Karten" genau aus.
