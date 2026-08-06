@@ -8,6 +8,7 @@ import { createRequire } from "module";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { supa, slug, fetchLearnedWizardSpells } from "./lib.mjs";
+import { generateImage } from "./generate-image.mjs";
 import { renderReferenceCard } from "./template-reference.mjs";
 import { renderEpicCard } from "./template-epic.mjs";
 import { TAROT_REF_FMT, TAROT_EPIC_FMT, IS_TAROT as TAROT, DIR_SUFFIX } from "./tarot.mjs";
@@ -62,10 +63,8 @@ async function itemArtB64(slugKey, prompt) {
     } else if (existsSync(stdArt)) {
       srcBuf = readFileSync(stdArt); // vorhandenes Standard-Art als Quelle (spart Imagen-Quota)
     } else {
-      const r = await genai.models.generateImages({ model: "imagen-4.0-generate-001", prompt: prompt + STYLE, config: { numberOfImages: 1, aspectRatio: "4:3" } });
-      const b64 = r.generatedImages?.[0]?.image?.imageBytes;
-      if (!b64) throw new Error("no art " + slugKey);
-      srcBuf = Buffer.from(b64, "base64");
+      // Bilderzeugung über Gemini, siehe generate-image.mjs
+      srcBuf = await generateImage(prompt + STYLE);
       await sharp(srcBuf).webp({ quality: 95 }).toFile(srcCache); // Original sichern
     }
     await sharp(srcBuf).resize(A_W, A_H, { fit: "cover", position: "attention" }).webp({ quality: 88 }).toFile(f);

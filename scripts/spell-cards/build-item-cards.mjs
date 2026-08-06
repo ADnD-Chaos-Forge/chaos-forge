@@ -7,13 +7,13 @@
 //
 // Nutzung: node build-item-cards.mjs [--tarot70|--tarot] [--only=cloak] [--force]
 import { chromium } from "playwright";
-import { GoogleGenAI } from "@google/genai";
 import sharp from "sharp";
 import { readFileSync, existsSync, mkdirSync, rmSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { supa, slug } from "./lib.mjs";
 import { checkArt } from "./check-art.mjs";
+import { generateImage, IMAGE_MODEL } from "./generate-image.mjs";
 import { renderItemCard } from "./template-item.mjs";
 import { TAROT_EPIC_FMT, IS_TAROT as TAROT, DIR_SUFFIX } from "./tarot.mjs";
 
@@ -27,12 +27,6 @@ const OUT = join(HERE, "out", `item-cards${TAROT ? DIR_SUFFIX : ""}`);
 const ITEMART = join(HERE, "cache", "art-items");
 [OUT, ITEMART].forEach((d) => mkdirSync(d, { recursive: true }));
 
-const env = Object.fromEntries(
-  readFileSync(join(ROOT, ".env.local"), "utf8")
-    .split("\n").filter((l) => l.includes("=") && !l.trim().startsWith("#"))
-    .map((l) => { const i = l.indexOf("="); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; })
-);
-const genai = new GoogleGenAI({ apiKey: env.GOOGLE_API_KEY });
 const STYLE =
   " — a single magic item as the clear subject, centered on dark stone, dark fantasy painterly digital illustration," +
   " deep indigo-purple atmosphere with teal and gold arcane light, dramatic rim lighting, highly detailed," +
@@ -71,14 +65,7 @@ async function artB64(key, prompt, subject) {
       // Stockfoto-Porträt. Auf einer gedruckten Karte ist das nicht heilbar.
       let last = "";
       for (let attempt = 1; attempt <= 4; attempt++) {
-        const r = await genai.models.generateImages({
-          model: "imagen-4.0-generate-001",
-          prompt: prompt + STYLE,
-          config: { numberOfImages: 1, aspectRatio: "4:3" },
-        });
-        const b64 = r.generatedImages?.[0]?.image?.imageBytes;
-        if (!b64) throw new Error("kein Artwork für " + key);
-        const buf = Buffer.from(b64, "base64");
+        const buf = await generateImage(prompt + STYLE);
         const check = await checkArt(buf, subject);
         if (check.ok) { srcBuf = buf; console.log(`      Bildprüfung ok (Versuch ${attempt})`); break; }
         last = check.reason;

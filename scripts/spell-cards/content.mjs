@@ -2,6 +2,7 @@
 // Effekt-Bild. Ein Opus-Aufruf liefert rules + art-prompt; Imagen macht das Bild.
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI } from "@google/genai";
+import { generateImage } from "./generate-image.mjs";
 import sharp from "sharp";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
@@ -289,16 +290,11 @@ async function generateArt(spell, artPrompt, outPath) {
   // Jeden Key der Reihe nach versuchen; bei JEDEM Fehler (Kontingent, abgelaufener
   // Token/401, gesperrtes Modell/404 …) zum nächsten Key wechseln.
   let lastErr;
-  for (let tried = 0; tried < GEMINI_CLIENTS.length; tried++) {
+  for (let tried = 0; tried < 1; tried++) {
     try {
-      const r = await GEMINI_CLIENTS[keyIdx].models.generateImages({
-        model: "imagen-4.0-generate-001",
-        prompt,
-        config: { numberOfImages: 1, aspectRatio: "4:3" },
-      });
-      const b64 = r.generatedImages?.[0]?.image?.imageBytes;
-      if (!b64) throw new Error("no image bytes for " + englishName(spell));
-      const buf = Buffer.from(b64, "base64");
+      // Bilderzeugung und Key-Rotation stecken in generate-image.mjs — das
+      // liest auch keys.env, nicht nur .env.local.
+      const buf = await generateImage(prompt);
       await sharp(buf).resize(768, 470, { fit: "cover", position: "attention" }).webp({ quality: 88 }).toFile(outPath);
       return;
     } catch (e) {
