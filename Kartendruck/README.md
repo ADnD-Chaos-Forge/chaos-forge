@@ -60,7 +60,7 @@ Die 16 Lernvorschläge (`*_sprocket-neu-*`, erzeugt via `node render-extra-cards
 
 ---
 
-### Zweites Set: `kompendium` (80 Karten)
+### Zweites Set: `kompendium` (81 Karten)
 
 Das zweite Bestellset — kein Helden-Deck, sondern das, was auf keinem Charakterbogen steht. Rückseite ist die neutrale Grimoire-Karte, weil das Set niemandem einzeln gehört.
 
@@ -73,7 +73,7 @@ Das zweite Bestellset — kein Helden-Deck, sondern das, was auf keinem Charakte
 | Zustände               | **8**  | Zum Auslegen: Bezaubert, Schlafend, Gehalten, Geblendet, Verängstigt, Unsichtbar, Beschleunigt, Verlangsamt |
 | Chronik-NPCs           | **28** | Porträt, Ort und Beschreibung, nach Ort sortiert                                                            |
 | Zitate                 | **31** | Die gesammelten Sprüche aus der Chronik                                                                     |
-| **gesamt**             | **80** |                                                                                                             |
+| **gesamt**             | **81** |                                                                                                             |
 
 **Die Ausrüstungskarten zeigen nur, was wirklich jemandem gehört.** Quelle ist `character_equipment` der aktiven Helden, nicht der `magic_items`-Katalog — ein Katalogeintrag, den niemand trägt, ergibt keine Karte für den Spieltisch. Der Besitzer steht als Kopfzeile auf jeder Karte. Larrys Klinge des Wassers fehlt bewusst: die hat als Epic Item schon eine eigene, ausführlichere Karte im ersten Set. Ladungen werden **nicht** gedruckt, nur „Verbrauchsgegenstand" — den Verbrauch führen die Spielenden selbst, eine gedruckte Zahl wäre ab der ersten Sitzung falsch.
 
@@ -87,7 +87,9 @@ Die Zustandskarten (`node build-condition-cards.mjs --tarot70`) legt man vor sic
 
 Die Zitatkarten (`node build-quote-cards.mjs --tarot70`) kommen ohne Artwork und ohne einen einzigen KI-Aufruf aus — der Spruch ist die Karte. Der Sprecher erscheint in seiner Klassenfarbe.
 
-Die Sonderkarte (`node build-special-card.mjs --tarot70`) trägt **nur** das Zitat und das Bild — keine Rubrik, keine Zuschreibung, keine Fußzeile. Der Schriftzug sitzt am unteren Rand, damit der Teller Labskaus frei bleibt; er ist die Pointe des Bildes. Der Verlauf verdunkelt nur das untere Fünftel, statt die Bildmitte grau zu überziehen. Anders als bei den Gegenstandskarten sind hier Menschen im Bild erwünscht — geprüft wird deshalb nur auf sichtbaren Text.
+Die Sonderkarten (`node build-special-card.mjs --tarot70`) tragen **nur** das Zitat und das Bild — keine Rubrik, keine Zuschreibung, keine Fußzeile. Der Schriftzug sitzt am unteren Rand, damit der Teller Labskaus frei bleibt; er ist die Pointe des Bildes. Der Verlauf verdunkelt nur das untere Fünftel, statt die Bildmitte grau zu überziehen. Anders als bei den Gegenstandskarten sind hier Menschen im Bild erwünscht — geprüft wird deshalb nur auf sichtbaren Text.
+
+„Zurück an den Absender" nutzt das PIN-Gate-Artwork als **Bildvorlage**: `generateImage()` nimmt über `refImage` ein Referenzbild entgegen, sodass der Spielleiter auf der Karte wiedererkennbar bleibt und seinen eigenen Zauber zurück ins Gesicht bekommt. Zwei umlaufende goldene Pfeile zitieren die bekannte Reverse-Geste, ohne deren Gestaltung nachzubauen.
 
 Die Spielleiterkarte (`node build-gm-card.mjs --tarot70`) schneidet das PIN-Gate-Artwork oben an: dort sitzt das Gesicht, und der Schriftzug „Master of Chaos" im aufgeschlagenen Buch fällt aus dem Bild. Name und Text lassen sich über `--name=` und `--text=` überschreiben.
 
@@ -99,7 +101,7 @@ Die 23 Regelkarten sind bewusst **nicht** Teil des Sets — THAC0, Rettungswürf
 
 Verpackt mit `node build-print-packages.mjs tarot70 --set2` und `node build-print-pdf.mjs tarot70 --set2`.
 
-80 Karten schöpfen meinspiels Umfang-Kategorie „73 – 80 Karten" genau aus.
+81 Karten liegen **eine über** meinspiels Umfang-Kategorie „73 – 80 Karten". Wer in der Stufe bleiben will, lässt eine Zitatkarte weg — die Nummerierung vergibt `build-print-packages.mjs` beim nächsten Lauf ohnehin neu.
 
 ---
 

@@ -60,18 +60,25 @@ export const FALLBACK_MODEL = "gemini-2.5-flash-image";
 /**
  * Erzeugt ein Bild und liefert es als Buffer. Schlägt ein Schlüssel fehl
  * (Kontingent, 401, gesperrtes Modell), übernimmt der nächste.
+ *
+ * Mit `refImage` wird das Bild aus einer Vorlage abgeleitet — so bleibt eine
+ * bestimmte Person über mehrere Karten hinweg wiedererkennbar.
+ *
  * @param {string} prompt
- * @param {{aspectRatio?: string}} [opts]
+ * @param {{aspectRatio?: string, refImage?: Buffer, refMime?: string}} [opts]
  * @returns {Promise<Buffer>}
  */
-export async function generateImage(prompt, { aspectRatio = "4:3" } = {}) {
+export async function generateImage(prompt, { aspectRatio = "4:3", refImage, refMime = "image/webp" } = {}) {
+  const contents = refImage
+    ? [{ role: "user", parts: [{ inlineData: { mimeType: refMime, data: refImage.toString("base64") } }, { text: prompt }] }]
+    : prompt;
   let lastErr;
   for (let tried = 0; tried < CLIENTS.length * 2; tried++) {
     const model = tried < CLIENTS.length ? IMAGE_MODEL : FALLBACK_MODEL;
     try {
       const r = await CLIENTS[keyIdx].models.generateContent({
         model,
-        contents: prompt,
+        contents,
         config: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio } },
       });
       const parts = r.candidates?.[0]?.content?.parts || [];
