@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ".env*" greift NUR bei Dateien, die mit ".env" beginnen — keys.env & Co. fielen
+# sonst durch und lägen mit ihren API-Keys im Repo.
+*.env
 
 # vercel
 .vercel
@@ -48,7 +51,7 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 /e2e/.auth/
-/.playwright-cli/
+.playwright-cli/
 
 # Supabase
 supabase/.temp/
@@ -69,3 +72,15 @@ ressources/books/
 # large reference material (copyrighted rulebooks) + upload scratch
 ressources/monsters/
 ressources/upload/
+
+# Kartendruck: druckreife Endergebnisse (~0,5 GB PNG/PDF/ZIP) — jederzeit über
+# scripts/spell-cards/ reproduzierbar, gehören nicht in die Git-History.
+# Die Bestell-Anleitung wird bewusst mitversioniert.
+Kartendruck/*
+!Kartendruck/README.md
+
+# Spell-Cards-Pipeline: nur die gerenderten Karten (~1 GB) bleiben lokal.
+# cache/ ist BEWUSST versioniert: Die Bilder darin sind per Gemini generiert
+# und nicht reproduzierbar — ein Neubau liefert andere Motive, nicht dieselben.
+# Gleiches gilt für die Claude-generierten Regeltexte in content.json.
+scripts/spell-cards/out/

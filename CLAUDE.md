@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Styling:** Tailwind CSS v4 + shadcn/ui + Glassmorphism Design-System
 - **i18n:** next-intl (Cookie-basiert, DE/EN) + `localized()` Utility für DB-Daten
 - **Unit-/Integrationstests:** Vitest (1764 Tests)
-- **E2E-Tests:** Playwright (130+ E2E inkl. Responsive, A11y, Sidebar, XP-Management, GM-Dashboard, Master, Mobile, Approval-Flow, Rescan)
+- **E2E-Tests:** Playwright (12 Specs: GM-Dashboard/Master, Dashboard, Auth-Redirect, Layout, Accessibility, Notifications, Rulebook-Chat, Landing, Login, Session-Share, Not-Found, Smoke). **Regel: E2E-Tests legen keine Charaktere an** — sie liefen gegen die Produktiv-DB und ließen dort Datenmüll zurück.
 - **Linting/Formatting:** ESLint (next config) + Prettier (0 Warnings, 0 Errors)
 - **Hosting:** Vercel (Free-Tier)
 - **AI:** Anthropic Claude API (Character Import, Monster Import, Session Summaries) + Google Gemini (Imagen für Bild-Generierung)
@@ -129,11 +129,12 @@ src/
     print-config.ts       # Print-Section-IDs, Preferences-Typen, Persistence
   middleware.ts           # Next.js Middleware (Supabase Session-Refresh)
   test/                   # Vitest Setup, Smoke- & Regressionstests
-e2e/                      # Playwright E2E-Tests
-  responsive-a11y.spec.ts # Mobile Responsive, Desktop Sidebar, FAB + WCAG 2 AA (axe-core)
+e2e/                      # Playwright E2E-Tests (legen KEINE Charaktere an)
+  accessibility.spec.ts   # WCAG 2 AA (axe-core)
+  master.spec.ts          # GM-Dashboard (größte Suite)
   pages/                  # Page Object Models (character-sheet, spellbook, login, master, party)
   helpers/                # Auth-Helper (Cookie-basierter Test-Login, Test-Domain: @qa.chaosforge.test)
-scripts/                  # Einmalige Daten-Pipeline-Scripts (nicht committed, siehe docs/monster-import.md)
+scripts/                  # Einmalige Daten-Pipeline-Scripts (spell-cards/ ist versioniert, out/ nicht)
 messages/                 # i18n-Dateien (de.json, en.json)
 supabase/
   migrations/             # 213 SQL-Migrationen (Schema + Seed-Daten + Spell Compendium + Epic Items + Realtime + Gold RPC + Monsters + Notifications + Weapon Proficiency Split + Monster Narrative + Profiles)
