@@ -155,6 +155,9 @@ export function SettingsClient({
       toast.success(t("accountDeleted"));
       const supabase = createClient();
       await supabase.auth.signOut();
+      // Full reload on purpose: the account is gone and the session was
+      // signed out — nothing of the old client state may survive.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = "/";
     } catch {
       toast.error(t("accountDeleteError"));

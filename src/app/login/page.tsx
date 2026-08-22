@@ -40,6 +40,9 @@ export default function LoginPage() {
           access_token: testData.access_token,
           refresh_token: testData.refresh_token,
         });
+        // Full reload on purpose: the auth cookies just changed, and the
+        // middleware has to hand the server components a fresh session.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = "/characters";
         return;
       }
@@ -80,6 +83,9 @@ export default function LoginPage() {
         // Ping admin via Discord webhook if this user is still unapproved.
         // Fire-and-forget — the server derives whether this is a fresh signup.
         fetch("/api/notify-new-user", { method: "POST" }).catch(() => {});
+        // Full reload on purpose — see above: the OTP verify just wrote new
+        // auth cookies.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = "/characters";
       }
     } catch (err) {
