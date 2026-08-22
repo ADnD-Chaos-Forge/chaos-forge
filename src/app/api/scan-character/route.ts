@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { generateText, type AiInputFile } from "@/lib/gemini/generate-text";
 import sharp from "sharp";
 import { createClient } from "@/lib/supabase/server";
 import { validateImportFiles } from "@/app/characters/import/import-validation";
@@ -7,31 +7,6 @@ import {
   buildCharacterScanPrompt,
   parseUpdateScanResponse,
 } from "@/lib/scan/character-scan-prompt";
-
-type ImageMediaType = "image/jpeg" | "image/png" | "image/webp" | "image/gif";
-
-function buildContentBlock(
-  base64: string,
-  mediaType: string,
-  isPdf: boolean
-):
-  | { type: "document"; source: { type: "base64"; media_type: "application/pdf"; data: string } }
-  | { type: "image"; source: { type: "base64"; media_type: ImageMediaType; data: string } } {
-  if (isPdf) {
-    return {
-      type: "document" as const,
-      source: { type: "base64" as const, media_type: "application/pdf" as const, data: base64 },
-    };
-  }
-  return {
-    type: "image" as const,
-    source: {
-      type: "base64" as const,
-      media_type: mediaType as ImageMediaType,
-      data: base64,
-    },
-  };
-}
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -58,10 +33,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: "Vision-Import ist nicht konfiguriert (ANTHROPIC_API_KEY fehlt)." },
+      { error: "Vision-Import ist nicht konfiguriert (GOOGLE_API_KEY fehlt)." },
       { status: 503 }
     );
   }
@@ -92,32 +67,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build content blocks for all files
-    const contentBlocks: Array<
-      | {
-          type: "document";
-          source: { type: "base64"; media_type: "application/pdf"; data: string };
-        }
-      | { type: "image"; source: { type: "base64"; media_type: ImageMediaType; data: string } }
-    > = [];
+    // Build the file parts for all uploads
+    const files: AiInputFile[] = [];
 
     for (const file of allFiles) {
       const bytes = Buffer.from(await file.arrayBuffer());
       const isPdf = file.type === "application/pdf";
 
       if (isPdf) {
-        const base64 = bytes.toString("base64");
-        contentBlocks.push(buildContentBlock(base64, file.type, true));
+        files.push({ data: bytes.toString("base64"), mimeType: "application/pdf" });
       } else {
-        // Resize images to max 1568px (Anthropic recommended limit)
-        // Reduces token cost and prevents request size issues
+        // Auf 1568px verkleinern: hält die Token-Kosten unten und die Anfrage
+        // klein genug, ohne der Handschrift-Erkennung Auflösung zu nehmen.
         const resized = await sharp(bytes)
           .rotate() // Auto-rotate based on EXIF orientation
           .resize(1568, 1568, { fit: "inside", withoutEnlargement: true })
           .jpeg({ quality: 85 })
           .toBuffer();
-        const base64 = resized.toString("base64");
-        contentBlocks.push(buildContentBlock(base64, "image/jpeg", false));
+        files.push({ data: resized.toString("base64"), mimeType: "image/jpeg" });
       }
     }
 
@@ -125,31 +92,21 @@ export async function POST(request: NextRequest) {
     const preciseMode = formData.get("precise") === "true";
     const mode = formData.get("mode") === "update" ? "update" : "create";
 
-    const client = new Anthropic({ apiKey });
-
-    const message = await client.messages.create({
-      model: preciseMode ? "claude-sonnet-4-6" : "claude-haiku-4-5-20251001",
+    const { text: responseText, truncated } = await generateText({
+      precise: preciseMode,
+      files,
+      prompt: buildCharacterScanPrompt({ mode, isMultiFile }),
       // Der Update-Modus liefert zwei Blöcke plus fünf annotierte Listen und
-      // braucht damit spürbar mehr Platz als der flache Create-Payload.
-      max_tokens: mode === "update" ? 8192 : 4096,
-      messages: [
-        {
-          role: "user",
-          content: [
-            ...contentBlocks,
-            {
-              type: "text",
-              text: buildCharacterScanPrompt({ mode, isMultiFile }),
-            },
-          ],
-        },
-      ],
+      // braucht damit spürbar mehr Platz als der flache Create-Payload. Auf
+      // Gemini 3 zählt zusätzlich das Nachdenken gegen dieses Budget.
+      maxOutputTokens: mode === "update" ? 24000 : 16000,
+      // Erzwingt rohes JSON statt eines Markdown-Blocks. Die Parser kommen mit
+      // beidem klar, aber so entfällt eine Fehlerquelle.
+      json: true,
     });
 
-    const responseText = message.content[0].type === "text" ? message.content[0].text : "";
-
     // Check if response was truncated
-    if (message.stop_reason === "max_tokens") {
+    if (truncated) {
       return NextResponse.json(
         { error: "Antwort wurde abgeschnitten — bitte erneut versuchen." },
         { status: 422 }
