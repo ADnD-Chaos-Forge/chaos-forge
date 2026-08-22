@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **E2E-Tests:** Playwright (12 Specs: GM-Dashboard/Master, Dashboard, Auth-Redirect, Layout, Accessibility, Notifications, Rulebook-Chat, Landing, Login, Session-Share, Not-Found, Smoke). **Regel: E2E-Tests legen keine Charaktere an** — sie liefen gegen die Produktiv-DB und ließen dort Datenmüll zurück.
 - **Linting/Formatting:** ESLint (next config) + Prettier (0 Warnings, 0 Errors)
 - **Hosting:** Vercel (Free-Tier)
-- **AI:** Anthropic Claude API (Character Import, Monster Import, Session Summaries) + Google Gemini (Imagen für Bild-Generierung)
+- **AI:** Google Gemini (Character Import, Monster Import, Session Summaries, Rulebook Chat via `gemini-flash-latest`/`gemini-pro-latest` + Imagen für Bild-Generierung), Voyage AI (Embeddings für die Regelbuch-Suche)
 - **Export:** `docx` + `file-saver` für Word-Export
 - **Image Compression:** Client-seitige Canvas API für iPhone-Fotos vor Upload
 - **UI-Theme:** Glassmorphism Dark Fantasy (Cinzel Headings, Geist Sans Body, klassenbasierte Akzentfarben, 3D-Tilt-Cards, Stagger-Reveal)
@@ -50,10 +50,10 @@ src/
     characters/[id]/      # Charakterbogen, Druckansicht, Zauberbuch, Play Mode, Epische Ausrüstung
     characters/[id]/rescan/ # Bogen erneut scannen → kuratierbare Änderungsliste
     characters/new/       # Charakter-Erstellung (Auswahl: Wizard oder Import)
-    characters/import/    # OCR/Vision-Import (Claude API)
-    api/scan-character/   # Claude Vision Endpoint für Character-Import (mode=create|update)
-    api/scan-monster/     # Claude Vision Endpoint für Monster-Import (Haiku/Sonnet Precise Mode)
-    api/rulebook-chat/    # Claude Endpoint für GM Rulebook Chat
+    characters/import/    # OCR/Vision-Import (Gemini Vision)
+    api/scan-character/   # Gemini Vision Endpoint für Character-Import (mode=create|update)
+    api/scan-monster/     # Gemini Vision Endpoint für Monster-Import (Flash/Pro Precise Mode)
+    api/rulebook-chat/    # Gemini Endpoint für GM Rulebook Chat (Streaming, Realms-Persona)
     dashboard/            # Dashboard mit 8 Widgets (Zitat, NPCs, XP, Tags, Party-Übersicht, etc.)
     party/                # Party-Inventar & Loot-Verteilung (Gold + Items + Audit-Log)
     master/               # GM-Dashboard: PIN-Gate, Party-Übersicht, Loot-Verteilung, Gold, Chat
@@ -114,9 +114,9 @@ src/
       treasure-codes.ts   # DMG-Treasure-Code-Legende (A-Z → DE-Kurzbeschreibung, Tooltip im Bestiary)
     rules/
       magic-items.ts      # getMagicItemEffects(equipment) — Aggregiert AC-Bonus, Saves etc. aus character_equipment.magic_effects
-    gemini/               # Google Gemini Imagen Client für Bild-Generierung (Rassen, Klassen, Banner)
+    gemini/               # Google Gemini: Imagen-Client für Bilder + `generate-text.ts`/`text-request.ts` für alle Text- und Vision-Aufrufe (Rassen, Klassen, Banner)
     scan/                 # AI-Scan-Prompts + Charakterbogen-Rescan-Engine
-      monster-scan-prompt.ts # Claude Vision Prompt für Monster-Import (ScannedMonsterVariant-Schema)
+      monster-scan-prompt.ts # Gemini Vision Prompt für Monster-Import (ScannedMonsterVariant-Schema)
       character-scan-prompt.ts # Create-/Update-Prompt, Typen, parseUpdateScanResponse()
       character-matching.ts # Fuzzy-Matching gegen Stammdaten (Waffen, NWPs, Zauber), Whitelists
       character-diff.ts     # buildChangeSet() — DB-Stand vs. Scan-Payload → ScanChange[]
@@ -291,7 +291,7 @@ Diese Abweichungen vom Standard-PHB gelten für die "Chaos RPG"-Gruppe:
 ## Supabase
 
 - **Client-Helfer:** `src/lib/supabase/client.ts` (Browser), `server.ts` (Server Components), `service.ts` (Service Role, RLS-Bypass), `middleware.ts` (Session-Refresh)
-- **Env-Variablen:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GM_PIN` (6-Digit), optional `GM_SESSION_SECRET` in `.env.local`
+- **Env-Variablen:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_API_KEY` (alle KI-Features), `VOYAGE_API_KEY` (Regelbuch-Suche), `GM_PIN` (6-Digit), optional `GM_SESSION_SECRET` und `CRON_SECRET` in `.env.local`
 - **RLS:** Alle Tabellen nutzen Row Level Security — SELECT für alle Authentifizierten, INSERT/UPDATE/DELETE nur für Owner
 - **Storage:** `voice-notes` Bucket für Sprachnotizen, `avatars` für Character-Avatare
 - **Migrationen:** 219 Migrationen unter `supabase/migrations/`, ausführen via `supabase db push`
@@ -313,7 +313,7 @@ Das Datenmodell und die Regelwerk-Engine müssen folgende AD&D 2e Besonderheiten
 - **Shield Proficiency:** P.O: Skills & Powers Table 51 — Buckler +1, Small +2, Medium +3, Large +3 (über `armor.shield_type` + Weapon Proficiency)
 - **Traits & Disadvantages:** P.O: Skills & Powers — JSONB-Arrays auf `characters` mit Name, Beschreibung, CP-Kosten (bilingual)
 - **Source Books:** Jedes Item/Waffe/Zauber hat ein `source_book` Feld (PHB, AEG, ToM, etc.)
-- **Monster Stat Blocks:** Vollständige Monstrous Manual Struktur (AC, HD, THAC0, APR, Damage, Special Attacks/Defenses, Morale, XP Value, Size, Climate, Treasure, Alignment, Typical Spells, No. Appearing). Narrative Sektionen: `intro_text`, `combat_tactics`, `habitat_society`, `ecology`. Sub-Varianten via `variant_of_id` (FK Self-Reference) + `variant_name`. `parseHitDiceValue()` unterstützt `"1/2"`, `"3+3"` und `"8"` Notation. GM kann alle Monster (auch canonical) über `MonsterForm` bearbeiten. AI-Import (Claude Vision) mit Multi-Variant-Picker für Stat-Blocks mit Sub-Varianten (z.B. Orc + Orog). Precise-Mode (Sonnet vs. Haiku) als Settings-Cog am Import-Button.
+- **Monster Stat Blocks:** Vollständige Monstrous Manual Struktur (AC, HD, THAC0, APR, Damage, Special Attacks/Defenses, Morale, XP Value, Size, Climate, Treasure, Alignment, Typical Spells, No. Appearing). Narrative Sektionen: `intro_text`, `combat_tactics`, `habitat_society`, `ecology`. Sub-Varianten via `variant_of_id` (FK Self-Reference) + `variant_name`. `parseHitDiceValue()` unterstützt `"1/2"`, `"3+3"` und `"8"` Notation. GM kann alle Monster (auch canonical) über `MonsterForm` bearbeiten. AI-Import (Gemini Vision) mit Multi-Variant-Picker für Stat-Blocks mit Sub-Varianten (z.B. Orc + Orog). Precise-Mode (`gemini-pro-latest` vs. `gemini-flash-latest`) als Settings-Cog am Import-Button.
 - **Magic Items AC:** `getMagicItemEffects(equipment)` aggregiert `ac_bonus` aus `character_equipment.magic_effects`. AD&D nutzt absteigende AC → Magic-Boni sind **negativ** (z.B. Ring of Protection +1 = `ac_bonus: -1`). `calculateAC()` akzeptiert `magicACModifier` Parameter — muss an **jeder** Aufrufstelle (Character-Sheet, Tab-Equipment, Play-Mode, Print-Sheet, DOCX-Export) mitgegeben werden.
 - **Custom Weapons:** `weapons.name` = Display-Name, `weapons.proficiency_name` = Waffenfertigkeits-Kategorie (getrennt seit Migration 00200) — ermöglicht z.B. ein "Krassreißer +2" mit Proficiency-Kategorie "Long Sword"
 
@@ -362,3 +362,5 @@ Finaler explorativer Test mit etablierten Testing-Heuristiken und gezielten "Tes
 19. **Settings, Legal & Kondensator** — `/settings` (Profil, Theme, Sprache, Tutorial-Reset, DSGVO-Self-Delete), `/impressum` + `/datenschutz` + Footer mit externen Diensten + DSGVO-Rechten, `forceStatOverrides`-Semantik für Epic Items mit `simple_effects.base_<stat>` (Kondensator CON-Fallback: beim Ablegen → CON 5, beim Anlegen → 18), `computeEffectiveMaxHp` Delta-Helper mit asymmetrischer Current-HP-Clamping-Regel (CON↑ max steigt/current bleibt, CON↓ current geclamped), ApprovalGate + Server-403 um Chronik-Actions (Bild-Gen/KI-Summary), KI-Summary max_tokens 500→1500, `skip_tutorials`-Flag für bestehende User ✅
 
 20. **Charakterbogen-Rescan** — Zweiter Scan-Pfad, der einen bestehenden Charakter aktualisiert statt einen neuen anzulegen: `/characters/[id]/rescan` mit kuratierbarer Änderungsliste (jede Änderung ab-/anwählbar und im Wert editierbar). Der Update-Prompt erfasst gedruckte UND handschriftliche Werte getrennt; bei Konflikt gewinnt die Handschrift, beide Werte bleiben sichtbar und umschaltbar. Reine, unit-getestete Pipeline in `src/lib/scan/` (Diff → Apply-Plan → Executor). Entfernungs-Vorschläge, aktuelle TP, Stammdaten und Notizen starten sichtbar-aber-abgewählt; nicht gelesene Felder erzeugen nie einen Vorschlag. Ausrüstung wird per Namens-Fuzzy-Match wiedererkannt. Nebenbei: `is_approved`-Check für `/api/scan-character` nachgerüstet, Matching-Logik aus dem Create-Import extrahiert und erstmals testabgedeckt ✅
+
+21. **Wechsel auf Google Gemini** — Alle KI-Features von der Anthropic-API auf Gemini umgestellt: Regelbuch-Chat (Streaming), Charakterbogen-Scan, Monster-Scan und Session-Zusammenfassungen. Gemeinsamer Layer unter `src/lib/gemini/` (`text-request.ts` rein und unit-getestet, `generate-text.ts` als dünner I/O-Layer mit `generateText()`/`streamText()`). Alias-Modelle statt gepinnter IDs, weil Google gepinnte Versionen abschaltet. JSON-Modus (`responseMimeType`) für die Scan-Routen, Truncation über `finishReason: MAX_TOKENS`. Der Chat spricht als Gelehrter aus den Reichen, hält sich kurz und antwortet nur zu AD&D und zur App. Datenschutzerklärung auf Google als Empfänger umgestellt, `@anthropic-ai/sdk` entfernt ✅
