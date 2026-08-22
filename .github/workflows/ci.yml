@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           # setup-node caches npm automatically since v5. The next step drops
           # the lockfile on purpose to re-resolve the linux bindings, so a
           # warmed cache would work against that intent.
