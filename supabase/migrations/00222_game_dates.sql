@@ -125,9 +125,6 @@ CREATE TRIGGER notify_game_date_change_trigger
   AFTER INSERT OR UPDATE OR DELETE ON public.game_dates
   FOR EACH ROW EXECUTE FUNCTION public.notify_game_date_change();
 
--- ── Seed ─────────────────────────────────────────────────────────────────────
--- Übernimmt den bisher hart kodierten Termin, damit der Banner nach dem Deploy
--- nicht leer läuft. Ohne auth.uid() unterdrückt der Trigger die Benachrichtigung.
-INSERT INTO public.game_dates (event_date)
-SELECT DATE '2026-06-20'
-WHERE NOT EXISTS (SELECT 1 FROM public.game_dates);
+-- Kein Seed: der bisher hart kodierte Termin (20.06.2026) liegt inzwischen in
+-- der Vergangenheit und wuerde nur einen Alteintrag anlegen. Die Gruppe startet
+-- mit einer leeren Liste und traegt den naechsten Abend selbst ein.
