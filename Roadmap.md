@@ -176,7 +176,7 @@ Die App richtet sich an eine private Spielgruppe ("Chaos RPG") mit maximal 10 Nu
 - [x] `skip_tutorials`-Flag für bestehende User (Backfill, damit keiner mit "alte Hasen"-Status das Tutorial bekommt).
 - [x] Dashboard Party-Stats: Dedup in `partyChars` gegen Self-Share-Duplikate.
 
-## Epic 21: Spieltermine
+## Epic 22: Spieltermine
 
 - [x] `game_dates`-Tabelle (Kalenderdatum ohne Zeitzone, optionaler Titel) + RLS + `enforce_approval`-Trigger.
 - [x] CRUD-Sektion in `/settings` (anlegen, bearbeiten, löschen mit Bestätigung, vergangene Termine eingeklappt).

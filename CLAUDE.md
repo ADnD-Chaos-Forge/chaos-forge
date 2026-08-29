@@ -296,7 +296,7 @@ Diese Abweichungen vom Standard-PHB gelten für die "Chaos RPG"-Gruppe:
 - **Env-Variablen:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_API_KEY` (alle KI-Features), `VOYAGE_API_KEY` (Regelbuch-Suche), `GM_PIN` (6-Digit), optional `GM_SESSION_SECRET` und `CRON_SECRET` in `.env.local`
 - **RLS:** Alle Tabellen nutzen Row Level Security — SELECT für alle Authentifizierten, INSERT/UPDATE/DELETE nur für Owner
 - **Storage:** `voice-notes` Bucket für Sprachnotizen, `avatars` für Character-Avatare
-- **Migrationen:** 222 Migrationen unter `supabase/migrations/`, ausführen via `supabase db push`
+- **Migrationen:** 223 Migrationen unter `supabase/migrations/`, ausführen via `supabase db push`
 - **User-Freigabe:** `profiles.is_approved` (default false, bestehende User via Backfill auf true) + `enforce_approval`-BEFORE-Trigger auf 20+ Tabellen (`characters`, `character_equipment`, `character_spells`, `chronicle_npcs`, `chronicle_quotes`, `sessions`, `tags`, `party_loot_*`, `monsters`, `magic_items`, `epic_items`, `gm_bookmarks`). `approve_user(uuid)` RPC nur für Admin. Items mit `simple_effects.base_<stat>` (Kondensator) gehen über `forceStatOverrides` — ersetzen Basiswert unbedingt (nicht max()).
 - **Tutorials:** `profiles.skip_tutorials` (Backfill = true) blendet Overlays für bestehende User aus. Client-Side localStorage-Key `chaos-forge-tutorial-dismissed`.
 - **Spieltermine:** `game_dates` (`event_date` als reines `date`, kein Zeitstempel — Countdown darf nicht von der Serverzeitzone abhängen). Jeder freigegebene Nutzer darf CRUD. Ein `AFTER`-Trigger verteilt Benachrichtigungen an alle anderen freigegebenen Spieler; Auslöser aus der QA-Domain und System-Kontext (kein `auth.uid()`) sind ausgenommen.
